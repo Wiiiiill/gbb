@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|Win32'">
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)gbbasic\$(PlatformTarget)_$(Configuration)</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-X2 -W $(ProjectDir)gbbasic\$(PlatformTarget)_$(Configuration)</LocalDebuggerCommandArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|Win32'">
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)gbbasic\$(PlatformTarget)_$(Configuration)</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-X2 -W $(ProjectDir)gbbasic\$(PlatformTarget)_$(Configuration)</LocalDebuggerCommandArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)gbbasic\$(PlatformTarget)_$(Configuration)</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-X2 -W $(ProjectDir)gbbasic\$(PlatformTarget)_$(Configuration)</LocalDebuggerCommandArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)gbbasic\$(PlatformTarget)_$(Configuration)</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-X2 -W $(ProjectDir)gbbasic\$(PlatformTarget)_$(Configuration)</LocalDebuggerCommandArguments>
+  </PropertyGroup>
+</Project>

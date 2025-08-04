@@ -1,0 +1,10 @@
+/CMakeFiles
+/CMakeCache.txt
+/cmake_install.cmake
+/Makefile
+/gbbasic
+/gbbasic_emu
+*.0
+*.1
+*.a
+*.so

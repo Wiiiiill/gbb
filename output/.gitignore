@@ -1,0 +1,8 @@
+/vm
+/x64_debug
+/x64_release
+/x86_debug
+/x86_release
+/gbbasic.app.dSYM
+/gbbasic.app
+/*.dylib

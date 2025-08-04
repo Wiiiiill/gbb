@@ -1,0 +1,1622 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\utils\bytes.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\text.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\stream.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\encoding.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\object.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\file_handle.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\mathematics.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\platform_android.cpp">
+      <Filter>utils\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\platform_html.cpp">
+      <Filter>utils\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\platform_linux.cpp">
+      <Filter>utils\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\platform_windows.cpp">
+      <Filter>utils\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\compiler\compiler.cpp">
+      <Filter>compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\imgui.cpp">
+      <Filter>lib\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\imgui_demo.cpp">
+      <Filter>lib\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\imgui_draw.cpp">
+      <Filter>lib\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\imgui_tables.cpp">
+      <Filter>lib\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\imgui_widgets.cpp">
+      <Filter>lib\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui_code_editor\imgui_code_editor.cpp">
+      <Filter>lib\imgui_code_editor</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui_sdl\imgui_sdl.cpp">
+      <Filter>lib\imgui_sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\filesystem.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\hacks.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\renderer.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\texture.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\window.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\platform.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\plus.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\json.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\stb\stb_vorbis.c">
+      <Filter>lib\stb</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\either.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\cloneable.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\application.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\operations.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\workspace.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\datetime.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\widgets.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\theme.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\resource\inline_resource.cpp">
+      <Filter>app\resource</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\project.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\document.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\dispatchable.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\md4c\src\md4c.c">
+      <Filter>lib\md4c\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_code.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lz4\lib\lz4.c">
+      <Filter>lib\lz4\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lz4\lib\lz4frame.c">
+      <Filter>lib\lz4\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lz4\lib\lz4hc.c">
+      <Filter>lib\lz4\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lz4\lib\xxhash.c">
+      <Filter>lib\lz4\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\b64\buffer.c">
+      <Filter>lib\b64</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\b64\decode.c">
+      <Filter>lib\b64</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\b64\encode.c">
+      <Filter>lib\b64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\input.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\editable.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\binjgb.c">
+      <Filter>lib\binjgb\src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\common.c">
+      <Filter>lib\binjgb\src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\emulator.c">
+      <Filter>lib\binjgb\src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\emulator-debug.c">
+      <Filter>lib\binjgb\src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\host.c">
+      <Filter>lib\binjgb\src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\host-gl.c">
+      <Filter>lib\binjgb\src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\host-ui-imgui.cc">
+      <Filter>lib\binjgb\src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\host-ui-simple.c">
+      <Filter>lib\binjgb\src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\joypad.c">
+      <Filter>lib\binjgb\src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\memory.c">
+      <Filter>lib\binjgb\src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\options.c">
+      <Filter>lib\binjgb\src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\rewind.c">
+      <Filter>lib\binjgb\src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\tester.c">
+      <Filter>lib\binjgb\src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\debugger\audio-window.cc">
+      <Filter>lib\binjgb\src\debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\debugger\debugger.cc">
+      <Filter>lib\binjgb\src\debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\debugger\disassembly-window.cc">
+      <Filter>lib\binjgb\src\debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\debugger\emulator-window.cc">
+      <Filter>lib\binjgb\src\debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\debugger\io-window.cc">
+      <Filter>lib\binjgb\src\debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\debugger\main.cc">
+      <Filter>lib\binjgb\src\debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\debugger\map-window.cc">
+      <Filter>lib\binjgb\src\debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\debugger\memory-window.cc">
+      <Filter>lib\binjgb\src\debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\debugger\obj-window.cc">
+      <Filter>lib\binjgb\src\debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\debugger\rewind-window.cc">
+      <Filter>lib\binjgb\src\debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\debugger\rom-window.cc">
+      <Filter>lib\binjgb\src\debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\debugger\tiledata-window.cc">
+      <Filter>lib\binjgb\src\debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\binjgb\src\emscripten\wrapper.c">
+      <Filter>lib\binjgb\src\emscripten</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\device.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\device_binjgb.cpp">
+      <Filter>app\device</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editing.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\colour.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\entry.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\generic.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\settings.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\contrib\minizip\ioapi.c">
+      <Filter>lib\zlib\contrib\minizip</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\contrib\minizip\iowin32.c">
+      <Filter>lib\zlib\contrib\minizip</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\contrib\minizip\miniunz.c">
+      <Filter>lib\zlib\contrib\minizip</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\contrib\minizip\minizip.c">
+      <Filter>lib\zlib\contrib\minizip</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\contrib\minizip\mztools.c">
+      <Filter>lib\zlib\contrib\minizip</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\contrib\minizip\unzip.c">
+      <Filter>lib\zlib\contrib\minizip</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\contrib\minizip\zip.c">
+      <Filter>lib\zlib\contrib\minizip</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\adler32.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\compress.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\crc32.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\deflate.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\gzclose.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\gzlib.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\gzread.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\gzwrite.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\infback.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\inffast.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\inflate.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\inftrees.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\trees.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\uncompr.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\zutil.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\archive.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\archive_zip.cpp">
+      <Filter>utils\archive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\exporter.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\web.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\updatable.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\web_html.cpp">
+      <Filter>utils\web</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\recorder.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\jo_gif\jo_gif.cpp">
+      <Filter>lib\jo_gif</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lz4\lib\lz4file.c">
+      <Filter>lib\lz4\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_tiles.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_map.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_actor.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_font.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_scene.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\command.cpp">
+      <Filter>app\editors\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\commands_tiles.cpp">
+      <Filter>app\editors\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\commands_paintable.cpp">
+      <Filter>app\editors\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\shapes.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\commands_map.cpp">
+      <Filter>app\editors\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_palette.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\actor.cpp">
+      <Filter>utils\assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\assets.cpp">
+      <Filter>utils\assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\font.cpp">
+      <Filter>utils\assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\scene.cpp">
+      <Filter>utils\assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\indexed.cpp">
+      <Filter>utils\assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\image.cpp">
+      <Filter>utils\assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_ref_resolver.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\compiler\pipeline.cpp">
+      <Filter>compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\commands_font.cpp">
+      <Filter>app\editors\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\commands_scene.cpp">
+      <Filter>app\editors\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\commands_actor.cpp">
+      <Filter>app\editors\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\map.cpp">
+      <Filter>utils\assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\work_queue.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\commands_layered.cpp">
+      <Filter>app\editors\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_properties.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_arbitrary.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\matrice.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\music.cpp">
+      <Filter>utils\assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\commands_music.cpp">
+      <Filter>app\editors\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_music.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\sfx.cpp">
+      <Filter>utils\assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\commands_sfx.cpp">
+      <Filter>app\editors\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_sfx.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\mpc\mpc.c">
+      <Filter>lib\mpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\parsers.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_search_result.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_console.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\civetweb\src\civetweb.c">
+      <Filter>lib\civetweb\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\web_civetweb.cpp">
+      <Filter>utils\web</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\trigger.cpp">
+      <Filter>utils\assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_code_language_definition.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\editor_code_binding.cpp">
+      <Filter>app\editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\localization.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\commands_paintable2d.cpp">
+      <Filter>app\editors\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\promise_cpp\src\promise.cpp">
+      <Filter>lib\promise_cpp\src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\portable_file_dialogs_polyfill\portable-file-dialogs.cpp">
+      <Filter>lib\portable_file_dialogs_polyfill</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\file_sandbox.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\portable_file_dialogs\portable-file-dialogs.cpp">
+      <Filter>lib\portable_file_dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\emulator.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="src\compiler\codepoint.cpp">
+      <Filter>compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\compiler\static_analyzer.cpp">
+      <Filter>compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\compiler\kernel.cpp">
+      <Filter>compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\rom_inspector.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\marker.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\clip\clip.cpp">
+      <Filter>lib\clip</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\clip\clip_none.cpp">
+      <Filter>lib\clip</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\clip\clip_win.cpp">
+      <Filter>lib\clip</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\clip\clip_win_bmp.cpp">
+      <Filter>lib\clip</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\clip\clip_win_wic.cpp">
+      <Filter>lib\clip</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\clip\clip_x11.cpp">
+      <Filter>lib\clip</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\clip\image_.cpp">
+      <Filter>lib\clip</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\commands_grouped.cpp">
+      <Filter>app\editors\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\activities.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="utils">
+      <UniqueIdentifier>{1d9c3c22-4e9d-407f-934c-a3f10af28d5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{1ab031b2-621e-40c0-82ba-9f344318d2df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\dirent">
+      <UniqueIdentifier>{662a5494-0482-475b-ba29-8fd9c48b6bba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\dirent\include">
+      <UniqueIdentifier>{01051673-f8c7-4477-8850-bf23cc7cabc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils\platform">
+      <UniqueIdentifier>{92ead2ba-3a91-469a-909f-c8f2f96cb5a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="compiler">
+      <UniqueIdentifier>{7ad7b3f0-1c59-4862-90f7-5d3c1f8d9368}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\imgui">
+      <UniqueIdentifier>{c6fe3c7f-bf04-4546-b1cf-8805cf9582b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\imgui_code_editor">
+      <UniqueIdentifier>{e4b2fb15-9bdb-4341-942a-5c5b03b11ef0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\imgui_sdl">
+      <UniqueIdentifier>{b5bb42a1-1838-404e-a368-9d4f38eace73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\portable_file_dialogs">
+      <UniqueIdentifier>{a86951d4-54aa-42e8-a3c7-8926757a9574}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\portable_file_dialogs_polyfill">
+      <UniqueIdentifier>{21de0de6-7e2e-41f5-9670-cdb949db8884}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\sdl">
+      <UniqueIdentifier>{d79f8990-f81a-484e-a65d-2f9392ffacf2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\sdl\include">
+      <UniqueIdentifier>{3e5446c5-de62-4768-849d-673d102b7645}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\rapidjson">
+      <UniqueIdentifier>{ccdbefbb-c2a4-4b8a-a646-c12834193f3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\rapidjson\include">
+      <UniqueIdentifier>{c1336a75-6b20-4753-81b1-4c71320ec1e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\rapidjson\include\rapidjson">
+      <UniqueIdentifier>{b65f2d65-d01f-45cb-b548-5ae4a60c3659}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\rapidjson\include\rapidjson\error">
+      <UniqueIdentifier>{dbe8c211-fa4d-4447-8202-5c6f917a93a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\rapidjson\include\rapidjson\internal">
+      <UniqueIdentifier>{fbcf663e-848f-4149-b5bc-a8cbc32c22b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\rapidjson\include\rapidjson\msinttypes">
+      <UniqueIdentifier>{4e156631-e0c2-4589-b909-9a66265a98d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\stb">
+      <UniqueIdentifier>{52fee8c9-2a02-4c76-8b81-527db1406581}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\jpath">
+      <UniqueIdentifier>{e7ca9fae-8772-4941-ac4f-1848ed85dca9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="app">
+      <UniqueIdentifier>{a3228fc1-cb9a-4429-954b-94ad2da72b8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\promise_cpp">
+      <UniqueIdentifier>{21d66198-2741-4565-b45e-73cd99b802cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="app\resource">
+      <UniqueIdentifier>{aef68188-60c9-441d-8aa8-2cdb47adfc47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\md4c">
+      <UniqueIdentifier>{d4063f35-9a46-4977-bd9f-f05dc8281237}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\md4c\src">
+      <UniqueIdentifier>{19abe8de-d69e-47f1-a390-6eb14cb6469a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="app\editors">
+      <UniqueIdentifier>{73443946-4e5d-420c-832a-a7dd337ea0f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\lz4">
+      <UniqueIdentifier>{1d252e61-c1b8-4d87-8b23-09cc7af329a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\lz4\lib">
+      <UniqueIdentifier>{08d9a4ad-058a-48c6-a8c9-05b6280ba972}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\b64">
+      <UniqueIdentifier>{f3d7043b-4e98-4e0f-8a4d-3a10d5c3e361}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\binjgb">
+      <UniqueIdentifier>{ad3ecfe0-f4d3-472f-aeb9-593a5e9984ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\binjgb\src">
+      <UniqueIdentifier>{13b36e5f-2b84-498e-a8fc-9f5cbbb78ca2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\binjgb\src\debugger">
+      <UniqueIdentifier>{514012bd-1fe8-44ec-aa14-6961170ed1ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\binjgb\src\emscripten">
+      <UniqueIdentifier>{0fb5bfe0-4dd9-43d0-967f-4592b63ede80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="app\device">
+      <UniqueIdentifier>{bdc9d1cb-3602-4a31-98a7-9bc5815059c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\zlib">
+      <UniqueIdentifier>{a0cae882-813b-4565-8600-a0500d9fc983}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\zlib\contrib">
+      <UniqueIdentifier>{156759a1-0dca-46ec-b52e-4704f9eb83be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\zlib\contrib\minizip">
+      <UniqueIdentifier>{18ef0226-267a-41da-b346-a6edbebf6c60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils\archive">
+      <UniqueIdentifier>{2755eb5a-271a-4bc5-a676-7e73ad1eff9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils\web">
+      <UniqueIdentifier>{c009bf12-fc69-477b-a0a6-9397874823d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\jo_gif">
+      <UniqueIdentifier>{e3884ccf-2e83-42dc-9a61-415574ea772b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="app\editors\commands">
+      <UniqueIdentifier>{a1c1f14a-59f8-4c58-97f8-9b5573625a2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils\assets">
+      <UniqueIdentifier>{08ff8e1f-efed-471c-8a92-37e5265ce9ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\mpc">
+      <UniqueIdentifier>{46729d6d-3d52-4fc7-8031-c9a15f661517}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\audio_file">
+      <UniqueIdentifier>{335a7d9a-7013-4d57-a186-2dc7983bf17f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="app\mac">
+      <UniqueIdentifier>{9ec6613e-f0de-43db-89bc-8028a5d5bc95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\civetweb">
+      <UniqueIdentifier>{2fa6aa95-4501-4495-8fd7-83edf857c901}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\civetweb\include">
+      <UniqueIdentifier>{5b5fe041-565f-4d40-aa60-9787b4d6377f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\civetweb\src">
+      <UniqueIdentifier>{e9c1ef3f-e41b-4c49-a3c3-870247d8a9cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\promise_cpp\include">
+      <UniqueIdentifier>{3aac04c3-aaac-42d3-a658-ae6cfc6adde2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\promise_cpp\include\promise-cpp">
+      <UniqueIdentifier>{ee200f28-7aca-4c5b-9e30-66546494a1aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\promise_cpp\src">
+      <UniqueIdentifier>{cd913a0c-b9cb-496c-83a9-fb665ffa5c00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\rapidfuzz_cpp">
+      <UniqueIdentifier>{ee888f3e-cd3b-4d4d-a220-4976e9507435}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\rapidfuzz_cpp\rapidfuzz">
+      <UniqueIdentifier>{e3371593-7b2c-47ca-9bd9-11a697022e06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\rapidfuzz_cpp\rapidfuzz\distance">
+      <UniqueIdentifier>{6625e29c-a623-47a5-8417-489a44599c6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\rapidfuzz_cpp\rapidfuzz\details">
+      <UniqueIdentifier>{f1f83920-2c41-4d75-9c37-ffb0322458b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\clip">
+      <UniqueIdentifier>{4fa8dc18-f2bd-45d0-a2c4-089363024e94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="app\win">
+      <UniqueIdentifier>{4ee78657-f8c5-479c-a1b4-a79bab36996e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\bigint">
+      <UniqueIdentifier>{e7da6a9c-0f6a-4c80-a5d9-272e0a4c116c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\bigint\include">
+      <UniqueIdentifier>{5d255f00-e5ab-48df-9812-5f25f55fa72f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\bigint\include\constructors">
+      <UniqueIdentifier>{a04b8560-0d2f-478d-a57d-37d5b39e9406}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\bigint\include\functions">
+      <UniqueIdentifier>{cdb52eec-a052-4e6f-bc65-7fdc91a483b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\bigint\include\operators">
+      <UniqueIdentifier>{30b1c9f9-f4a8-4c92-b6fa-5c37fb1174c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\bigint\include\third_party">
+      <UniqueIdentifier>{f14b7baa-b8fc-4f61-bb3e-0f556c7b1dee}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\utils\bytes.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\text.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\stream.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\encoding.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\object.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\file_handle.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\mathematics.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\dirent\include\dirent.h">
+      <Filter>lib\dirent\include</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gbbasic.h" />
+    <ClInclude Include="src\compiler\compiler.h">
+      <Filter>compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\imconfig.h">
+      <Filter>lib\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\imgui.h">
+      <Filter>lib\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\imgui_internal.h">
+      <Filter>lib\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\imstb_rectpack.h">
+      <Filter>lib\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\imstb_textedit.h">
+      <Filter>lib\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\imstb_truetype.h">
+      <Filter>lib\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui_code_editor\imgui_code_editor.h">
+      <Filter>lib\imgui_code_editor</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui_sdl\imgui_sdl.h">
+      <Filter>lib\imgui_sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\portable_file_dialogs\portable-file-dialogs.h">
+      <Filter>lib\portable_file_dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\portable_file_dialogs_polyfill\portable-file-dialogs.h">
+      <Filter>lib\portable_file_dialogs_polyfill</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sdl\include\SDL.h">
+      <Filter>lib\sdl\include</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\filesystem.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\hacks.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\renderer.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\texture.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\window.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\platform.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\plus.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\allocators.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\cursorstreamwrapper.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\document.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\encodedstream.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\encodings.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\filereadstream.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\filewritestream.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\fwd.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\istreamwrapper.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\memorybuffer.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\memorystream.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\ostreamwrapper.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\pointer.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\prettywriter.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\rapidjson.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\reader.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\schema.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\stream.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\stringbuffer.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\uri.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\writer.h">
+      <Filter>lib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\error\en.h">
+      <Filter>lib\rapidjson\include\rapidjson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\error\error.h">
+      <Filter>lib\rapidjson\include\rapidjson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\internal\biginteger.h">
+      <Filter>lib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\internal\clzll.h">
+      <Filter>lib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\internal\diyfp.h">
+      <Filter>lib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\internal\dtoa.h">
+      <Filter>lib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\internal\ieee754.h">
+      <Filter>lib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\internal\itoa.h">
+      <Filter>lib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\internal\meta.h">
+      <Filter>lib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\internal\pow10.h">
+      <Filter>lib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\internal\regex.h">
+      <Filter>lib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\internal\stack.h">
+      <Filter>lib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\internal\strfunc.h">
+      <Filter>lib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\internal\strtod.h">
+      <Filter>lib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\internal\swap.h">
+      <Filter>lib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\msinttypes\inttypes.h">
+      <Filter>lib\rapidjson\include\rapidjson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\include\rapidjson\msinttypes\stdint.h">
+      <Filter>lib\rapidjson\include\rapidjson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\json.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_c_lexer.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_connected_components.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_divide.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_ds.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_dxt.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_easy_font.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_herringbone_wang_tile.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_hexwave.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_image.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_image_write.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_include.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_leakcheck.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_rect_pack.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_sprintf.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_textedit.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_tilemap_editor.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_truetype.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_voxel_render.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\either.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\cloneable.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\jpath\jpath.hpp">
+      <Filter>lib\jpath</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_perlin.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\application.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\operations.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\workspace.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\datetime.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\widgets.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\theme.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\resource\inline_font.h">
+      <Filter>app\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\resource\inline_image.h">
+      <Filter>app\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\resource\inline_resource.h">
+      <Filter>app\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\resource\inline_toast.h">
+      <Filter>app\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\project.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\document.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\dispatchable.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\md4c\src\md4c.h">
+      <Filter>lib\md4c\src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_code.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lz4\lib\lz4.h">
+      <Filter>lib\lz4\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lz4\lib\lz4frame.h">
+      <Filter>lib\lz4\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lz4\lib\lz4frame_static.h">
+      <Filter>lib\lz4\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lz4\lib\lz4hc.h">
+      <Filter>lib\lz4\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lz4\lib\xxhash.h">
+      <Filter>lib\lz4\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\b64\b64.h">
+      <Filter>lib\b64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\input.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\resource\inline_icon.h">
+      <Filter>app\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\editable.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\binjgb\src\common.h">
+      <Filter>lib\binjgb\src</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\binjgb\src\emulator.h">
+      <Filter>lib\binjgb\src</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\binjgb\src\emulator-debug.h">
+      <Filter>lib\binjgb\src</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\binjgb\src\host.h">
+      <Filter>lib\binjgb\src</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\binjgb\src\host-gl.h">
+      <Filter>lib\binjgb\src</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\binjgb\src\host-ui.h">
+      <Filter>lib\binjgb\src</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\binjgb\src\joypad.h">
+      <Filter>lib\binjgb\src</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\binjgb\src\memory.h">
+      <Filter>lib\binjgb\src</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\binjgb\src\options.h">
+      <Filter>lib\binjgb\src</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\binjgb\src\rewind.h">
+      <Filter>lib\binjgb\src</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\binjgb\src\debugger\debugger.h">
+      <Filter>lib\binjgb\src\debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\binjgb\src\debugger\imgui-helpers.h">
+      <Filter>lib\binjgb\src\debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\device.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\device_binjgb.h">
+      <Filter>app\device</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editing.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\colour.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\entry.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\generic.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\settings.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\contrib\minizip\crypt.h">
+      <Filter>lib\zlib\contrib\minizip</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\contrib\minizip\ioapi.h">
+      <Filter>lib\zlib\contrib\minizip</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\contrib\minizip\iowin32.h">
+      <Filter>lib\zlib\contrib\minizip</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\contrib\minizip\mztools.h">
+      <Filter>lib\zlib\contrib\minizip</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\contrib\minizip\unzip.h">
+      <Filter>lib\zlib\contrib\minizip</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\contrib\minizip\zip.h">
+      <Filter>lib\zlib\contrib\minizip</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\crc32.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\deflate.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\gzguts.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\inffast.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\inffixed.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\inflate.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\inftrees.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\trees.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\zconf.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\zlib.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\zutil.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\archive.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\archive_zip.h">
+      <Filter>utils\archive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\exporter.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\web.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\updatable.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\web_html.h">
+      <Filter>utils\web</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\recorder.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\jo_gif\jo_gif.h">
+      <Filter>lib\jo_gif</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lz4\lib\lz4file.h">
+      <Filter>lib\lz4\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_tiles.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_map.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_actor.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_font.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_scene.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\command.h">
+      <Filter>app\editors\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\commands_tiles.h">
+      <Filter>app\editors\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\commands_paintable.h">
+      <Filter>app\editors\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\shapes.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\commands_map.h">
+      <Filter>app\editors\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_palette.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\actor.h">
+      <Filter>utils\assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\assets.h">
+      <Filter>utils\assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\font.h">
+      <Filter>utils\assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\scene.h">
+      <Filter>utils\assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\indexed.h">
+      <Filter>utils\assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\image.h">
+      <Filter>utils\assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_ref_resolver.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\compiler\pipeline.h">
+      <Filter>compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\commands_font.h">
+      <Filter>app\editors\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\commands_scene.h">
+      <Filter>app\editors\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\commands_actor.h">
+      <Filter>app\editors\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\map.h">
+      <Filter>utils\assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\resource\inline_text.h">
+      <Filter>app\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\work_queue.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\commands_layered.h">
+      <Filter>app\editors\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_properties.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_arbitrary.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\matrice.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\music.h">
+      <Filter>utils\assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\commands_music.h">
+      <Filter>app\editors\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_music.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\sfx.h">
+      <Filter>utils\assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\commands_sfx.h">
+      <Filter>app\editors\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_sfx.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\mpc\mpc.h">
+      <Filter>lib\mpc</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\audio_file\AudioFile.h">
+      <Filter>lib\audio_file</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\parsers.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\mac\AppDelegate.h">
+      <Filter>app\mac</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_search_result.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_console.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\civetweb\include\civetweb.h">
+      <Filter>lib\civetweb\include</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\web_civetweb.h">
+      <Filter>utils\web</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_image_resize2.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\trigger.h">
+      <Filter>utils\assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_code_language_definition.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\editor_code_binding.h">
+      <Filter>app\editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\localization.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\commands_paintable2d.h">
+      <Filter>app\editors\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\promise_cpp\include\promise-cpp\add_ons.hpp">
+      <Filter>lib\promise_cpp\include\promise-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\promise_cpp\include\promise-cpp\any.hpp">
+      <Filter>lib\promise_cpp\include\promise-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\promise_cpp\include\promise-cpp\call_traits.hpp">
+      <Filter>lib\promise_cpp\include\promise-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\promise_cpp\include\promise-cpp\promise.hpp">
+      <Filter>lib\promise_cpp\include\promise-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\promise_cpp\include\promise-cpp\promise_inl.hpp">
+      <Filter>lib\promise_cpp\include\promise-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\file_sandbox.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\emulator.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\fuzz.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\fuzz_impl.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\rapidfuzz_all.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\CharSet.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\common.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\common_impl.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\config.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\distance.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\GrowingHashmap.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\intrinsics.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\Matrix.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\PatternMatchVector.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\Range.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\simd.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\simd_avx2.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\simd_sse2.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\SplittedSentenceView.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\type_traits.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\details\types.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\details</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\DamerauLevenshtein.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\DamerauLevenshtein_impl.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\Hamming.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\Hamming_impl.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\Indel.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\Indel_impl.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\Jaro.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\Jaro_impl.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\JaroWinkler.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\JaroWinkler_impl.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\LCSseq.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\LCSseq_impl.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\Levenshtein.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\Levenshtein_impl.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\OSA.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\OSA_impl.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\Postfix.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\Postfix_impl.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\Prefix.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidfuzz_cpp\rapidfuzz\distance\Prefix_impl.hpp">
+      <Filter>lib\rapidfuzz_cpp\rapidfuzz\distance</Filter>
+    </ClInclude>
+    <ClInclude Include="src\compiler\codepoint.h">
+      <Filter>compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="src\compiler\static_analyzer.h">
+      <Filter>compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="src\compiler\kernel.h">
+      <Filter>compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\rom_inspector.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\marker.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\clip\clip.h">
+      <Filter>lib\clip</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\clip\clip_common.h">
+      <Filter>lib\clip</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\clip\clip_lock_impl.h">
+      <Filter>lib\clip</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\clip\clip_osx.h">
+      <Filter>lib\clip</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\clip\clip_win.h">
+      <Filter>lib\clip</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\clip\clip_win_bmp.h">
+      <Filter>lib\clip</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\clip\clip_win_wic.h">
+      <Filter>lib\clip</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\clip\clip_x11_png.h">
+      <Filter>lib\clip</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\commands_grouped.h">
+      <Filter>app\editors\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\win\resource.h">
+      <Filter>app\win</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\bigint\include\constructors\constructors.hpp">
+      <Filter>lib\bigint\include\constructors</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\bigint\include\functions\conversion.hpp">
+      <Filter>lib\bigint\include\functions</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\bigint\include\functions\math.hpp">
+      <Filter>lib\bigint\include\functions</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\bigint\include\functions\random.hpp">
+      <Filter>lib\bigint\include\functions</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\bigint\include\functions\utility.hpp">
+      <Filter>lib\bigint\include\functions</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\bigint\include\third_party\catch.hpp">
+      <Filter>lib\bigint\include\third_party</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\bigint\include\operators\arithmetic_assignment.hpp">
+      <Filter>lib\bigint\include\operators</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\bigint\include\operators\assignment.hpp">
+      <Filter>lib\bigint\include\operators</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\bigint\include\operators\binary_arithmetic.hpp">
+      <Filter>lib\bigint\include\operators</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\bigint\include\operators\increment_decrement.hpp">
+      <Filter>lib\bigint\include\operators</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\bigint\include\operators\io_stream.hpp">
+      <Filter>lib\bigint\include\operators</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\bigint\include\operators\relational.hpp">
+      <Filter>lib\bigint\include\operators</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\bigint\include\operators\unary_arithmetic.hpp">
+      <Filter>lib\bigint\include\operators</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\bigint\include\BigInt.hpp">
+      <Filter>lib\bigint\include</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\activities.h">
+      <Filter>app</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\utils\platform_ios.mm">
+      <Filter>utils\platform</Filter>
+    </None>
+    <None Include="src\utils\platform_macos.mm">
+      <Filter>utils\platform</Filter>
+    </None>
+    <None Include="lib\binjgb\src\builtin-palettes.def">
+      <Filter>lib\binjgb\src</Filter>
+    </None>
+    <None Include="src\app\mac\AppDelegate.m">
+      <Filter>app\mac</Filter>
+    </None>
+    <None Include="lib\clip\clip_osx.mm">
+      <Filter>lib\clip</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src\app\win\gbbasic.rc">
+      <Filter>app\win</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="src\app\win\icon.ico">
+      <Filter>app\win</Filter>
+    </Image>
+  </ItemGroup>
+</Project>

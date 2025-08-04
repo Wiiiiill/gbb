@@ -1,0 +1,6 @@
+*.c linguist-language=C++
+*.h linguist-language=C++
+*.inl linguist-language=C++
+lib/* linguist-vendored
+src/vm/drv/* linguist-vendored
+gbbasic/docs/* linguist-documentation

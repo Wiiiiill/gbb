@@ -1,0 +1,414 @@
+{
+  "title": {
+    "english": "Default"
+  },
+  "kernel": {
+    "rom": "gbbvm.gb",
+    "symbols": "gbbvm.sym",
+    "aliases": "gbbvm.aliases.json",
+    "source_code": "gbbvm.zip"
+  },
+  "bootstrap": {
+    "bank": 9
+  },
+  "memory": {
+    "heap_size": "1024",
+    "stack_size": "64"
+  },
+  "objects": {
+    "mac_actor_count": 21,
+    "mac_trigger_count": 31
+  },
+  "identifiers": [ ],
+  "snippets": [
+    {
+      "type": "object",
+      "content": [
+        "on actor(?) hits start lbl",
+        "lbl:",
+        "  begin def",
+        "    def self = stack1",
+        "    def other = stack0",
+        "    ' Your code here...",
+        "    end",
+        "  end def",
+        ""
+      ],
+      "name": {
+        "english": "Actor Callback (Hits)"
+      }
+    },
+    {
+      "type": "object",
+      "content": [
+        "on trigger(?) ENTER bor LEAVE start lbl",
+        "lbl:",
+        "  begin def",
+        "    def index = stack1",
+        "    def event = stack0",
+        "    if event = ENTER then",
+        "      ' Your code here...",
+        "    else ' if event = LEAVE then",
+        "      ' Your code here...",
+        "    end if",
+        "    end",
+        "  end def",
+        ""
+      ],
+      "name": {
+        "english": "Trigger Callback"
+      }
+    },
+    {
+      "type": "gui",
+      "content": [
+        "on menu() start lbl",
+        "lbl:",
+        "  begin def",
+        "    def index = stack1",
+        "    def event = stack0",
+        "    if event = ENTER then",
+        "      shell \"^Hand\"",
+        "    else if event = LEAVE then",
+        "      shell \"^Pointer\"",
+        "    end if",
+        "    if event = CONFIRM then",
+        "      ' Your code here...",
+        "    end if",
+        "    end",
+        "  end def",
+        ""
+      ],
+      "name": {
+        "english": "Menu Callback"
+      }
+    },
+    {
+      "type": "separator",
+      "content": "",
+      "name": {
+        "english": "-"
+      }
+    },
+    {
+      "type": "input",
+      "content": [
+        "' `BTN` for pressed, `BTND` for button down or `BTNU` for button up.",
+        "' Use `UP_BTN`, `DOWN_BTN`, `LEFT_BTN`, `RIGHT_BTN`, `A_BTN`, `B_BTN`, `SELECT_BTN` or `START_BTN` as argument to check for specific button;",
+        "' or without argument for any button",
+        "on btn() start lbl",
+        "lbl:",
+        "  ' Your code here...",
+        "  end",
+        ""
+      ],
+      "name": {
+        "english": "Gamepad Callback"
+      }
+    },
+    {
+      "type": "input",
+      "content": [
+        "' `TOUCH` for pressed, `TOUCHD` for touch down or `TOUCHU` for touch up.",
+        "on touch start lbl",
+        "lbl:",
+        "  begin def",
+        "    def x = stack2",
+        "    def y = stack1",
+        "    def p = stack0",
+        "    ' Your code here...",
+        "    end",
+        "  end def",
+        ""
+      ],
+      "name": {
+        "english": "Touch/Mouse Callback"
+      }
+    },
+    {
+      "type": "input",
+      "content": [
+        "' Access to the `KEYM` and `KEYC` registers for keyboard input.",
+        "def KEYM = 0xFEA8",
+        "def KEYC = 0xFEA9",
+        "auto update off",
+        "lbl:",
+        "  let k = peek(KEYC)   ' Get the key code.",
+        "  if k <> 0 then       ' If a key code is available.",
+        "    let m = peek(KEYM) ' Get the key modifiers.",
+        "    print \"Key pressed %d, %x\", k, m",
+        "    poke KEYC, 0       ' Clear the key code, and acknowledge to accept more key codes.",
+        "  end if",
+        "  update",
+        "  goto lbl",
+        ""
+      ],
+      "name": {
+        "english": "Keyboard Input"
+      }
+    },
+    {
+      "type": "separator",
+      "content": "",
+      "name": {
+        "english": "-"
+      }
+    },
+    {
+      "type": "misc",
+      "content": [
+        "kill                      ' Kill the other threads.",
+        "memset(0x8000, 0, 0x2000) ' Reset the VRAM.",
+        "option VRAM_BANK, VRAM_BANK1",
+        "memset(0x8000, 0, 0x2000)",
+        "option VRAM_BANK, VRAM_BANK0",
+        "load scene() = nothing    ' Clear the scene and objects.",
+        "restore                   ' Reset the data sequence cursor.",
+        "randomize                 ' Initialize the random seed.",
+        ""
+      ],
+      "name": {
+        "english": "Reset Game Scene"
+      }
+    }
+  ],
+  "behaviours": [
+    {
+      "type": "none",
+      "id": "none",
+      "value": "0x00",
+      "name": {
+        "english": "None"
+      },
+      "animation": "none"
+    },
+    {
+      "type": "player",
+      "id": "plpl",
+      "value": "0x01",
+      "name": {
+        "english": "Platformer Player"
+      },
+      "animation": "platformer"
+    },
+    {
+      "type": "npc",
+      "id": "plmv",
+      "value": "0x02",
+      "name": {
+        "english": "Platformer Move"
+      },
+      "animation": "platformer"
+    },
+    {
+      "type": "npc",
+      "id": "plid",
+      "value": "0x03",
+      "name": {
+        "english": "Platformer Idle"
+      },
+      "animation": "platformer"
+    },
+    {
+      "type": "player",
+      "id": "tdpl",
+      "value": "0x05",
+      "name": {
+        "english": "Topdown Player"
+      },
+      "animation": "topdown"
+    },
+    {
+      "type": "npc",
+      "id": "tdmv",
+      "value": "0x07",
+      "name": {
+        "english": "Topdown Move"
+      },
+      "animation": "topdown"
+    },
+    {
+      "type": "npc",
+      "id": "tdid",
+      "value": "0x08",
+      "name": {
+        "english": "Topdown Idle"
+      },
+      "animation": "topdown"
+    },
+    {
+      "type": "player",
+      "id": "pcpl",
+      "value": "0x09",
+      "name": {
+        "english": "Point&Click Player"
+      },
+      "animation": "pointandclick"
+    },
+    {
+      "type": "player",
+      "id": "pcpm",
+      "value": "0x8A",
+      "name": {
+        "english": "Point&Click Player with Mouse"
+      },
+      "animation": "pointandclick"
+    },
+    {
+      "type": "player",
+      "id": "pcpt",
+      "value": "0x8B",
+      "name": {
+        "english": "Point&Click Player with Touch"
+      },
+      "animation": "pointandclick"
+    }
+  ],
+  "animations": [
+    {
+      "type": "none",
+      "names": [
+        {
+          "english": "Down"
+        },
+        {
+          "english": "Right"
+        },
+        {
+          "english": "Up"
+        },
+        {
+          "english": "Left"
+        },
+        {
+          "english": "Move Down"
+        },
+        {
+          "english": "Move Right"
+        },
+        {
+          "english": "Move Up"
+        },
+        {
+          "english": "Move Left"
+        }
+      ]
+    },
+    {
+      "type": "platformer",
+      "names": [
+        {
+          "english": "Down"
+        },
+        {
+          "english": "Right"
+        },
+        {
+          "english": "Up"
+        },
+        {
+          "english": "Left"
+        },
+        {
+          "english": "Move Down"
+        },
+        {
+          "english": "Move Right"
+        },
+        {
+          "english": "Move Up"
+        },
+        {
+          "english": "Move Left"
+        }
+      ]
+    },
+    {
+      "type": "topdown",
+      "names": [
+        {
+          "english": "Down"
+        },
+        {
+          "english": "Right"
+        },
+        {
+          "english": "Up"
+        },
+        {
+          "english": "Left"
+        },
+        {
+          "english": "Move Down"
+        },
+        {
+          "english": "Move Right"
+        },
+        {
+          "english": "Move Up"
+        },
+        {
+          "english": "Move Left"
+        }
+      ]
+    },
+    {
+      "type": "pointandclick",
+      "names": [
+        {
+          "english": "Normal"
+        },
+        {
+          "english": "Hover"
+        },
+        {
+          "english": "Unused"
+        },
+        {
+          "english": "Unused"
+        },
+        {
+          "english": "Unused"
+        },
+        {
+          "english": "Unused"
+        },
+        {
+          "english": "Unused"
+        },
+        {
+          "english": "Unused"
+        }
+      ]
+    },
+    {
+      "type": "projectile",
+      "names": [
+        {
+          "english": "Down"
+        },
+        {
+          "english": "Right"
+        },
+        {
+          "english": "Up"
+        },
+        {
+          "english": "Left"
+        },
+        {
+          "english": "Unused"
+        },
+        {
+          "english": "Unused"
+        },
+        {
+          "english": "Unused"
+        },
+        {
+          "english": "Unused"
+        }
+      ]
+    }
+  ]
+}

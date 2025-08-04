@@ -1,0 +1,28 @@
+{
+  "fonts": [
+    {
+      "path": "LanaPixel.ttf",
+      "encoded_ttf_data": null,
+      "bitmap_data": null,
+      "size": [ -1, 13 ],
+      "max_size": [ 16, 16 ],
+      "trim": true,
+      "offset": -3,
+      "is_two_bits_per_pixel": false,
+      "prefer_full_word": true,
+      "prefer_full_word_for_non_ascii": false,
+      "enabled_effect": 0,
+      "shadow_offset": 0, "shadow_strength": 0, "shadow_direction": 8,
+      "outline_offset": 0, "outline_strength": 0,
+      "thresholds": [ 250, 191, 127, 0 ],
+      "inverted": false,
+      "arbitrary": null,
+      "content": "The Quick Brown Fox Jumps Over The Lazy Dog.\nHello World!\n你好世界！\nこんにちは世界！\nOlá, mundo!\nПривет, мир!",
+      "name": "Default",
+      "magnification": 0,
+      "frame_margin": [ 1, 1 ],
+      "character_padding": [ 0, 1 ]
+    }
+  ],
+  "arbitrary": null
+}

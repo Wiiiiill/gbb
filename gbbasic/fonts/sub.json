@@ -1,0 +1,9 @@
+{
+  "fonts": [
+    {
+      "path": "NotoSans.ttf",
+      "offset": -2,
+      "thresholds": [ 30, 0, 0, 0 ]
+    }
+  ]
+}
