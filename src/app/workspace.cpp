@@ -441,6 +441,12 @@ bool Workspace::open(Window* wnd, Renderer* rnd, const char* font, unsigned fps,
 
 	activeKernelIndex(-1);
 
+	exampleCount(0);
+
+	musicCount(0);
+
+	sfxCount(0);
+
 	isFocused(true);
 	menuHeight(0.0f);
 	menuOpened(false);
@@ -513,22 +519,16 @@ bool Workspace::open(Window* wnd, Renderer* rnd, const char* font, unsigned fps,
 	loadExporters();
 
 	// Load examples.
-#if WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED
 	loadExamples(wnd, rnd);
-#endif /* WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED */
 
 	// Load starter kits.
 	loadStarterKits(wnd, rnd);
 
 	// Load music.
-#if WORKSPACE_MUSIC_MENU_ENABLED
 	loadMusic();
-#endif /* WORKSPACE_MUSIC_MENU_ENABLED */
 
 	// Load SFX.
-#if WORKSPACE_SFX_MENU_ENABLED
 	loadSfx();
-#endif /* WORKSPACE_SFX_MENU_ENABLED */
 
 	// Load documents.
 	loadDocuments();
@@ -578,22 +578,16 @@ bool Workspace::close(Window*, Renderer* rnd) {
 	unloadDocuments();
 
 	// Unload SFX.
-#if WORKSPACE_SFX_MENU_ENABLED
 	unloadSfx();
-#endif /* WORKSPACE_SFX_MENU_ENABLED */
 
 	// Unload music.
-#if WORKSPACE_MUSIC_MENU_ENABLED
 	unloadMusic();
-#endif /* WORKSPACE_MUSIC_MENU_ENABLED */
 
 	// Unload starter kits.
 	unloadStarterKits();
 
 	// Unload examples.
-#if WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED
 	unloadExamples();
-#endif /* WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED */
 
 	// Unload exporters.
 	unloadExporters();
@@ -3700,7 +3694,7 @@ void Workspace::ejectSourceCode(Window* wnd, Renderer* rnd) {
 	std::string name;
 	Path::split(krnlPath, &name, nullptr, nullptr);
 
-	const std::string src = Path::combine(KERNEL_RULE_DIR, (name + ".zip").c_str());
+	const std::string src = Path::combine(KERNEL_BINARIES_DIR, (name + ".zip").c_str());
 	if (!Path::existsFile(src.c_str())) {
 		const std::string msg = "Cannot find source code \"" + src + "\".";
 		error(msg.c_str());
@@ -3775,6 +3769,14 @@ void Workspace::ejectSourceCode(Window* wnd, Renderer* rnd) {
 }
 
 void Workspace::toggleDocument(const char* path) {
+	if (documents().empty()) {
+		const std::string osstr = Unicode::toOs("https://paladin-t.github.io/kits/gbb/manual.html");
+
+		Platform::surf(osstr.c_str());
+
+		return;
+	}
+
 	const char* shown = document() ? document()->shown() : nullptr;
 	const bool close = !path || (shown ? strcmp(shown, path) == 0 : false);
 
@@ -5380,26 +5382,38 @@ bool Workspace::saveConfig(Window*, Renderer*, rapidjson::Document &doc) {
 }
 
 void Workspace::loadKernels(void) {
-	DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(KERNEL_RULE_DIR);
+	auto load = [this] (const FileInfos::Ptr &fileInfos) -> void {
+		for (int i = 0; i < fileInfos->count(); ++i) {
+			FileInfo::Ptr fileInfo = fileInfos->get(i);
+
+			const std::string path = fileInfo->fullPath();
+			std::string name;
+			Path::split(path, &name, nullptr, nullptr);
+
+			GBBASIC::Kernel::Ptr krnl(new GBBASIC::Kernel());
+			if (!krnl->open(path.c_str(), theme()->menu_Kernels().c_str()))
+				continue; // Not a kernel.
+
+			if (name == "default")
+				kernels().insert(kernels().begin(), krnl);
+			else
+				kernels().push_back(krnl);
+
+			Platform::idle();
+		}
+	};
+
+	kernels().clear();
+
+	DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(KERNEL_BINARIES_DIR);
 	FileInfos::Ptr fileInfos = dirInfo->getFiles("*.json", true);
-	for (int i = 0; i < fileInfos->count(); ++i) {
-		FileInfo::Ptr fileInfo = fileInfos->get(i);
-
-		const std::string path = fileInfo->fullPath();
-		std::string name;
-		Path::split(path, &name, nullptr, nullptr);
-
-		GBBASIC::Kernel::Ptr krnl(new GBBASIC::Kernel());
-		if (!krnl->open(path.c_str(), theme()->menu_Kernels().c_str()))
-			continue; // Not a kernel.
-
-		if (name == "default")
-			kernels().insert(kernels().begin(), krnl);
-		else
-			kernels().push_back(krnl);
-
-		Platform::idle();
-	}
+	load(fileInfos);
+#if WORKSPACE_ALTERNATIVE_ROOT_PATH_ENABLED
+	const std::string altPath = Path::combine(WORKSPACE_ALTERNATIVE_ROOT_PATH, KERNEL_BINARIES_DIR);
+	dirInfo = DirectoryInfo::make(altPath.c_str());
+	fileInfos = dirInfo->getFiles("*.json", true);
+	load(fileInfos);
+#endif /* WORKSPACE_ALTERNATIVE_ROOT_PATH_ENABLED */
 
 	if (kernels().empty()) {
 		messagePopupBox(theme()->dialogPrompt_CannotFindAnyKernel(), nullptr, nullptr, nullptr);
@@ -5428,31 +5442,41 @@ void Workspace::unloadKernels(void) {
 }
 
 void Workspace::loadExporters(void) {
+	auto load = [this] (const FileInfos::Ptr &fileInfos, Text::Set &licenses) -> void {
+		for (int i = 0; i < fileInfos->count(); ++i) {
+			FileInfo::Ptr fileInfo = fileInfos->get(i);
+
+			const std::string path = fileInfo->fullPath();
+
+			Exporter::Ptr ex(new Exporter());
+			ex->open(path.c_str(), theme()->menu_Build().c_str());
+			exporters().push_back(ex);
+
+			for (const std::string &l : ex->licenses()) {
+				if (licenses.find(l) != licenses.end())
+					continue;
+
+				licenses.insert(l);
+
+				exporterLicenses() += l + "\n";
+			}
+
+			Platform::idle();
+		}
+	};
+
 	exporterLicenses().clear();
 
-	Text::Set set;
-	DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(EXPORTER_RULE_DIR);
+	Text::Set licenses;
+	DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(EXPORTER_RULES_DIR);
 	FileInfos::Ptr fileInfos = dirInfo->getFiles("*.json", true);
-	for (int i = 0; i < fileInfos->count(); ++i) {
-		FileInfo::Ptr fileInfo = fileInfos->get(i);
-
-		const std::string path = fileInfo->fullPath();
-
-		Exporter::Ptr ex(new Exporter());
-		ex->open(path.c_str(), theme()->menu_Build().c_str());
-		exporters().push_back(ex);
-
-		for (const std::string &l : ex->licenses()) {
-			if (set.find(l) != set.end())
-				continue;
-
-			set.insert(l);
-
-			exporterLicenses() += l + "\n";
-		}
-
-		Platform::idle();
-	}
+	load(fileInfos, licenses);
+#if WORKSPACE_ALTERNATIVE_ROOT_PATH_ENABLED
+	const std::string altPath = Path::combine(WORKSPACE_ALTERNATIVE_ROOT_PATH, EXPORTER_RULES_DIR);
+	dirInfo = DirectoryInfo::make(altPath.c_str());
+	fileInfos = dirInfo->getFiles("*.json", true);
+	load(fileInfos, licenses);
+#endif /* WORKSPACE_ALTERNATIVE_ROOT_PATH_ENABLED */
 
 	std::sort(
 		exporters().begin(), exporters().end(),
@@ -5472,14 +5496,19 @@ void Workspace::unloadExporters(void) {
 	exporters().clear();
 }
 
-#if WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED
 void Workspace::loadExamples(Window* wnd, Renderer* rnd) {
+	exampleCount(0);
+
+	DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(WORKSPACE_EXAMPLE_PROJECTS_DIR);
+	FileInfos::Ptr fileInfos = dirInfo->getFiles("*." GBBASIC_RICH_PROJECT_EXT ";" "*." GBBASIC_PLAIN_PROJECT_EXT, true);
+
+	exampleCount(fileInfos->count());
+
+#if WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED
 	examples().clear();
 
 	Project::Array examplePtrs;
 
-	DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(WORKSPACE_EXAMPLE_PROJECTS_DIR);
-	FileInfos::Ptr fileInfos = dirInfo->getFiles("*." GBBASIC_RICH_PROJECT_EXT ";" "*." GBBASIC_PLAIN_PROJECT_EXT, true);
 	for (int i = 0; i < fileInfos->count(); ++i) {
 		FileInfo::Ptr fileInfo = fileInfos->get(i);
 
@@ -5513,33 +5542,49 @@ void Workspace::loadExamples(Window* wnd, Renderer* rnd) {
 		const std::string &entry = prj->title();
 		examples().push_back(EntryWithPath(entry, prj->path(), prj->description()));
 	}
+#else /* WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED */
+	(void)wnd;
+	(void)rnd;
+#endif /* WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED */
 }
 
 void Workspace::unloadExamples(void) {
+	exampleCount(0);
+
+#if WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED
 	examples().clear();
-}
 #endif /* WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED */
+}
 
 void Workspace::loadStarterKits(Window* wnd, Renderer* rnd) {
+	auto load = [wnd, rnd, this] (const FileInfos::Ptr &fileInfos, Project::Array &kitPtrs) -> void {
+		for (int i = 0; i < fileInfos->count(); ++i) {
+			FileInfo::Ptr fileInfo = fileInfos->get(i);
+
+			const std::string path = fileInfo->fullPath();
+
+			Project::Ptr prj(new Project(wnd, rnd, this));
+			if (prj->open(path.c_str())) {
+				kitPtrs.push_back(prj);
+			}
+			prj->close(true);
+
+			Platform::idle();
+		}
+	};
+
 	starterKits().clear();
 
 	Project::Array kitPtrs;
-
 	DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(WORKSPACE_STARTER_KITS_PROJECTS_DIR);
 	FileInfos::Ptr fileInfos = dirInfo->getFiles("*." GBBASIC_RICH_PROJECT_EXT ";" "*." GBBASIC_PLAIN_PROJECT_EXT, true);
-	for (int i = 0; i < fileInfos->count(); ++i) {
-		FileInfo::Ptr fileInfo = fileInfos->get(i);
-
-		const std::string path = fileInfo->fullPath();
-
-		Project::Ptr prj(new Project(wnd, rnd, this));
-		if (prj->open(path.c_str())) {
-			kitPtrs.push_back(prj);
-		}
-		prj->close(true);
-
-		Platform::idle();
-	}
+	load(fileInfos, kitPtrs);
+#if WORKSPACE_ALTERNATIVE_ROOT_PATH_ENABLED
+	const std::string altPath = Path::combine(WORKSPACE_ALTERNATIVE_ROOT_PATH, WORKSPACE_STARTER_KITS_PROJECTS_DIR);
+	dirInfo = DirectoryInfo::make(altPath.c_str());
+	fileInfos = dirInfo->getFiles("*." GBBASIC_RICH_PROJECT_EXT ";" "*." GBBASIC_PLAIN_PROJECT_EXT, true);
+	load(fileInfos, kitPtrs);
+#endif /* WORKSPACE_ALTERNATIVE_ROOT_PATH_ENABLED */
 
 	std::sort(
 		kitPtrs.begin(), kitPtrs.end(),
@@ -5566,14 +5611,19 @@ void Workspace::unloadStarterKits(void) {
 	starterKits().clear();
 }
 
-#if WORKSPACE_MUSIC_MENU_ENABLED
 void Workspace::loadMusic(void) {
+	musicCount(0);
+
+	DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(WORKSPACE_MUSIC_DIR);
+	FileInfos::Ptr fileInfos = dirInfo->getFiles("*.json", true);
+
+	musicCount(fileInfos->count());
+
+#if WORKSPACE_MUSIC_MENU_ENABLED
 	music().clear();
 
 	Project::Array examplePtrs;
 
-	DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(WORKSPACE_MUSIC_DIR);
-	FileInfos::Ptr fileInfos = dirInfo->getFiles("*.json", true);
 	for (int i = 0; i < fileInfos->count(); ++i) {
 		FileInfo::Ptr fileInfo = fileInfos->get(i);
 
@@ -5586,21 +5636,30 @@ void Workspace::loadMusic(void) {
 
 		Platform::idle();
 	}
+#endif /* WORKSPACE_MUSIC_MENU_ENABLED */
 }
 
 void Workspace::unloadMusic(void) {
+	musicCount(0);
+
+#if WORKSPACE_MUSIC_MENU_ENABLED
 	music().clear();
-}
 #endif /* WORKSPACE_MUSIC_MENU_ENABLED */
+}
+
+void Workspace::loadSfx(void) {
+	sfxCount(0);
+
+	DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(WORKSPACE_SFX_DIR);
+	FileInfos::Ptr fileInfos = dirInfo->getFiles("*.json", true);
+
+	sfxCount(fileInfos->count());
 
 #if WORKSPACE_SFX_MENU_ENABLED
-void Workspace::loadSfx(void) {
 	sfx().clear();
 
 	Project::Array examplePtrs;
 
-	DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(WORKSPACE_SFX_DIR);
-	FileInfos::Ptr fileInfos = dirInfo->getFiles("*.json", true);
 	for (int i = 0; i < fileInfos->count(); ++i) {
 		FileInfo::Ptr fileInfo = fileInfos->get(i);
 
@@ -5613,16 +5672,21 @@ void Workspace::loadSfx(void) {
 
 		Platform::idle();
 	}
+#endif /* WORKSPACE_SFX_MENU_ENABLED */
 }
 
 void Workspace::unloadSfx(void) {
+	sfxCount(0);
+
+#if WORKSPACE_SFX_MENU_ENABLED
 	sfx().clear();
-}
 #endif /* WORKSPACE_SFX_MENU_ENABLED */
+}
 
 void Workspace::loadDocuments(void) {
 	DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(DOCUMENT_MARKDOWN_DIR);
 	FileInfos::Ptr fileInfos = dirInfo->getFiles("*." DOCUMENT_MARKDOWN_EXT, true);
+
 	for (int i = 0; i < fileInfos->count(); ++i) {
 		FileInfo::Ptr fileInfo = fileInfos->get(i);
 
@@ -7105,7 +7169,7 @@ void Workspace::menu(Window* wnd, Renderer* rnd) {
 				ImGui::EndMenu();
 			}
 #endif /* WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED */
-			if (Path::existsDirectory(WORKSPACE_EXAMPLE_PROJECTS_DIR)) {
+			if (exampleCount() > 0) {
 				if (showRecentProjects()) {
 					if (ImGui::MenuItem(theme()->menu_ImportExamples())) {
 						closeFilter();
@@ -7171,7 +7235,11 @@ void Workspace::menu(Window* wnd, Renderer* rnd) {
 				}
 #endif /* GBBASIC_OS_HTML */
 			}
-			if (!documents().empty()) {
+			if (documents().empty()) {
+				if (ImGui::MenuItem(theme()->menu_Manual(), "F1")) {
+					toggleDocument(nullptr);
+				}
+			} else {
 				std::string path;
 				if (ImGui::DocumentMenu(documents(), path)) {
 					toggleDocument(path.c_str());
@@ -10667,83 +10735,85 @@ void Workspace::importMusic(Window* wnd, Renderer* rnd) {
 					import(txt, "JSON");
 				} while (false);
 			}
+			if (musicCount() > 0) {
 #if WORKSPACE_MUSIC_MENU_ENABLED
-			if (ImGui::BeginMenu(theme()->menu_Library())) {
-				std::string path;
-				if (ImGui::MusicMenu(music(), path)) {
-					std::string txt;
-					File::Ptr file(File::create());
-					if (!file->open(path.c_str(), Stream::READ)) {
-						bubble(theme()->dialogPrompt_InvalidData(), nullptr);
+				if (ImGui::BeginMenu(theme()->menu_Library())) {
+					std::string path;
+					if (ImGui::MusicMenu(music(), path)) {
+						std::string txt;
+						File::Ptr file(File::create());
+						if (!file->open(path.c_str(), Stream::READ)) {
+							bubble(theme()->dialogPrompt_InvalidData(), nullptr);
 
-						break;
-					}
-					if (!file->readString(txt)) {
+							break;
+						}
+						if (!file->readString(txt)) {
+							file->close(); FileMonitor::unuse(path);
+
+							bubble(theme()->dialogPrompt_InvalidData(), nullptr);
+
+							break;
+						}
 						file->close(); FileMonitor::unuse(path);
 
-						bubble(theme()->dialogPrompt_InvalidData(), nullptr);
-
-						break;
+						import(txt, "JSON");
 					}
-					file->close(); FileMonitor::unuse(path);
 
-					import(txt, "JSON");
+					ImGui::EndMenu();
 				}
-
-				ImGui::EndMenu();
-			}
 #else /* WORKSPACE_MUSIC_MENU_ENABLED */
-			if (ImGui::MenuItem(theme()->menu_FromLibrary())) {
-				const std::string musicDirectory = Path::absoluteOf(WORKSPACE_MUSIC_DIR);
-				std::string defaultPath = musicDirectory;
-				do {
-					DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(musicDirectory.c_str());
-					FileInfos::Ptr fileInfos = dirInfo->getFiles("*.json", false);
-					if (fileInfos->count() == 0)
-						break;
+				if (ImGui::MenuItem(theme()->menu_FromLibrary())) {
+					const std::string musicDirectory = Path::absoluteOf(WORKSPACE_MUSIC_DIR);
+					std::string defaultPath = musicDirectory;
+					do {
+						DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(musicDirectory.c_str());
+						FileInfos::Ptr fileInfos = dirInfo->getFiles("*.json", false);
+						if (fileInfos->count() == 0)
+							break;
 
-					FileInfo::Ptr fileInfo = fileInfos->get(0);
-					defaultPath = fileInfo->fullPath();
+						FileInfo::Ptr fileInfo = fileInfos->get(0);
+						defaultPath = fileInfo->fullPath();
 #if defined GBBASIC_OS_WIN
-					defaultPath = Text::replace(defaultPath, "/", "\\");
+						defaultPath = Text::replace(defaultPath, "/", "\\");
 #endif /* GBBASIC_OS_WIN */
-				} while (false);
+					} while (false);
 
-				do {
-					pfd::open_file open(
-						GBBASIC_TITLE,
-						defaultPath,
-						GBBASIC_JSON_FILE_FILTER,
-						pfd::opt::none
-					);
-					if (open.result().empty())
-						break;
+					do {
+						pfd::open_file open(
+							GBBASIC_TITLE,
+							defaultPath,
+							GBBASIC_JSON_FILE_FILTER,
+							pfd::opt::none
+						);
+						if (open.result().empty())
+							break;
 
-					std::string path = open.result().front();
-					Path::uniform(path);
-					if (path.empty())
-						break;
+						std::string path = open.result().front();
+						Path::uniform(path);
+						if (path.empty())
+							break;
 
-					std::string txt;
-					File::Ptr file(File::create());
-					if (!file->open(path.c_str(), Stream::READ)) {
-						bubble(theme()->dialogPrompt_InvalidData(), nullptr);
+						std::string txt;
+						File::Ptr file(File::create());
+						if (!file->open(path.c_str(), Stream::READ)) {
+							bubble(theme()->dialogPrompt_InvalidData(), nullptr);
 
-						break;
-					}
-					if (!file->readString(txt)) {
+							break;
+						}
+						if (!file->readString(txt)) {
+							file->close(); FileMonitor::unuse(path);
+
+							bubble(theme()->dialogPrompt_InvalidData(), nullptr);
+
+							break;
+						}
 						file->close(); FileMonitor::unuse(path);
 
-						bubble(theme()->dialogPrompt_InvalidData(), nullptr);
-
-						break;
-					}
-					file->close(); FileMonitor::unuse(path);
-
-					import(txt, "JSON");
-				} while (false);
-			}
+						import(txt, "JSON");
+					} while (false);
+				}
 #endif /* WORKSPACE_MUSIC_MENU_ENABLED */
+			}
 
 			ImGui::EndPopup();
 		}

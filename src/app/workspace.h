@@ -157,6 +157,17 @@
 #	endif /* GBBASIC_DEBUG */
 #endif /* WORKSPACE_STARTER_KITS_PROJECTS_WRITABLE */
 
+#ifndef WORKSPACE_ALTERNATIVE_ROOT_PATH
+#	define WORKSPACE_ALTERNATIVE_ROOT_PATH "../.."
+#endif /* WORKSPACE_ALTERNATIVE_ROOT_PATH */
+#ifndef WORKSPACE_ALTERNATIVE_ROOT_PATH_ENABLED
+#	if defined GBBASIC_OS_MAC
+#		define WORKSPACE_ALTERNATIVE_ROOT_PATH_ENABLED 1
+#	else /* Platform macro. */
+#		define WORKSPACE_ALTERNATIVE_ROOT_PATH_ENABLED 0
+#	endif /* Platform macro. */
+#endif /* WORKSPACE_ALTERNATIVE_ROOT_PATH_ENABLED */
+
 #ifndef WORKSPACE_HEAD_BAR_ADJUSTING_ENABLED
 #	if defined GBBASIC_OS_WIN || defined GBBASIC_OS_MAC || defined GBBASIC_OS_LINUX
 #		define WORKSPACE_HEAD_BAR_ADJUSTING_ENABLED 1
@@ -475,16 +486,19 @@ public:
 #if WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED
 	GBBASIC_PROPERTY(EntryWithPath::List, examples)
 #endif /* WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED */
+	GBBASIC_PROPERTY_READONLY(int, exampleCount)
 
 	GBBASIC_PROPERTY(EntryWithPath::Array, starterKits)
 
 #if WORKSPACE_MUSIC_MENU_ENABLED
 	GBBASIC_PROPERTY(Entry::Dictionary, music)
 #endif /* WORKSPACE_MUSIC_MENU_ENABLED */
+	GBBASIC_PROPERTY_READONLY(int, musicCount)
 
 #if WORKSPACE_SFX_MENU_ENABLED
 	GBBASIC_PROPERTY(Entry::Dictionary, sfx)
 #endif /* WORKSPACE_SFX_MENU_ENABLED */
+	GBBASIC_PROPERTY_READONLY(int, sfxCount)
 
 	GBBASIC_PROPERTY(Entry::Dictionary, documents)
 
@@ -934,23 +948,17 @@ private:
 	void loadExporters(void);
 	void unloadExporters(void);
 
-#if WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED
 	void loadExamples(Window* wnd, Renderer* rnd);
 	void unloadExamples(void);
-#endif /* WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED */
 
 	void loadStarterKits(Window* wnd, Renderer* rnd);
 	void unloadStarterKits(void);
 
-#if WORKSPACE_MUSIC_MENU_ENABLED
 	void loadMusic(void);
 	void unloadMusic(void);
-#endif /* WORKSPACE_MUSIC_MENU_ENABLED */
 
-#if WORKSPACE_SFX_MENU_ENABLED
 	void loadSfx(void);
 	void unloadSfx(void);
-#endif /* WORKSPACE_SFX_MENU_ENABLED */
 
 	void loadDocuments(void);
 	void unloadDocuments(void);

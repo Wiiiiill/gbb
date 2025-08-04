@@ -18,9 +18,9 @@
 ** Macros and constants
 */
 
-#ifndef KERNEL_RULE_DIR
-#	define KERNEL_RULE_DIR "../kernels/" /* Relative path. */
-#endif /* KERNEL_RULE_DIR */
+#ifndef KERNEL_BINARIES_DIR
+#	define KERNEL_BINARIES_DIR "../kernels/" /* Relative path. */
+#endif /* KERNEL_BINARIES_DIR */
 
 #ifndef KERNEL_SNIPPET_TYPE_SEPARATOR
 #	define KERNEL_SNIPPET_TYPE_SEPARATOR "separator"

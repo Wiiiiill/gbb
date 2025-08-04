@@ -456,7 +456,7 @@ bool Exporter::run(
 	if (!path || !*path) {
 		// Do nothing.
 	} else if (packageArchived()) {
-		const std::string srcPath = Path::combine(EXPORTER_RULE_DIR, packageTemplate().c_str());
+		const std::string srcPath = Path::combine(EXPORTER_RULES_DIR, packageTemplate().c_str());
 		if (!Path::copyFile(srcPath.c_str(), path)) {
 			const std::string msg = "Cannot initialize package \"" + std::string(path) + "\".";
 			output(msg, EXPORTER_ERROR);

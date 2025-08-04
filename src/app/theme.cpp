@@ -384,6 +384,7 @@ bool Theme::open(class Renderer* rnd) {
 	menu_JumpToTheMap("Jump to The Map");
 	menu_Kernels("Kernels");
 	menu_Library("Library");
+	menu_Manual("Manual...");
 	menu_Map("Map");
 	menu_MoveBackward("Move Backward");
 	menu_MoveForward("Move Forward");

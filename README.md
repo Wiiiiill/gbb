@@ -113,12 +113,12 @@ Dependencies: Visual Studio (with C++ development tools installed).
 <summary>Steps</summary>
 
 1. Build SDL2
-  1. Compile from "lib/sdl/VisualC/SDL.sln"
-  2. Execute `lib/sdl/copy_win.cmd`
+	1. Compile from "lib/sdl/VisualC/SDL.sln"
+	2. Execute `lib/sdl/copy_win.cmd`
 2. Build GB BASIC
-  1. Compile from "gbbasic.sln"
+	1. Compile from "gbbasic.sln"
 3. Build GBBVM
-  1. Execute `gbbvm.cmd`
+	1. Execute `gbbvm.cmd`
 
 </details>
 
@@ -130,24 +130,24 @@ Dependencies: CMake, GCC.
 <summary>Steps</summary>
 
 1. Build SDL2
-  1. Execute:
-    ```sh
-    cd lib/sdl
-    ./configure
-    make
-    sudo make install
-    cd ../..
-    ```
-  2. Execute `lib/sdl/copy_linux.sh`
+	1. Execute:
+		```sh
+		cd lib/sdl
+		./configure
+		make
+		sudo make install
+		cd ../..
+		```
+	2. Execute `lib/sdl/copy_linux.sh`
 2. Build GB BASIC
-  1. Execute:
-    ```sh
-    cd gbbasic.linux
-    cmake . && make
-    cd ..
-    ```
+	1. Execute:
+		```sh
+		cd gbbasic.linux
+		cmake . && make
+		cd ..
+		```
 3. Build GBBVM
-  1. Execute `gbbvm.cmd`
+	1. Execute `gbbvm.cmd`
 
 </details>
 
@@ -159,13 +159,13 @@ Dependencies: Xcode.
 <summary>Steps</summary>
 
 1. Build SDL2
-  1. Compile dylib from "lib/sdl/Xcode/SDL/SDL.xcodeproj"
-  2. Reveal "libSDL2.dylib" in Finder
-  3. Copy "libSDL2.dylib" to "lib/sdl/lib/mac/"
+	1. Compile dylib from "lib/sdl/Xcode/SDL/SDL.xcodeproj"
+	2. Reveal "libSDL2.dylib" in Finder
+	3. Copy "libSDL2.dylib" to "lib/sdl/lib/mac/"
 2. Build GB BASIC
-  1. Compile from "gbbasic.xcodeproj"
+	1. Compile from "gbbasic.xcodeproj"
 3. Build GBBVM
-  1. Execute `gbbvm.cmd`
+	1. Execute `gbbvm.cmd`
 
 </details>
 

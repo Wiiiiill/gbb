@@ -183,6 +183,7 @@ public:
 	GBBASIC_PROPERTY_READONLY(std::string, menu_JumpToTheMap)
 	GBBASIC_PROPERTY_READONLY(std::string, menu_Kernels)
 	GBBASIC_PROPERTY_READONLY(std::string, menu_Library)
+	GBBASIC_PROPERTY_READONLY(std::string, menu_Manual)
 	GBBASIC_PROPERTY_READONLY(std::string, menu_Map)
 	GBBASIC_PROPERTY_READONLY(std::string, menu_MoveBackward)
 	GBBASIC_PROPERTY_READONLY(std::string, menu_MoveForward)

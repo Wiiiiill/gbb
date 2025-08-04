@@ -1284,60 +1284,62 @@ private:
 					nullptr, nullptr
 				);
 			}
+			if (ws->sfxCount() > 0) {
 #if WORKSPACE_SFX_MENU_ENABLED
-			if (ImGui::BeginMenu(ws->theme()->menu_Library())) {
-				std::string path;
-				if (ImGui::SfxMenu(ws->sfx(), path)) {
-					importFromLibraryFile(wnd, rnd, ws, path, true);
-				}
+				if (ImGui::BeginMenu(ws->theme()->menu_Library())) {
+					std::string path;
+					if (ImGui::SfxMenu(ws->sfx(), path)) {
+						importFromLibraryFile(wnd, rnd, ws, path, true);
+					}
 
-				ImGui::EndMenu();
-			}
+					ImGui::EndMenu();
+				}
 #else /* WORKSPACE_SFX_MENU_ENABLED */
-			if (ImGui::MenuItem(ws->theme()->menu_FromLibrary())) {
-				const std::string sfxDirectory = Path::absoluteOf(WORKSPACE_SFX_DIR);
-				std::string defaultPath = sfxDirectory;
-				DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(sfxDirectory.c_str());
-				FileInfos::Ptr fileInfos = dirInfo->getFiles("*.json", false);
-				if (fileInfos->count() != 0) {
-					FileInfo::Ptr fileInfo = fileInfos->get(0);
-					defaultPath = fileInfo->fullPath();
+				if (ImGui::MenuItem(ws->theme()->menu_FromLibrary())) {
+					const std::string sfxDirectory = Path::absoluteOf(WORKSPACE_SFX_DIR);
+					std::string defaultPath = sfxDirectory;
+					DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(sfxDirectory.c_str());
+					FileInfos::Ptr fileInfos = dirInfo->getFiles("*.json", false);
+					if (fileInfos->count() != 0) {
+						FileInfo::Ptr fileInfo = fileInfos->get(0);
+						defaultPath = fileInfo->fullPath();
 #	if defined GBBASIC_OS_WIN
-					defaultPath = Text::replace(defaultPath, "/", "\\");
+						defaultPath = Text::replace(defaultPath, "/", "\\");
 #	endif /* GBBASIC_OS_WIN */
-				}
+					}
 
-				do {
-					pfd::open_file open(
-						GBBASIC_TITLE,
-						defaultPath,
-						GBBASIC_JSON_FILE_FILTER,
-						pfd::opt::multiselect
-					);
-					if (open.result().empty())
-						break;
-
-					if (open.result().size() == 1) {
-						std::string path = open.result().front();
-						if (path.empty())
+					do {
+						pfd::open_file open(
+							GBBASIC_TITLE,
+							defaultPath,
+							GBBASIC_JSON_FILE_FILTER,
+							pfd::opt::multiselect
+						);
+						if (open.result().empty())
 							break;
-						Path::uniform(path);
 
-						if (!importFromLibraryFile(wnd, rnd, ws, path, true))
-							break;
-					} else {
-						for (int i = 0; i < (int)open.result().size(); ++i) {
-							std::string path = open.result()[i];
+						if (open.result().size() == 1) {
+							std::string path = open.result().front();
 							if (path.empty())
-								continue;
+								break;
 							Path::uniform(path);
 
-							importFromLibraryFile(wnd, rnd, ws, path, true);
+							if (!importFromLibraryFile(wnd, rnd, ws, path, true))
+								break;
+						} else {
+							for (int i = 0; i < (int)open.result().size(); ++i) {
+								std::string path = open.result()[i];
+								if (path.empty())
+									continue;
+								Path::uniform(path);
+
+								importFromLibraryFile(wnd, rnd, ws, path, true);
+							}
 						}
-					}
-				} while (false);
-			}
+					} while (false);
+				}
 #endif /* WORKSPACE_SFX_MENU_ENABLED */
+			}
 
 			ImGui::EndPopup();
 		}
@@ -1646,51 +1648,53 @@ private:
 					custom
 				);
 			}
+			if (ws->sfxCount() > 0) {
 #if WORKSPACE_SFX_MENU_ENABLED
-			if (ImGui::BeginMenu(ws->theme()->menu_Library())) {
-				std::string path;
-				if (ImGui::SfxMenu(ws->sfx(), path)) {
-					importFromLibraryFile(wnd, rnd, ws, path, false);
+				if (ImGui::BeginMenu(ws->theme()->menu_Library())) {
+					std::string path;
+					if (ImGui::SfxMenu(ws->sfx(), path)) {
+						importFromLibraryFile(wnd, rnd, ws, path, false);
+					}
+
+					ImGui::EndMenu();
 				}
-
-				ImGui::EndMenu();
-			}
 #else /* WORKSPACE_SFX_MENU_ENABLED */
-			if (ImGui::MenuItem(ws->theme()->menu_FromLibrary())) {
-				const std::string sfxDirectory = Path::absoluteOf(WORKSPACE_SFX_DIR);
-				std::string defaultPath = sfxDirectory;
-				do {
-					DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(sfxDirectory.c_str());
-					FileInfos::Ptr fileInfos = dirInfo->getFiles("*.json", false);
-					if (fileInfos->count() == 0)
-						break;
+				if (ImGui::MenuItem(ws->theme()->menu_FromLibrary())) {
+					const std::string sfxDirectory = Path::absoluteOf(WORKSPACE_SFX_DIR);
+					std::string defaultPath = sfxDirectory;
+					do {
+						DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(sfxDirectory.c_str());
+						FileInfos::Ptr fileInfos = dirInfo->getFiles("*.json", false);
+						if (fileInfos->count() == 0)
+							break;
 
-					FileInfo::Ptr fileInfo = fileInfos->get(0);
-					defaultPath = fileInfo->fullPath();
+						FileInfo::Ptr fileInfo = fileInfos->get(0);
+						defaultPath = fileInfo->fullPath();
 #if defined GBBASIC_OS_WIN
-					defaultPath = Text::replace(defaultPath, "/", "\\");
+						defaultPath = Text::replace(defaultPath, "/", "\\");
 #endif /* GBBASIC_OS_WIN */
-				} while (false);
+					} while (false);
 
-				do {
-					pfd::open_file open(
-						GBBASIC_TITLE,
-						defaultPath,
-						GBBASIC_JSON_FILE_FILTER,
-						pfd::opt::none
-					);
-					if (open.result().empty())
-						break;
+					do {
+						pfd::open_file open(
+							GBBASIC_TITLE,
+							defaultPath,
+							GBBASIC_JSON_FILE_FILTER,
+							pfd::opt::none
+						);
+						if (open.result().empty())
+							break;
 
-					std::string path = open.result().front();
-					Path::uniform(path);
-					if (path.empty())
-						break;
+						std::string path = open.result().front();
+						Path::uniform(path);
+						if (path.empty())
+							break;
 
-					importFromLibraryFile(wnd, rnd, ws, path, false);
-				} while (false);
-			}
+						importFromLibraryFile(wnd, rnd, ws, path, false);
+					} while (false);
+				}
 #endif /* WORKSPACE_SFX_MENU_ENABLED */
+			}
 
 			ImGui::EndPopup();
 		}

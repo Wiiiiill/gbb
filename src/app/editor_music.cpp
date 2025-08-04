@@ -4304,51 +4304,53 @@ private:
 					importFromJsonFile(wnd, rnd, ws, path);
 				} while (false);
 			}
+			if (ws->musicCount() > 0) {
 #if WORKSPACE_MUSIC_MENU_ENABLED
-			if (ImGui::BeginMenu(ws->theme()->menu_Library())) {
-				std::string path;
-				if (ImGui::MusicMenu(ws->music(), path)) {
-					importFromLibraryFile(wnd, rnd, ws, path);
+				if (ImGui::BeginMenu(ws->theme()->menu_Library())) {
+					std::string path;
+					if (ImGui::MusicMenu(ws->music(), path)) {
+						importFromLibraryFile(wnd, rnd, ws, path);
+					}
+
+					ImGui::EndMenu();
 				}
-
-				ImGui::EndMenu();
-			}
 #else /* WORKSPACE_MUSIC_MENU_ENABLED */
-			if (ImGui::MenuItem(ws->theme()->menu_FromLibrary())) {
-				const std::string musicDirectory = Path::absoluteOf(WORKSPACE_MUSIC_DIR);
-				std::string defaultPath = musicDirectory;
-				do {
-					DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(musicDirectory.c_str());
-					FileInfos::Ptr fileInfos = dirInfo->getFiles("*.json", false);
-					if (fileInfos->count() == 0)
-						break;
+				if (ImGui::MenuItem(ws->theme()->menu_FromLibrary())) {
+					const std::string musicDirectory = Path::absoluteOf(WORKSPACE_MUSIC_DIR);
+					std::string defaultPath = musicDirectory;
+					do {
+						DirectoryInfo::Ptr dirInfo = DirectoryInfo::make(musicDirectory.c_str());
+						FileInfos::Ptr fileInfos = dirInfo->getFiles("*.json", false);
+						if (fileInfos->count() == 0)
+							break;
 
-					FileInfo::Ptr fileInfo = fileInfos->get(0);
-					defaultPath = fileInfo->fullPath();
+						FileInfo::Ptr fileInfo = fileInfos->get(0);
+						defaultPath = fileInfo->fullPath();
 #if defined GBBASIC_OS_WIN
-					defaultPath = Text::replace(defaultPath, "/", "\\");
+						defaultPath = Text::replace(defaultPath, "/", "\\");
 #endif /* GBBASIC_OS_WIN */
-				} while (false);
+					} while (false);
 
-				do {
-					pfd::open_file open(
-						GBBASIC_TITLE,
-						defaultPath,
-						GBBASIC_JSON_FILE_FILTER,
-						pfd::opt::none
-					);
-					if (open.result().empty())
-						break;
+					do {
+						pfd::open_file open(
+							GBBASIC_TITLE,
+							defaultPath,
+							GBBASIC_JSON_FILE_FILTER,
+							pfd::opt::none
+						);
+						if (open.result().empty())
+							break;
 
-					std::string path = open.result().front();
-					Path::uniform(path);
-					if (path.empty())
-						break;
+						std::string path = open.result().front();
+						Path::uniform(path);
+						if (path.empty())
+							break;
 
-					importFromLibraryFile(wnd, rnd, ws, path);
-				} while (false);
-			}
+						importFromLibraryFile(wnd, rnd, ws, path);
+					} while (false);
+				}
 #endif /* WORKSPACE_MUSIC_MENU_ENABLED */
+			}
 
 			ImGui::EndPopup();
 		}

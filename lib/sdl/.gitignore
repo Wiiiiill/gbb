@@ -68,7 +68,9 @@
 /build
 
 /lib/mac/*.framework
+/lib/mac/*.a
 /lib/mac/*.dylib
+/lib/mac/*.metallib
 
 /lib/x64/*.lib
 /lib/x64/*.dll

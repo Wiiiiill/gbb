@@ -22,9 +22,9 @@
 ** Macros and constants
 */
 
-#ifndef EXPORTER_RULE_DIR
-#	define EXPORTER_RULE_DIR "../exporters/" /* Relative path. */
-#endif /* EXPORTER_RULE_DIR */
+#ifndef EXPORTER_RULES_DIR
+#	define EXPORTER_RULES_DIR "../exporters/" /* Relative path. */
+#endif /* EXPORTER_RULES_DIR */
 
 #ifndef EXPORTER_ICON_MIN_WIDTH
 #	define EXPORTER_ICON_MIN_WIDTH 128
