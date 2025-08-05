@@ -224,7 +224,7 @@ exit /b 0
 BATCH_SCRIPT
 
 # ==============================================================================
-# macOS/Linux Shell Script Section
+# MacOS/Linux Shell Script Section
 # ==============================================================================
 
 # Prepare environment.

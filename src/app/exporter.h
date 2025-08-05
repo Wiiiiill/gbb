@@ -85,6 +85,7 @@ public:
 	};
 
 public:
+	GBBASIC_PROPERTY(std::string, path)
 	GBBASIC_PROPERTY(Entry, entry)
 	GBBASIC_PROPERTY(Localization::Dictionary, title)
 	GBBASIC_PROPERTY(int, order)

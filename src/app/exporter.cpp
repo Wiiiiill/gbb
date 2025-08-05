@@ -264,9 +264,9 @@ bool Exporter::clone(Object** ptr) const { // Non-clonable.
 	return false;
 }
 
-bool Exporter::open(const char* path, const char* menu) {
+bool Exporter::open(const char* path_, const char* menu) {
 	File::Ptr file(File::create());
-	if (!file->open(path, Stream::READ))
+	if (!file->open(path_, Stream::READ))
 		return false;
 	std::string content;
 	if (!file->readString(content)) {
@@ -392,6 +392,7 @@ bool Exporter::open(const char* path, const char* menu) {
 		}
 	}
 
+	path(path_);
 	title(title_);
 	order(order_);
 	isMajor(isMajor_);
@@ -421,8 +422,8 @@ bool Exporter::open(const char* path, const char* menu) {
 }
 
 bool Exporter::close(void) {
+	path().clear();
 	entry().clear();
-
 	title().clear();
 	order(0);
 	isMajor(false);
@@ -445,7 +446,7 @@ bool Exporter::close(void) {
 }
 
 bool Exporter::run(
-	const char* path, Bytes::Ptr rom, std::string &exported, std::string &hosted,
+	const char* path_, Bytes::Ptr rom, std::string &exported, std::string &hosted,
 	const std::string &settings, const std::string &args, Bytes::Ptr icon,
 	OutputHandler output
 ) const {
@@ -453,72 +454,74 @@ bool Exporter::run(
 	GBBASIC_ASSERT(!isMessage() && "Impossible.");
 
 	// Export package.
-	if (!path || !*path) {
+	if (!path_ || !*path_) {
 		// Do nothing.
 	} else if (packageArchived()) {
-		const std::string srcPath = Path::combine(EXPORTER_RULES_DIR, packageTemplate().c_str());
-		if (!Path::copyFile(srcPath.c_str(), path)) {
-			const std::string msg = "Cannot initialize package \"" + std::string(path) + "\".";
+		std::string dir;
+		Path::split(path(), nullptr, nullptr, &dir);
+		const std::string srcPath = Path::combine(dir.c_str(), packageTemplate().c_str());
+		if (!Path::copyFile(srcPath.c_str(), path_)) {
+			const std::string msg = "Cannot initialize package \"" + std::string(path_) + "\".";
 			output(msg, EXPORTER_ERROR);
 
 			return false;
 		}
 		Archive::Ptr arc(Archive::create(Archive::ZIP));
-		if (!arc->open(path, Stream::APPEND)) {
-			const std::string msg = "Cannot open package \"" + std::string(path) + "\".";
+		if (!arc->open(path_, Stream::APPEND)) {
+			const std::string msg = "Cannot open package \"" + std::string(path_) + "\".";
 			output(msg, EXPORTER_ERROR);
 
 			return false;
 		}
 		if (!arc->fromBytes(rom.get(), packageEntry().c_str())) {
-			const std::string msg = "Cannot write ROM to package \"" + std::string(path) + "\".";
+			const std::string msg = "Cannot write ROM to package \"" + std::string(path_) + "\".";
 			output(msg, EXPORTER_ERROR);
 
 			return false;
 		}
 		if (!settings.empty() && !packageConfig().empty()) {
 			if (!arc->fromString(settings, packageConfig().c_str())) {
-				const std::string msg = "Cannot write config to package \"" + std::string(path) + "\".";
+				const std::string msg = "Cannot write config to package \"" + std::string(path_) + "\".";
 				output(msg, EXPORTER_WARN);
 			}
 		}
 		if (!args.empty() && !packageArgs().empty()) {
 			if (!arc->fromString(args, packageArgs().c_str())) {
-				const std::string msg = "Cannot write args to package \"" + std::string(path) + "\".";
+				const std::string msg = "Cannot write args to package \"" + std::string(path_) + "\".";
 				output(msg, EXPORTER_WARN);
 			}
 		}
 		if (icon && !icon->empty() && !packageIcon().empty()) {
 			if (!arc->fromBytes(icon.get(), packageIcon().c_str())) {
-				const std::string msg = "Cannot write icon to package \"" + std::string(path) + "\".";
+				const std::string msg = "Cannot write icon to package \"" + std::string(path_) + "\".";
 				output(msg, EXPORTER_WARN);
 			}
 		}
 
 		arc->close();
-		exported = path;
+		exported = path_;
 	} else {
 		File::Ptr file(File::create());
-		if (!file->open(path, Stream::WRITE)) {
-			const std::string msg = "Cannot open \"" + std::string(path) + "\".";
+		if (!file->open(path_, Stream::WRITE)) {
+			const std::string msg = "Cannot open \"" + std::string(path_) + "\".";
 			output(msg, EXPORTER_ERROR);
 
 			return false;
 		}
 		if (file->writeBytes(rom.get()) == 0) {
-			const std::string msg = "Cannot write to \"" + std::string(path) + "\".";
+			const std::string msg = "Cannot write to \"" + std::string(path_) + "\".";
 			output(msg, EXPORTER_ERROR);
 
 			return false;
 		}
-		exported = path;
+		exported = path_;
 	}
 
 	// Host the exported content.
 	if (surfMethod() == "web") {
-		gotoWeb(path, rom, hosted, output);
+		gotoWeb(path_, rom, hosted, output);
 	} else if (surfMethod() == "url") {
-		gotoUrl(path, rom, hosted, output);
+		gotoUrl(path_, rom, hosted, output);
 	} else if (surfMethod().empty()) {
 		// Do nothing.
 	} else {
@@ -536,21 +539,21 @@ void Exporter::reset(void) {
 	}
 }
 
-void Exporter::gotoWeb(const char* path, Bytes::Ptr /* rom */, std::string &hosted, OutputHandler output) const {
+void Exporter::gotoWeb(const char* path_, Bytes::Ptr /* rom */, std::string &hosted, OutputHandler output) const {
 	const unsigned short port = 8081;
 	_web = Web::Ptr(Web::create());
 
-	const std::string path_ = path;
+	const std::string pathstr = path_;
 	Web::RequestedHandler::Callback func = std::bind( // Threaded.
-		[path_] (std::string hostEntry, OutputHandler output, Web::RequestedHandler* self, const char* method, const char* uri, const char* /* query */, const char* /* body */, const Text::Dictionary &/* headers */) -> bool {
-			auto getFullPath = [] (const std::string &hostEntry, const std::string &path) -> std::string {
+		[pathstr] (std::string hostEntry, OutputHandler output, Web::RequestedHandler* self, const char* method, const char* uri, const char* /* query */, const char* /* body */, const Text::Dictionary &/* headers */) -> bool {
+			auto getFullPath = [] (const std::string &hostEntry, const std::string &path_) -> std::string {
 				if (hostEntry.empty())
-					return path;
+					return path_;
 
 				std::string ret = hostEntry;
-				if (!Text::startsWith(path, "/", false))
+				if (!Text::startsWith(path_, "/", false))
 					ret += "/";
-				ret += path;
+				ret += path_;
 
 				return ret;
 			};
@@ -567,7 +570,7 @@ void Exporter::gotoWeb(const char* path, Bytes::Ptr /* rom */, std::string &host
 				if (uri_ == "/") {
 					const std::string entry = getFullPath(hostEntry, "index.html");
 					Archive::Ptr arc(Archive::create(Archive::ZIP));
-					arc->open(path_.c_str(), Stream::READ);
+					arc->open(pathstr.c_str(), Stream::READ);
 					Bytes::Ptr bytes(Bytes::create());
 					arc->toBytes(bytes.get(), entry.c_str());
 					bytes->poke(0);
@@ -576,7 +579,7 @@ void Exporter::gotoWeb(const char* path, Bytes::Ptr /* rom */, std::string &host
 				} else if (ext == "htm" || ext == "html") {
 					const std::string entry = getFullPath(hostEntry, uri_);
 					Archive::Ptr arc(Archive::create(Archive::ZIP));
-					arc->open(path_.c_str(), Stream::READ);
+					arc->open(pathstr.c_str(), Stream::READ);
 					Bytes::Ptr bytes(Bytes::create());
 					arc->toBytes(bytes.get(), entry.c_str());
 					bytes->poke(0);
@@ -585,7 +588,7 @@ void Exporter::gotoWeb(const char* path, Bytes::Ptr /* rom */, std::string &host
 				} else if (ext == "css") {
 					const std::string entry = getFullPath(hostEntry, uri_);
 					Archive::Ptr arc(Archive::create(Archive::ZIP));
-					arc->open(path_.c_str(), Stream::READ);
+					arc->open(pathstr.c_str(), Stream::READ);
 					Bytes::Ptr bytes(Bytes::create());
 					arc->toBytes(bytes.get(), entry.c_str());
 					bytes->poke(0);
@@ -594,7 +597,7 @@ void Exporter::gotoWeb(const char* path, Bytes::Ptr /* rom */, std::string &host
 				} else if (ext == "json") {
 					const std::string entry = getFullPath(hostEntry, uri_);
 					Archive::Ptr arc(Archive::create(Archive::ZIP));
-					arc->open(path_.c_str(), Stream::READ);
+					arc->open(pathstr.c_str(), Stream::READ);
 					Bytes::Ptr bytes(Bytes::create());
 					arc->toBytes(bytes.get(), entry.c_str());
 					bytes->poke(0);
@@ -603,7 +606,7 @@ void Exporter::gotoWeb(const char* path, Bytes::Ptr /* rom */, std::string &host
 				} else if (ext == "js") {
 					const std::string entry = getFullPath(hostEntry, uri_);
 					Archive::Ptr arc(Archive::create(Archive::ZIP));
-					arc->open(path_.c_str(), Stream::READ);
+					arc->open(pathstr.c_str(), Stream::READ);
 					Bytes::Ptr bytes(Bytes::create());
 					arc->toBytes(bytes.get(), entry.c_str());
 					bytes->poke(0);
@@ -612,7 +615,7 @@ void Exporter::gotoWeb(const char* path, Bytes::Ptr /* rom */, std::string &host
 				} else if (ext == "wasm") {
 					const std::string entry = getFullPath(hostEntry, uri_);
 					Archive::Ptr arc(Archive::create(Archive::ZIP));
-					arc->open(path_.c_str(), Stream::READ);
+					arc->open(pathstr.c_str(), Stream::READ);
 					Bytes::Ptr bytes(Bytes::create());
 					arc->toBytes(bytes.get(), entry.c_str());
 					bytes->poke(0);
@@ -621,7 +624,7 @@ void Exporter::gotoWeb(const char* path, Bytes::Ptr /* rom */, std::string &host
 				} else if (ext == "data") {
 					const std::string entry = getFullPath(hostEntry, uri_);
 					Archive::Ptr arc(Archive::create(Archive::ZIP));
-					arc->open(path_.c_str(), Stream::READ);
+					arc->open(pathstr.c_str(), Stream::READ);
 					Bytes::Ptr bytes(Bytes::create());
 					arc->toBytes(bytes.get(), entry.c_str());
 					bytes->poke(0);
@@ -630,7 +633,7 @@ void Exporter::gotoWeb(const char* path, Bytes::Ptr /* rom */, std::string &host
 				} else if (ext == "gb" || ext == "gbc") {
 					const std::string entry = getFullPath(hostEntry, uri_);
 					Archive::Ptr arc(Archive::create(Archive::ZIP));
-					arc->open(path_.c_str(), Stream::READ);
+					arc->open(pathstr.c_str(), Stream::READ);
 					Bytes::Ptr bytes(Bytes::create());
 					arc->toBytes(bytes.get(), entry.c_str());
 					bytes->poke(0);
@@ -671,7 +674,7 @@ void Exporter::gotoWeb(const char* path, Bytes::Ptr /* rom */, std::string &host
 	Platform::surf(url.c_str());
 }
 
-void Exporter::gotoUrl(const char* /* path */, Bytes::Ptr rom, std::string &hosted, OutputHandler output) const {
+void Exporter::gotoUrl(const char* /* path_ */, Bytes::Ptr rom, std::string &hosted, OutputHandler output) const {
 	Bytes::Ptr compressed(Bytes::create());
 	if (!Lz4::fromBytes(compressed.get(), rom.get()))
 		return;

@@ -328,6 +328,7 @@ bool Kernel::open(const char* path_, const char* menu) {
 bool Kernel::close(void) {
 	// Clear the properties.
 	path().clear();
+	entry().clear();
 	title().clear();
 	kernelRom().clear();
 	kernelSymbols().clear();
