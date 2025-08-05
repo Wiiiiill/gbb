@@ -147,7 +147,7 @@ Dependencies: CMake, GCC.
 		cd ..
 		```
 3. Build GBBVM
-	1. Execute `gbbvm.cmd`
+	1. Execute `gbbvm.sh`
 
 </details>
 
@@ -165,7 +165,7 @@ Dependencies: Xcode.
 2. Build GB BASIC
 	1. Compile from "gbbasic.xcodeproj"
 3. Build GBBVM
-	1. Execute `gbbvm.cmd`
+	1. Execute `gbbvm.sh`
 
 </details>
 
