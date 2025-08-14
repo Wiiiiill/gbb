@@ -187,6 +187,9 @@ private:
 	} _shared;
 
 public:
+	static int refCount;
+
+public:
 	EditorCodeImpl(const Text::Array &ids, bool isMajor) :
 		_isMajor(isMajor)
 	{
@@ -1693,18 +1696,18 @@ private:
 EditorCodeImpl::Shared EditorCodeImpl::_shared;
 EditorCodeImpl::Debounce EditorCodeImpl::_debounce = EditorCodeImpl::Debounce(STATIC_ANALYZER_INTERVAL);
 
-int EditorCode::refCount = 0;
+int EditorCodeImpl::refCount = 0;
 
 EditorCode* EditorCode::create(const Text::Array &ids, bool isMajor) {
 	EditorCodeImpl* result = new EditorCodeImpl(ids, isMajor);
-	result->initialize(refCount++);
+	result->initialize(EditorCodeImpl::refCount++);
 
 	return result;
 }
 
 void EditorCode::destroy(EditorCode* ptr) {
 	EditorCodeImpl* impl = static_cast<EditorCodeImpl*>(ptr);
-	impl->dispose(--refCount);
+	impl->dispose(--EditorCodeImpl::refCount);
 	delete impl;
 }
 

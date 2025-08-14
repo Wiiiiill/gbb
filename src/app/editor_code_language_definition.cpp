@@ -193,14 +193,14 @@ ImGui::CodeEditor::LanguageDefinition EditorCodeLanguageDefinition::languageDefi
 		// Thread.
 		"arg", "start", "join", "kill", "wait", "lock", "unlock",
 
-		// Data stream.
+		// Peek and poke.
 		"peek", "poke",
 
 		// Stack.
 		"reserve", "push", "pop", "top", "stack",
 
 		// Memory.
-		"pack", "unpack", "packn", "unpackn",
+		"pack", "unpack",
 		"swap",
 		"inc", "dec",
 

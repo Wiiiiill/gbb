@@ -108,7 +108,7 @@ EM_JS(
 			ret = '';
 		const lengthBytes = lengthBytesUTF8(ret) + 1;
 		const stringOnWasmHeap = _malloc(lengthBytes);
-		stringToUTF8(ret, stringOnWasmHeap, lengthBytes + 1);
+		stringToUTF8(ret, stringOnWasmHeap, lengthBytes);
 		obj.cache.push(stringOnWasmHeap);
 
 		return stringOnWasmHeap;
@@ -129,7 +129,7 @@ EM_JS(
 			ret = '';
 		const lengthBytes = lengthBytesUTF8(ret) + 1;
 		const stringOnWasmHeap = _malloc(lengthBytes);
-		stringToUTF8(ret, stringOnWasmHeap, lengthBytes + 1);
+		stringToUTF8(ret, stringOnWasmHeap, lengthBytes);
 		obj.cache.push(stringOnWasmHeap);
 
 		return stringOnWasmHeap;

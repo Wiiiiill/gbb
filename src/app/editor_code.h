@@ -29,9 +29,6 @@
 */
 
 class EditorCode : public Editor, public virtual Object {
-private:
-	static int refCount;
-
 public:
 	GBBASIC_CLASS_TYPE('C', 'O', 'D', 'E')
 

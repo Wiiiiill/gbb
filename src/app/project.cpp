@@ -45,7 +45,7 @@ EM_JS(
 			ret = '';
 		const lengthBytes = lengthBytesUTF8(ret) + 1;
 		const stringOnWasmHeap = _malloc(lengthBytes);
-		stringToUTF8(ret, stringOnWasmHeap, lengthBytes + 1);
+		stringToUTF8(ret, stringOnWasmHeap, lengthBytes);
 
 		return stringOnWasmHeap;
 	}
@@ -1576,8 +1576,13 @@ bool Project::sramExists(class Workspace* ws) const {
 }
 
 std::string Project::sramPath(class Workspace* ws) const {
-	if (path().empty())
-		return "";
+	if (path().empty()) {
+		const std::string name = title().empty() ? GBBASIC_NONAME_PROJECT_NAME : title();
+		const std::string writableDir = Platform::writableDirectory();
+		const std::string path_ = Path::combine(writableDir.c_str(), name.c_str()) + "." GBBASIC_SRAM_STATE_EXT;
+
+		return path_;
+	}
 
 	std::string name;
 	std::string dir;

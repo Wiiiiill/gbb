@@ -91,10 +91,11 @@ public:
 	GBBASIC_PROPERTY(int, order)
 	GBBASIC_PROPERTY(bool, isMajor)
 	GBBASIC_PROPERTY(bool, isMinor)
-	GBBASIC_PROPERTY(bool, isMessage)
-	GBBASIC_PROPERTY(std::string, message)
+	GBBASIC_PROPERTY(bool, messageEnabled)
+	GBBASIC_PROPERTY(std::string, messageContent)
 	GBBASIC_PROPERTY(Text::Array, extensions)
 	GBBASIC_PROPERTY(Text::Array, filter)
+	GBBASIC_PROPERTY(bool, buildEnabled)
 	GBBASIC_PROPERTY(bool, packageArchived)
 	GBBASIC_PROPERTY(std::string, packageTemplate)
 	GBBASIC_PROPERTY(std::string, packageEntry)
@@ -124,16 +125,21 @@ public:
 	bool open(const char* path, const char* menu);
 	bool close(void);
 
+	/**
+	 * @param[out] exported
+	 * @param[out] hosted
+	 */
 	bool run(
-		const char* path, Bytes::Ptr rom, std::string &exported, std::string &hosted,
+		const char* path, Bytes::Ptr rom, std::string* exported /* nullable */, std::string* hosted /* nullable */,
 		const std::string &settings, const std::string &args, Bytes::Ptr icon /* nullable */,
 		OutputHandler output
 	) const;
 	void reset(void);
 
 private:
-	void gotoWeb(const char* path, Bytes::Ptr rom, std::string &hosted, OutputHandler output) const;
-	void gotoUrl(const char* path, Bytes::Ptr rom, std::string &hosted, OutputHandler output) const;
+	void gotoBase64(const char* path, Bytes::Ptr rom, std::string* hosted /* nullable */, OutputHandler output) const;
+	void gotoWeb(const char* path, Bytes::Ptr rom, std::string* hosted /* nullable */, OutputHandler output) const;
+	void gotoUrl(const char* path, Bytes::Ptr rom, std::string* hosted /* nullable */, OutputHandler output) const;
 };
 
 /* ===========================================================================} */

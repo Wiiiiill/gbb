@@ -74,7 +74,7 @@ EM_JS(
 			ret = '';
 		const lengthBytes = lengthBytesUTF8(ret) + 1;
 		const stringOnWasmHeap = _malloc(lengthBytes);
-		stringToUTF8(ret, stringOnWasmHeap, lengthBytes + 1);
+		stringToUTF8(ret, stringOnWasmHeap, lengthBytes);
 
 		return stringOnWasmHeap;
 	}
@@ -219,7 +219,7 @@ private:
 
 		double delta = 0.0;
 
-		char* clipboardTextData = nullptr;
+		std::string clipboardTextData;
 
 		bool mouseCursorIndicated = false;
 		SDL_Cursor* mouseCursors[ImGuiMouseCursor_COUNT] = { };
@@ -448,16 +448,6 @@ public:
 		if (ntpOpt != _options.end()) {
 			showRecent = false;
 		}
-#endif /* Platform macro. */
-
-		// Recommend desktop version if necessary.
-#if defined GBBASIC_OS_HTML
-		EM_ASM({
-			showTips({
-				content: '<a href="https://paladin-t.github.io/kits/gbb/" target="_blank">Click</a> to get desktop version.',
-				timeout: -1
-			});
-		});
 #endif /* Platform macro. */
 
 		// Initialize the icon.
@@ -719,17 +709,17 @@ private:
 			Context* data = (Context*)userdata;
 			(void)data;
 
-			SDL_SetClipboardText(text);
+			const std::string osstr = Unicode::toOs(text);
+			Platform::setClipboardText(osstr.c_str());
 		};
 		io.GetClipboardTextFn = [] (void* userdata) -> const char* {
 			Context* data = (Context*)userdata;
-			if (data->clipboardTextData) {
-				SDL_free(data->clipboardTextData);
-				data->clipboardTextData = nullptr;
-			}
-			data->clipboardTextData = SDL_GetClipboardText();
+			if (!data->clipboardTextData.empty())
+				data->clipboardTextData.clear();
+			const std::string osstr = Platform::getClipboardText();
+			data->clipboardTextData = Unicode::fromOs(osstr);
 
-			return data->clipboardTextData;
+			return data->clipboardTextData.c_str();
 		};
 		io.ClipboardUserData = &_context;
 
@@ -776,9 +766,7 @@ private:
 		io.ImeSetInputScreenPosFn = nullptr;
 #endif /* GBBASIC_OS_WIN */
 
-		if (_context.clipboardTextData)
-			SDL_free(_context.clipboardTextData);
-		_context.clipboardTextData = nullptr;
+		_context.clipboardTextData.clear();
 
 		for (ImGuiMouseCursor i = 0; i < ImGuiMouseCursor_COUNT; ++i)
 			SDL_FreeCursor(_context.mouseCursors[i]);
@@ -1368,6 +1356,7 @@ class Application* createApplication(class Workspace* workspace, int argc, const
 		FS.mkdir('/fonts');
 		FS.mkdir('/kernels');
 		FS.mkdir('/kits');
+		FS.mkdir('/music');
 		FS.mkdir('/sfx');
 		FS.mkdir('/themes');
 	});
@@ -1483,6 +1472,26 @@ class Application* createApplication(class Workspace* workspace, int argc, const
 		},
 		result
 	);
+
+	// Recommend desktop version if necessary.
+#if defined GBBASIC_OS_HTML
+	EM_ASM({
+		do {
+			if (typeof isDesktopVersionSuggestionTipsEnabled == 'function') {
+				if (!isDesktopVersionSuggestionTipsEnabled())
+					break;
+			}
+
+			if (typeof showTips != 'function')
+				break;
+
+			showTips({
+				content: '<a href="https://paladin-t.github.io/kits/gbb/" target="_blank">Click</a> to get desktop version.',
+				timeout: -1
+			});
+		} while (false);
+	});
+#endif /* Platform macro. */
 
 	// Finish.
 	return result;

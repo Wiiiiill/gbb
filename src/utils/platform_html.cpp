@@ -7,6 +7,7 @@
 */
 
 #include "bytes.h"
+#include "encoding.h"
 #include "platform.h"
 #include "text.h"
 #include <SDL.h>
@@ -22,6 +23,12 @@
 ** {===========================================================================
 ** Basic
 */
+
+EM_JS(
+	void, platformHtmlFree, (void* ptr), {
+		_free(ptr);
+	}
+);
 
 void Platform::open(void) {
 	// Do nothing.
@@ -216,21 +223,34 @@ std::string Platform::absoluteOf(const std::string &path) {
 	return result;
 }
 
+char platformBinPath[GBBASIC_MAX_PATH + 1];
+
+std::string Platform::executableFile(void) {
+	return platformBinPath;
+}
+
 static std::string (* platformDocumentPathResolver)(void) = nullptr;
 
 void platformSetDocumentPathResolver(std::string (* resolver)(void)) {
 	platformDocumentPathResolver = resolver;
 }
 
-std::string platformBinPath;
-
-std::string Platform::executableFile(void) {
-	return platformBinPath;
-}
-
 std::string Platform::documentDirectory(void) {
 	if (platformDocumentPathResolver)
 		return platformDocumentPathResolver();
+
+	return "";
+}
+
+static std::string (* platformWritablePathResolver)(void) = nullptr;
+
+void platformSetWritablePathResolver(std::string (* resolver)(void)) {
+	platformWritablePathResolver = resolver;
+}
+
+std::string Platform::writableDirectory(void) {
+	if (platformWritablePathResolver)
+		return platformWritablePathResolver();
 
 	return "";
 }
@@ -278,6 +298,45 @@ void Platform::browse(const char*) {
 ** {===========================================================================
 ** Clipboard
 */
+
+EM_JS(void, platformHtmlCopy, (const char* str), {
+	Asyncify.handleAsync(async () => {
+		document.getElementById('clipping').focus();
+		const _ = await navigator.clipboard.writeText(UTF8ToString(str));
+		document.getElementById('canvas').focus();
+	});
+});
+EM_JS(char*, platformHtmlPaste, (), {
+	return Asyncify.handleAsync(async () => {
+		document.getElementById('clipping').focus();
+		const str = await navigator.clipboard.readText();
+		document.getElementById('canvas').focus();
+		const lengthBytes = lengthBytesUTF8(str) + 1;
+		const stringOnWasmHeap = _malloc(lengthBytes);
+		stringToUTF8(str, stringOnWasmHeap, lengthBytes);
+
+		return stringOnWasmHeap;
+	});
+});
+
+bool Platform::hasClipboardText(void) {
+	return true;
+}
+
+std::string Platform::getClipboardText(void) {
+	const char* cstr = platformHtmlPaste();
+	const std::string txt = cstr;
+	const std::string osstr = Unicode::toOs(txt);
+	platformHtmlFree((void*)cstr);
+
+	return osstr;
+}
+
+void Platform::setClipboardText(const char* txt) {
+	const std::string utfstr = Unicode::fromOs(txt);
+
+	platformHtmlCopy(utfstr.c_str());
+}
 
 bool Platform::isClipboardImageSupported(void) {
 	return false;
@@ -351,14 +410,9 @@ EM_JS(
 			ret = toString(ret);
 		const lengthBytes = lengthBytesUTF8(ret) + 1;
 		const stringOnWasmHeap = _malloc(lengthBytes);
-		stringToUTF8(ret, stringOnWasmHeap, lengthBytes + 1);
+		stringToUTF8(ret, stringOnWasmHeap, lengthBytes);
 
 		return stringOnWasmHeap;
-	}
-);
-EM_JS(
-	void, platformHtmlFree, (void* ptr), {
-		_free(ptr);
 	}
 );
 

@@ -592,6 +592,11 @@ EM_JS(
 				return false;
 		}
 
+		if (typeof isInCrossOriginIframe == 'function') {
+			if (isInCrossOriginIframe())
+				return false;
+		}
+
 		return true;
 	}
 );
@@ -869,10 +874,12 @@ EM_JS(
 							await stream.write(blob);
 							await stream.close();
 						} catch (_) {
-							showTips({
-								content: 'No permission to write to local file or user denied.',
-								type: 'error'
-							});
+							if (typeof showTips == 'function') {
+								showTips({
+									content: 'No permission to write to local file or user denied.',
+									type: 'error'
+								});
+							}
 						}
 						{
 							FS.unlink(path); // As "/Dir/File Name.ext".
@@ -935,7 +942,6 @@ EM_JS(
 	void, syncFileForSaveJs, (unsigned handle, const char* overriddenPath), {
 		const fullPath_ = overriddenPath; // As "/Dir/File Name.ext".
 		ccall('monitorFile', 'number', [ 'number', 'number' ], [ handle, fullPath_ ]);
-		_free(fullPath_);
 	}
 );
 #else /* Platform macro. */

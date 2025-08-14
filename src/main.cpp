@@ -16,25 +16,28 @@
 #	include <fcntl.h>
 #	include <io.h>
 #	include <Windows.h>
+#elif defined GBBASIC_OS_LINUX
+	// Do nothing.
 #elif defined GBBASIC_OS_MAC
-// Do nothing.
-#elif defined GBBASIC_OS_IOS
-#	include "platform.h"
-#	include <SDL.h>
+	// Do nothing.
 #elif defined GBBASIC_OS_ANDROID
 #	include "platform.h"
 #	include <SDL.h>
-#elif defined GBBASIC_OS_LINUX
-// Do nothing.
+#elif defined GBBASIC_OS_IOS
+#	include "platform.h"
+#	include <SDL.h>
+#else /* Platform macro. */
+#	error "Not implemented."
 #endif /* Platform macro. */
+
+typedef std::vector<const char*> Argv;
 
 #if defined GBBASIC_OS_HTML
 EM_JS(
-	bool, fssynced, (), {
+	bool, mainIsFsSynced, (), {
 		return !!Module.syncdone;
 	}
 );
-
 EM_JS(
 	bool, mainGetActiveFrameRate, (), {
 		if (typeof getActiveFrameRate != 'function')
@@ -43,16 +46,6 @@ EM_JS(
 		return getActiveFrameRate();
 	}
 );
-
-extern "C" {
-
-EMSCRIPTEN_KEEPALIVE int pushEvent(int event, int code, int data0, int data1) {
-	pushApplicationEvent(event, code, data0, data1);
-
-	return 0;
-}
-
-}
 #endif /* GBBASIC_OS_HTML */
 
 static int entry(int argc, const char* argv[]) {
@@ -63,7 +56,7 @@ static int entry(int argc, const char* argv[]) {
 #elif defined GBBASIC_OS_HTML
 	constexpr const int STEP = 10;
 	emscripten_set_main_loop([] (void) -> void { /* Do nothing. */ }, 0, 0);
-	while (!fssynced()) {
+	while (!mainIsFsSynced()) {
 		emscripten_sleep(STEP);
 	}
 	Application* app = createApplication(new Workspace(), argc, argv);
@@ -93,45 +86,73 @@ static int entry(int argc, const char* argv[]) {
 #	pragma message("Not using Emscripten thread.")
 #endif /* __EMSCRIPTEN_PTHREADS__ */
 
-extern std::string platformBinPath;
+#ifndef MAIN_BIN_PATH
+#	define MAIN_BIN_PATH "/home/gbbasic.js"
+#endif /* MAIN_BIN_PATH */
+#ifndef MAIN_DOCUMENT_PATH
+#	define MAIN_DOCUMENT_PATH "/Documents"
+#endif /* MAIN_DOCUMENT_PATH */
+#ifndef MAIN_WRITABLE_PATH
+#	define MAIN_WRITABLE_PATH "/data"
+#endif /* MAIN_WRITABLE_PATH */
+
+extern char platformBinPath[GBBASIC_MAX_PATH + 1];
 
 extern void platformSetDocumentPathResolver(std::string(*)(void));
 
-static std::string htmlDocumentPathResolve(void) {
-	return "/Documents";
-}
+extern void platformSetWritablePathResolver(std::string(*)(void));
 
 EM_JS(
-	void, initHtml, (), {
-		FS.mkdir('/Documents');
-		FS.mount(MEMFS, { }, '/Documents');
+	void, initializeHtml, (const char* docPath, const char* writablePath), {
+		const MAIN_DOCUMENT_PATH = UTF8ToString(docPath);
+		const MAIN_WRITABLE_PATH = UTF8ToString(writablePath);
+
+		FS.mkdir(MAIN_DOCUMENT_PATH);
+		FS.mount(MEMFS, { }, MAIN_DOCUMENT_PATH);
 
 		Module.syncdone = 0;
-		FS.mkdir('/libsdl');
-		FS.mkdir('/libsdl/gbbasic');
-		FS.mkdir('/libsdl/gbbasic/data');
-		FS.mount(IDBFS, { }, '/libsdl/gbbasic/data');
+		FS.mkdir(MAIN_WRITABLE_PATH);
+		FS.mount(IDBFS, { }, MAIN_WRITABLE_PATH);
 
-		FS.syncfs(
-			true,
-			(err) => {
-				if (err)
-					Module.printErr(err);
-
-				Module.print("Filesystem loaded.");
-				Module.syncdone = 1;
+		FS.syncfs(true, (err) => {
+			if (err) {
+				Module.printErr(err);
 			}
-		);
+			Module.print("HTML filesystem initialized.");
+			Module.syncdone = 1;
+		});
 	}
 );
 
+extern "C" {
+
+EMSCRIPTEN_KEEPALIVE int pushEvent(int event, int code, int data0, int data1) {
+	pushApplicationEvent(event, code, data0, data1);
+
+	return 0;
+}
+
+}
+
 int main(int argc, const char* argv[]) {
-	std::vector<const char*> args;
-	initHtml();
+	Argv args;
 
-	platformBinPath = "/home/gbbasic.js";
+	initializeHtml(MAIN_DOCUMENT_PATH, MAIN_WRITABLE_PATH);
 
-	platformSetDocumentPathResolver(htmlDocumentPathResolve);
+	memset(platformBinPath, 0, GBBASIC_COUNTOF(platformBinPath));
+	snprintf(platformBinPath, GBBASIC_COUNTOF(platformBinPath), "%s", MAIN_BIN_PATH);
+
+	platformSetDocumentPathResolver(
+		[] (void) -> std::string {
+			return MAIN_DOCUMENT_PATH;
+		}
+	);
+
+	platformSetWritablePathResolver(
+		[] (void) -> std::string {
+			return MAIN_WRITABLE_PATH;
+		}
+	);
 
 	for (int i = 1; i < argc; ++i)
 		args.push_back(argv[i]);
@@ -179,8 +200,8 @@ static void openTerminal(void) {
 	freopen("CON", "w", stderr);
 }
 
-static std::vector<const char*> splitArgs(const char* ln, Text::Array &args) {
-	std::vector<const char*> ret;
+static Argv splitArgs(const char* ln, Text::Array &args) {
+	Argv ret;
 	Text::Array tmp = args;
 	bool withQuate = false;
 	args = Text::split(ln, " ");
@@ -229,8 +250,8 @@ int CALLBACK WinMain(_In_ HINSTANCE /* hInstance */, _In_ HINSTANCE /* hPrevInst
 	openTerminal();
 #endif /* GBBASIC_DEBUG */
 
-	Text::Array argbuf;
-	std::vector<const char*> args = splitArgs(lpCmdLine, argbuf);
+	Text::Array buf;
+	Argv args = splitArgs(lpCmdLine, buf);
 
 #if !defined GBBASIC_DEBUG
 	for (const char* arg : args) {
@@ -247,9 +268,30 @@ int CALLBACK WinMain(_In_ HINSTANCE /* hInstance */, _In_ HINSTANCE /* hPrevInst
 	else
 		return entry((int)args.size(), &args.front());
 }
+#elif defined GBBASIC_OS_LINUX /* Platform macro. */
+extern char platformBinPath[GBBASIC_MAX_PATH + 1];
+
+int main(int argc, const char* argv[]) {
+	char buf[GBBASIC_MAX_PATH + 1];
+	buf[GBBASIC_MAX_PATH] = '\0';
+	Argv args;
+
+	realpath(argv[0], buf);
+	memset(platformBinPath, 0, GBBASIC_COUNTOF(platformBinPath));
+	if (argc >= 1)
+		snprintf(platformBinPath, GBBASIC_COUNTOF(platformBinPath), "%s", buf);
+
+	for (int i = 1; i < argc; ++i)
+		args.push_back(argv[i]);
+
+	if (args.empty())
+		return entry(0, nullptr);
+	else
+		return entry((int)args.size(), &args.front());
+}
 #elif defined GBBASIC_OS_MAC /* Platform macro. */
 int main(int argc, const char* argv[]) {
-	std::vector<const char*> args;
+	Argv args;
 
 	for (int i = 1; i < argc; ++i)
 		args.push_back(argv[i]);
@@ -259,26 +301,6 @@ int main(int argc, const char* argv[]) {
 	else
 		return entry((int)args.size(), &args.front());
 }
-#elif defined GBBASIC_OS_IOS /* Platform macro. */
-#if defined __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
-int SDL_main(int argc, char* argv[]) {
-	std::vector<const char*> args;
-
-	for (int i = 1; i < argc; ++i)
-		args.push_back(argv[i]);
-
-	if (args.empty())
-		return entry(0, nullptr);
-	else
-		return entry((int)args.size(), &args.front());
-}
-
-#if defined __cplusplus
-}
-#endif /* __cplusplus */
 #elif defined GBBASIC_OS_ANDROID /* Platform macro. */
 #if defined __cplusplus
 extern "C" {
@@ -300,28 +322,9 @@ int fseeko64(FILE* fp, long off, int ori) {
 }
 #endif /* __cplusplus */
 
-extern std::string platformBinPath;
+extern char platformBinPath[GBBASIC_MAX_PATH + 1];
 
 extern void platformSetDocumentPathResolver(std::string(*)(void));
-
-static std::string androidDocumentPathResolve(void) {
-	std::string dir;
-	const char* cstr = SDL_AndroidGetInternalStoragePath();
-	if (!cstr) {
-		int state = SDL_AndroidGetExternalStorageState();
-		if (state & SDL_ANDROID_EXTERNAL_STORAGE_WRITE)
-			cstr = SDL_AndroidGetExternalStoragePath();
-	}
-	if (!cstr) {
-		cstr = SDL_GetPrefPath(BASIC8_DOMAIN, BASIC8_TITLE);
-		dir = cstr;
-		SDL_free((void*)cstr);
-	}
-	if (cstr)
-		dir = cstr;
-
-	return dir;
-}
 
 #if defined __cplusplus
 extern "C" {
@@ -332,11 +335,31 @@ extern "C" {
 #endif /* main */
 
 int main(int argc, const char* argv[]) {
-	std::vector<const char*> args;
+	Argv args;
 
-	platformBinPath = "/";
+	memset(platformBinPath, 0, GBBASIC_COUNTOF(platformBinPath));
+	snprintf(platformBinPath, GBBASIC_COUNTOF(platformBinPath), "%s", "/");
 
-	platformSetDocumentPathResolver(androidDocumentPathResolve);
+	platformSetDocumentPathResolver(
+		[] (void) -> std::string {
+			std::string dir;
+			const char* cstr = SDL_AndroidGetInternalStoragePath();
+			if (!cstr) {
+				const int state = SDL_AndroidGetExternalStorageState();
+				if (state & SDL_ANDROID_EXTERNAL_STORAGE_WRITE)
+					cstr = SDL_AndroidGetExternalStoragePath();
+			}
+			if (!cstr) {
+				cstr = SDL_GetPrefPath("gbbasic", "data");
+				dir = cstr;
+				SDL_free((void*)cstr);
+			}
+			if (cstr)
+				dir = cstr;
+
+			return dir;
+		}
+	);
 
 	if (argc >= 2)
 		Platform::currentDirectory(argv[1]);
@@ -353,17 +376,13 @@ int main(int argc, const char* argv[]) {
 #if defined __cplusplus
 }
 #endif /* __cplusplus */
-#elif defined GBBASIC_OS_LINUX /* Platform macro. */
-extern std::string platformBinPath;
+#elif defined GBBASIC_OS_IOS /* Platform macro. */
+#if defined __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
-int main(int argc, const char* argv[]) {
-	char buf[GBBASIC_MAX_PATH + 1];
-	buf[GBBASIC_MAX_PATH] = '\0';
-	std::vector<const char*> args;
-
-	realpath(argv[0], buf);
-	if (argc >= 1)
-		platformBinPath = buf;
+int SDL_main(int argc, char* argv[]) {
+	Argv args;
 
 	for (int i = 1; i < argc; ++i)
 		args.push_back(argv[i]);
@@ -373,4 +392,8 @@ int main(int argc, const char* argv[]) {
 	else
 		return entry((int)args.size(), &args.front());
 }
+
+#if defined __cplusplus
+}
+#endif /* __cplusplus */
 #endif /* Platform macro. */

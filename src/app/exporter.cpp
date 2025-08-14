@@ -45,8 +45,8 @@ Exporter::Settings::Settings() {
 	inputGamepads[0].buttons[Input::DOWN]   = Input::Button(Input::KEYBOARD, 0, SDL_SCANCODE_S);
 	inputGamepads[0].buttons[Input::LEFT]   = Input::Button(Input::KEYBOARD, 0, SDL_SCANCODE_A);
 	inputGamepads[0].buttons[Input::RIGHT]  = Input::Button(Input::KEYBOARD, 0, SDL_SCANCODE_D);
-	inputGamepads[0].buttons[Input::A]      = Input::Button(Input::KEYBOARD, 0, SDL_SCANCODE_J);
-	inputGamepads[0].buttons[Input::B]      = Input::Button(Input::KEYBOARD, 0, SDL_SCANCODE_K);
+	inputGamepads[0].buttons[Input::A]      = Input::Button(Input::KEYBOARD, 0, SDL_SCANCODE_K);
+	inputGamepads[0].buttons[Input::B]      = Input::Button(Input::KEYBOARD, 0, SDL_SCANCODE_J);
 	inputGamepads[0].buttons[Input::SELECT] = Input::Button(Input::KEYBOARD, 0, SDL_SCANCODE_1);
 	inputGamepads[0].buttons[Input::START]  = Input::Button(Input::KEYBOARD, 0, SDL_SCANCODE_2);
 
@@ -247,6 +247,11 @@ bool Exporter::Settings::fromString(const std::string &val) {
 }
 
 Exporter::Exporter() {
+	order(-1);
+	isMajor(false);
+	isMinor(false);
+	messageEnabled(false);
+	buildEnabled(true);
 	packageArchived(false);
 }
 
@@ -285,10 +290,11 @@ bool Exporter::open(const char* path_, const char* menu) {
 	int order_ = 0;
 	bool isMajor_ = false;
 	bool isMinor_ = false;
-	bool isMessage_ = false;
-	std::string message_;
+	bool messageEnabled_ = false;
+	std::string messageContent_;
 	Text::Array extensions_;
 	Text::Array filter_;
+	bool buildEnabled_ = true;
 	bool packageArchived_ = false;
 	std::string packageTemplate_;
 	std::string packageEntry_;
@@ -317,11 +323,11 @@ bool Exporter::open(const char* path_, const char* menu) {
 		isMinor_ = false;
 	}
 
-	if (!Jpath::get(doc, isMessage_, "is_message"))
-		isMessage_ = 0;
+	if (!Jpath::get(doc, messageEnabled_, "message", "enabled"))
+		messageEnabled_ = 0;
 
-	if (!Jpath::get(doc, message_, "message"))
-		message_.clear();
+	if (!Jpath::get(doc, messageContent_, "message", "content"))
+		messageContent_.clear();
 
 	std::string tmp;
 	int n = Jpath::count(doc, "extensions");
@@ -347,6 +353,11 @@ bool Exporter::open(const char* path_, const char* menu) {
 		if (!Jpath::get(doc, tmp, "filter", i))
 			return false;
 		filter_.push_back(tmp);
+	}
+
+	if (Jpath::has(doc, "build", "enabled")) {
+		if (!Jpath::get(doc, buildEnabled_, "build", "enabled"))
+			return false;
 	}
 
 	if (Jpath::has(doc, "package", "archived")) {
@@ -397,10 +408,11 @@ bool Exporter::open(const char* path_, const char* menu) {
 	order(order_);
 	isMajor(isMajor_);
 	isMinor(isMinor_);
-	isMessage(isMessage_);
-	message(message_);
+	messageEnabled(messageEnabled_);
+	messageContent(messageContent_);
 	extensions(extensions_);
 	filter(filter_);
+	buildEnabled(buildEnabled_);
 	packageArchived(packageArchived_);
 	packageTemplate(packageTemplate_);
 	packageEntry(packageEntry_);
@@ -428,10 +440,11 @@ bool Exporter::close(void) {
 	order(0);
 	isMajor(false);
 	isMinor(false);
-	isMessage(false);
-	message().clear();
+	messageEnabled(false);
+	messageContent().clear();
 	extensions().clear();
 	filter().clear();
+	buildEnabled(true);
 	packageArchived(false);
 	packageTemplate().clear();
 	packageEntry().clear();
@@ -446,12 +459,17 @@ bool Exporter::close(void) {
 }
 
 bool Exporter::run(
-	const char* path_, Bytes::Ptr rom, std::string &exported, std::string &hosted,
+	const char* path_, Bytes::Ptr rom, std::string* exported, std::string* hosted,
 	const std::string &settings, const std::string &args, Bytes::Ptr icon,
 	OutputHandler output
 ) const {
 	// Prepare.
-	GBBASIC_ASSERT(!isMessage() && "Impossible.");
+	GBBASIC_ASSERT(!messageEnabled() && "Impossible.");
+
+	if (exported)
+		exported->clear();
+	if (hosted)
+		hosted->clear();
 
 	// Export package.
 	if (!path_ || !*path_) {
@@ -499,8 +517,9 @@ bool Exporter::run(
 		}
 
 		arc->close();
-		exported = path_;
-	} else {
+		if (exported)
+			*exported = path_;
+	} else if (buildEnabled()) {
 		File::Ptr file(File::create());
 		if (!file->open(path_, Stream::WRITE)) {
 			const std::string msg = "Cannot open \"" + std::string(path_) + "\".";
@@ -514,11 +533,14 @@ bool Exporter::run(
 
 			return false;
 		}
-		exported = path_;
+		if (exported)
+			*exported = path_;
 	}
 
 	// Host the exported content.
-	if (surfMethod() == "web") {
+	if (surfMethod() == "base64") {
+		gotoBase64(path_, rom, hosted, output);
+	} else if (surfMethod() == "web") {
 		gotoWeb(path_, rom, hosted, output);
 	} else if (surfMethod() == "url") {
 		gotoUrl(path_, rom, hosted, output);
@@ -539,7 +561,24 @@ void Exporter::reset(void) {
 	}
 }
 
-void Exporter::gotoWeb(const char* path_, Bytes::Ptr /* rom */, std::string &hosted, OutputHandler output) const {
+void Exporter::gotoBase64(const char* /* path_ */, Bytes::Ptr rom, std::string* hosted, OutputHandler output) const {
+	Bytes::Ptr compressed(Bytes::create());
+	if (!Lz4::fromBytes(compressed.get(), rom.get()))
+		return;
+
+	std::string txt;
+	if (!Base64::fromBytes(txt, compressed.get()))
+		return;
+
+	const std::string url = Text::format(surfEntry(), { txt });
+	if (hosted)
+		*hosted = url;
+	const std::string msg = "Hosting...";
+	output(msg, EXPORTER_PRINT);
+	Platform::surf(url.c_str());
+}
+
+void Exporter::gotoWeb(const char* path_, Bytes::Ptr /* rom */, std::string* hosted, OutputHandler output) const {
 	const unsigned short port = 8081;
 	_web = Web::Ptr(Web::create());
 
@@ -668,24 +707,18 @@ void Exporter::gotoWeb(const char* path_, Bytes::Ptr /* rom */, std::string &hos
 	_web->open(port, nullptr);
 
 	const std::string url = "http://127.0.0.1:" + Text::toString(port);
-	hosted = url;
-	const std::string msg = "Hosting at " + url + ".";
+	if (hosted)
+		*hosted = url;
+	const std::string msg = "Hosting at " + url + "...";
 	output(msg, EXPORTER_PRINT);
 	Platform::surf(url.c_str());
 }
 
-void Exporter::gotoUrl(const char* /* path_ */, Bytes::Ptr rom, std::string &hosted, OutputHandler output) const {
-	Bytes::Ptr compressed(Bytes::create());
-	if (!Lz4::fromBytes(compressed.get(), rom.get()))
-		return;
-
-	std::string txt;
-	if (!Base64::fromBytes(txt, compressed.get()))
-		return;
-
-	const std::string url = Text::format(surfEntry(), { txt });
-	hosted = url;
-	const std::string msg = "Hosting.";
+void Exporter::gotoUrl(const char* /* path_ */, Bytes::Ptr /* rom */, std::string* hosted, OutputHandler output) const {
+	const std::string &url = surfEntry();
+	if (hosted)
+		*hosted = url;
+	const std::string msg = "Surfing...";
 	output(msg, EXPORTER_PRINT);
 	Platform::surf(url.c_str());
 }

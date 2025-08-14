@@ -40,6 +40,7 @@
 #include <SDL.h>
 #if defined GBBASIC_OS_HTML
 #	include <emscripten.h>
+#	include <emscripten/bind.h>
 #endif /* GBBASIC_OS_HTML */
 
 /*
@@ -83,6 +84,36 @@ static_assert(sizeof(ImDrawIdx) == sizeof(unsigned int), "Wrong ImDrawIdx size."
 */
 
 #if defined GBBASIC_OS_HTML
+EMSCRIPTEN_BINDINGS(Categories) {
+	emscripten::enum_<Workspace::Categories>("Categories")
+		.value("PALETTE",  Workspace::Categories::PALETTE)
+		.value("FONT",     Workspace::Categories::FONT)
+		.value("CODE",     Workspace::Categories::CODE)
+		.value("TILES",    Workspace::Categories::TILES)
+		.value("MAP",      Workspace::Categories::MAP)
+		.value("MUSIC",    Workspace::Categories::MUSIC)
+		.value("SFX",      Workspace::Categories::SFX)
+		.value("ACTOR",    Workspace::Categories::ACTOR)
+		.value("SCENE",    Workspace::Categories::SCENE)
+		.value("CONSOLE",  Workspace::Categories::CONSOLE)
+		.value("EMULATOR", Workspace::Categories::EMULATOR)
+		.value("HOME",     Workspace::Categories::HOME)
+	;
+};
+
+EMSCRIPTEN_BINDINGS(ExternalEventTypes) {
+	emscripten::enum_<Workspace::ExternalEventTypes>("ExternalEventTypes")
+		.value("RESIZE_WINDOW", Workspace::ExternalEventTypes::RESIZE_WINDOW)
+		.value("LOAD_PROJECT",  Workspace::ExternalEventTypes::LOAD_PROJECT)
+		.value("PATCH_PROJECT", Workspace::ExternalEventTypes::PATCH_PROJECT)
+		.value("TO_CATEGORY",   Workspace::ExternalEventTypes::TO_CATEGORY)
+		.value("TO_PAGE",       Workspace::ExternalEventTypes::TO_PAGE)
+		.value("COMPILE",       Workspace::ExternalEventTypes::COMPILE)
+		.value("RUN",           Workspace::ExternalEventTypes::RUN)
+		.value("COUNT",         Workspace::ExternalEventTypes::COUNT)
+	;
+};
+
 EM_JS(
 	void, workspaceFree, (void* ptr), {
 		_free(ptr);
@@ -97,7 +128,7 @@ EM_JS(
 			ret = '';
 		const lengthBytes = lengthBytesUTF8(ret) + 1;
 		const stringOnWasmHeap = _malloc(lengthBytes);
-		stringToUTF8(ret, stringOnWasmHeap, lengthBytes + 1);
+		stringToUTF8(ret, stringOnWasmHeap, lengthBytes);
 
 		return stringOnWasmHeap;
 	}
@@ -127,7 +158,7 @@ EM_JS(
 			ret = '';
 		const lengthBytes = lengthBytesUTF8(ret) + 1;
 		const stringOnWasmHeap = _malloc(lengthBytes);
-		stringToUTF8(ret, stringOnWasmHeap, lengthBytes + 1);
+		stringToUTF8(ret, stringOnWasmHeap, lengthBytes);
 
 		return stringOnWasmHeap;
 	}
@@ -427,7 +458,7 @@ bool Workspace::open(Window* wnd, Renderer* rnd, const char* font, unsigned fps,
 
 	showRecentProjects(showRecent);
 	category(Categories::HOME);
-	categoryOfAudio(AssetsBundle::Categories::MUSIC);
+	categoryOfAudio(Categories::MUSIC);
 	categoryBeforeCompiling(Categories::HOME);
 	interactable(true);
 	toRun(false);
@@ -715,7 +746,7 @@ void Workspace::refreshWindowTitle(Window* wnd) {
 	const Project::Ptr &prj = currentProject();
 	if (prj) {
 		std::string wndTitle = std::string(GBBASIC_TITLE " v" GBBASIC_VERSION_STRING);
-		if (settings().mainShowProjectPathAtTitleBar)
+		if (settings().mainShowProjectPathAtTitleBar && !prj->path().empty())
 			wndTitle += std::string("  [") + prj->title() + " - " + prj->path() + std::string("]");
 		else
 			wndTitle += std::string("  [") + prj->title() + std::string("]");
@@ -851,25 +882,23 @@ void Workspace::category(const Categories &category) {
 	switch (_category) {
 	case Categories::MUSIC: // Fall through.
 	case Categories::SFX:
-		categoryOfAudio((AssetsBundle::Categories)_category);
+		categoryOfAudio(_category);
 
 		break;
 	default: // Do nothing.
 		break;
 	}
 
-	if (canvasDevice()) {
-		switch (_category) {
-		case Categories::PALETTE: // Fall through.
-		case Categories::CONSOLE: // Fall through.
-		case Categories::EMULATOR: // Fall through.
-		case Categories::HOME: // Do nothing.
-			break;
-		default:
-			categoryBeforeCompiling(_category);
+	switch (_category) {
+	case Categories::PALETTE: // Fall through.
+	case Categories::CONSOLE: // Fall through.
+	case Categories::EMULATOR: // Fall through.
+	case Categories::HOME: // Do nothing.
+		break;
+	default:
+		categoryBeforeCompiling(_category);
 
-			break;
-		}
+		break;
 	}
 }
 
@@ -2014,6 +2043,19 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 #if defined GBBASIC_OS_HTML
 	SDL_Event* evt = (SDL_Event*)event;
 	switch (type) {
+	case ExternalEventTypes::RESIZE_WINDOW: {
+			const int width = (int)(intptr_t)evt->user.data1;
+			const int height = (int)(intptr_t)evt->user.data2;
+
+			const Math::Vec2i oldSize = wnd->size();
+			Math::Vec2i size(width, height);
+			wnd->size(size);
+			size = wnd->size();
+
+			fprintf(stdout, "SDL: RESIZE_WINDOW prefered [%d, %d], was [%d, %d], now [%d, %d].\n", width, height, oldSize.x, oldSize.y, size.x, size.y);
+		}
+
+		break;
 	case ExternalEventTypes::LOAD_PROJECT: {
 			fprintf(stdout, "SDL: LOAD_PROJECT.\n");
 
@@ -5848,11 +5890,13 @@ void Workspace::finish(Window* wnd, Renderer* rnd) {
 		_hadUnsavedChanges = hasUnsavedChanges;
 		if (opened && hasUnsavedChanges) {
 			EM_ASM({
-				blockExit('You have unsaved data.');
+				if (typeof blockExit == 'function')
+					blockExit('You have unsaved data.');
 			});
 		} else {
 			EM_ASM({
-				allowExit();
+				if (typeof allowExit == 'function')
+					allowExit();
 			});
 		}
 	}
@@ -6408,7 +6452,7 @@ void Workspace::shortcuts(Window* wnd, Renderer* rnd) {
 
 			destroyAudioDevice();
 
-			categoryOfAudio(AssetsBundle::Categories::MUSIC);
+			categoryOfAudio(Categories::MUSIC);
 
 			Operations::fileClose(wnd, rnd, this);
 		} else if (r && modifier && io.KeyShift && !io.KeyAlt) {
@@ -6438,7 +6482,7 @@ void Workspace::shortcuts(Window* wnd, Renderer* rnd) {
 			int toExport_ = -1;
 			for (int i = 0; i < (int)exporters().size(); ++i) {
 				Exporter::Ptr &ex = exporters()[i];
-				if (ex->isMajor() && !ex->isMessage()) {
+				if (ex->isMajor() && !ex->messageEnabled()) {
 					toExport_ = i;
 
 					break;
@@ -6449,7 +6493,7 @@ void Workspace::shortcuts(Window* wnd, Renderer* rnd) {
 			int toExport_ = -1;
 			for (int i = 0; i < (int)exporters().size(); ++i) {
 				Exporter::Ptr &ex = exporters()[i];
-				if (ex->isMinor() && !ex->isMessage()) {
+				if (ex->isMinor() && !ex->messageEnabled()) {
 					toExport_ = i;
 
 					break;
@@ -6815,8 +6859,8 @@ void Workspace::menu(Window* wnd, Renderer* rnd) {
 			int toExport_ = -1;
 			for (int i = 0; i < (int)exporters().size(); ++i) {
 				if (exporters()[i].get() == ex) {
-					if (ex->isMessage()) {
-						messagePopupBox(ex->message(), nullptr, nullptr, nullptr);
+					if (ex->messageEnabled()) {
+						messagePopupBox(ex->messageContent(), nullptr, nullptr, nullptr);
 
 						break;
 					}
@@ -7097,7 +7141,7 @@ void Workspace::menu(Window* wnd, Renderer* rnd) {
 
 				destroyAudioDevice();
 
-				categoryOfAudio(AssetsBundle::Categories::MUSIC);
+				categoryOfAudio(Categories::MUSIC);
 
 				Operations::fileClose(wnd, rnd, this);
 
@@ -8933,7 +8977,7 @@ void Workspace::tabs(Window* wnd, Renderer* rnd) {
 				if (ImGui::MenuBarImageButton(theme()->iconAudio()->pointer(rnd), ImVec2(13, 13), ImVec4(1, 1, 1, 1), theme()->tooltipEdit_Audio().c_str()) && !busy) {
 					if (docOpened)
 						toggleDocument(nullptr);
-					category((Categories)categoryOfAudio());
+					category(categoryOfAudio());
 				}
 			}
 			ImGui::SameLine();
@@ -11417,7 +11461,7 @@ void Workspace::exportProject(Window* wnd, Renderer* rnd, int toExport_) {
 					compileProject(wnd, rnd, nullptr, nullptr, nullptr, false, toExport_);
 				}
 			);
-	} else {
+	} else if (ex->buildEnabled()) {
 		Operations::popupRomBuildSettings(wnd, rnd, this, ex)
 			.then(
 				[wnd, rnd, this, toExport_] (bool ok, const char* cartType, const char* sramType, bool hasRtc) -> void {
@@ -11427,6 +11471,30 @@ void Workspace::exportProject(Window* wnd, Renderer* rnd, int toExport_) {
 						compileProject(wnd, rnd, nullptr, nullptr, nullptr, false, toExport_);
 				}
 			);
+	} else {
+		if (toExport_ >= 0) {
+			Exporter::Ptr ex = exporters()[toExport_];
+			ex->run(
+				nullptr, nullptr, nullptr, nullptr,
+				"", "", nullptr,
+				[this] (const std::string &msg, int lv) -> void {
+					switch (lv) {
+					case 0: // Print.
+						print(msg.c_str());
+
+						break;
+					case 1: // Warn.
+						warn(msg.c_str());
+
+						break;
+					case 2: // Error.
+						error(msg.c_str());
+
+						break;
+					}
+				}
+			);
+		}
 	}
 }
 

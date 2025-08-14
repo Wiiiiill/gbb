@@ -7,6 +7,7 @@
 */
 
 #import "bytes.h"
+#import "encoding.h"
 #import "file_sandbox.h"
 #import "image.h"
 #import "platform.h"
@@ -271,6 +272,14 @@ std::string Platform::documentDirectory(void) {
 	return ret;
 }
 
+std::string Platform::writableDirectory(void) {
+	const char* cstr = SDL_GetPrefPath("gbbasic", "data");
+	const std::string osstr = Unicode::toOs(cstr);
+	SDL_free((void*)cstr);
+
+	return osstr;
+}
+
 std::string Platform::savedGamesDirectory(void) {
 	return writableDirectory();
 }
@@ -311,6 +320,25 @@ void Platform::browse(const char* dir) {
 ** {===========================================================================
 ** Clipboard
 */
+
+bool Platform::hasClipboardText(void) {
+	return !!SDL_HasClipboardText();
+}
+
+std::string Platform::getClipboardText(void) {
+	const char* cstr = SDL_GetClipboardText();
+	const std::string txt = cstr;
+	const std::string osstr = Unicode::toOs(txt);
+	SDL_free((void*)cstr);
+
+	return osstr;
+}
+
+void Platform::setClipboardText(const char* txt) {
+	const std::string utfstr = Unicode::fromOs(txt);
+
+	SDL_SetClipboardText(utfstr.c_str());
+}
 
 bool Platform::isClipboardImageSupported(void) {
 	return true;

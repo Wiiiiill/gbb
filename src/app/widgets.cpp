@@ -1683,7 +1683,7 @@ void EmulatorBuildSettingsPopupBox::update(Workspace*) {
 				if (_hasIcon) {
 					PushID("#Icon");
 					{
-						const float width = GetWindowWidth();
+						const float width = GetContentRegionMax().x;
 
 						AlignTextToFramePadding();
 						TextUnformatted(_theme->windowPreferences_Emulator_ApplicationIcon());
@@ -1716,7 +1716,7 @@ void EmulatorBuildSettingsPopupBox::update(Workspace*) {
 
 						SameLine();
 						const float btnW = 64.0f;
-						const float posX = width - btnW - style.ItemSpacing.x;
+						const float posX = width - btnW;
 						const float posY = GetCursorPosY();
 						SetCursorPosX(posX);
 						if (Button(_theme->generic_Replace(), ImVec2(btnW, 0))) {

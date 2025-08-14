@@ -306,6 +306,9 @@ public:
 		_bordered = val;
 
 		SDL_SetWindowBordered(_window, val ? SDL_TRUE : SDL_FALSE);
+
+		if (!(SDL_GetWindowFlags(_window) & SDL_WINDOW_RESIZABLE) && _resizable)
+			SDL_SetWindowResizable(_window, SDL_TRUE);
 	}
 
 	virtual bool resizable(void) const override {

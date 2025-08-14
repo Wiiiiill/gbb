@@ -7,6 +7,7 @@
 */
 
 #include "bytes.h"
+#include "encoding.h"
 #include "file_sandbox.h"
 #include "platform.h"
 #include <SDL.h>
@@ -318,7 +319,7 @@ std::string Platform::absoluteOf(const std::string &path) {
 	return result;
 }
 
-std::string platformBinPath;
+char platformBinPath[GBBASIC_MAX_PATH + 1];
 
 std::string Platform::executableFile(void) {
 	return platformBinPath;
@@ -385,6 +386,14 @@ std::string Platform::documentDirectory(void) {
 	return homeDir;
 }
 
+std::string Platform::writableDirectory(void) {
+	const char* cstr = SDL_GetPrefPath("gbbasic", "data");
+	const std::string osstr = Unicode::toOs(cstr);
+	SDL_free((void*)cstr);
+
+	return osstr;
+}
+
 std::string Platform::savedGamesDirectory(void) {
 	return writableDirectory();
 }
@@ -428,6 +437,25 @@ void Platform::browse(const char* dir) {
 ** {===========================================================================
 ** Clipboard
 */
+
+bool Platform::hasClipboardText(void) {
+	return !!SDL_HasClipboardText();
+}
+
+std::string Platform::getClipboardText(void) {
+	const char* cstr = SDL_GetClipboardText();
+	const std::string txt = cstr;
+	const std::string osstr = Unicode::toOs(txt);
+	SDL_free((void*)cstr);
+
+	return osstr;
+}
+
+void Platform::setClipboardText(const char* txt) {
+	const std::string utfstr = Unicode::fromOs(txt);
+
+	SDL_SetClipboardText(utfstr.c_str());
+}
 
 bool Platform::isClipboardImageSupported(void) {
 	return false;

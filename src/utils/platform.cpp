@@ -6,11 +6,9 @@
 ** For the latest info, see https://paladin-t.github.io/kits/gbb/
 */
 
-#include "encoding.h"
 #include "platform.h"
 #include "../../lib/imgui_sdl/imgui_sdl.h"
 #include <SDL.h>
-#include <algorithm>
 #include <clocale>
 
 /*
@@ -33,33 +31,6 @@ bool Platform::ignore(const char* path) {
 		return true;
 
 	return false;
-}
-
-std::string Platform::writableDirectory(void) {
-	const char* cstr = SDL_GetPrefPath("gbbasic", "data");
-	const std::string osstr = Unicode::toOs(cstr);
-	SDL_free((void*)cstr);
-
-	return osstr;
-}
-
-bool Platform::hasClipboardText(void) {
-	return !!SDL_HasClipboardText();
-}
-
-std::string Platform::getClipboardText(void) {
-	const char* cstr = SDL_GetClipboardText();
-	const std::string txt = cstr;
-	const std::string osstr = Unicode::toOs(txt);
-	SDL_free((void*)cstr);
-
-	return osstr;
-}
-
-void Platform::setClipboardText(const char* txt) {
-	const std::string utfstr = Unicode::fromOs(txt);
-
-	SDL_SetClipboardText(utfstr.c_str());
 }
 
 bool Platform::isLittleEndian(void) {

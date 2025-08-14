@@ -1238,6 +1238,8 @@ promise::Promise Operations::fileClose(Window* wnd, Renderer* rnd, Workspace* ws
 						ws->currentProject(nullptr);
 						ws->popupBox(nullptr);
 						ws->category(Workspace::Categories::HOME);
+						ws->categoryOfAudio(Workspace::Categories::MUSIC);
+						ws->categoryBeforeCompiling(Workspace::Categories::HOME);
 						ws->tabsWidth(0.0f);
 						ws->consoleHasWarning(false);
 						ws->consoleHasError(false);
@@ -1487,18 +1489,20 @@ promise::Promise Operations::fileSaveForNotepad(Window* wnd, Renderer* rnd, Work
 						if (Module.__GBBASIC_DOWNLOAD_TIPS_SHOWN_TIMES__ == undefined)
 							Module.__GBBASIC_DOWNLOAD_TIPS_SHOWN_TIMES__ = 0;
 
-						if (Module.__GBBASIC_DOWNLOAD_TIPS_SHOWN_TIMES__ >= 3) // Only prompt 3 times.
-							break;
+						/*if (Module.__GBBASIC_DOWNLOAD_TIPS_SHOWN_TIMES__ >= 3) // Only prompt 3 times.
+							break;*/
 
 						if (typeof isFileSyncDisabled != 'function')
 							break;
 
-						if (!isFileSyncDisabled())
+						if (isFileSyncDisabled())
 							break;
 
-						showTips({
-							content: 'Saved in memory, click the download button to preserve your project.'
-						});
+						if (typeof showTips == 'function') {
+							showTips({
+								content: 'Saved in memory, click the download button to preserve your project.'
+							});
+						}
 						++Module.__GBBASIC_DOWNLOAD_TIPS_SHOWN_TIMES__;
 					} while (false);
 				});
@@ -4020,7 +4024,7 @@ promise::Promise Operations::projectBuild(Window* wnd, Renderer* rnd, Workspace*
 				std::string hosted;
 				const bool ret = ex->run(
 					path.c_str(), rom,
-					exported, hosted,
+					&exported, &hosted,
 					ws->settings().exporterSettings, ws->settings().exporterArgs, ws->settings().exporterIcon,
 					[ws] (const std::string &msg, int lv) -> void {
 						switch (lv) {
@@ -4047,7 +4051,7 @@ promise::Promise Operations::projectBuild(Window* wnd, Renderer* rnd, Workspace*
 					return;
 				}
 
-				GBBASIC_ASSERT(!ex->isMessage() && "Impossible.");
+				GBBASIC_ASSERT(!ex->messageEnabled() && "Impossible.");
 
 				if (path.empty()) {
 					const std::string msg = ws->theme()->dialogPrompt_TheRomIsEncodedInTheUrlOfTheOpenedBrowserPageMakeSureYourBrowserSupportsLongUrl();

@@ -58,7 +58,8 @@ Editor::Debounce::~Debounce() {
 }
 
 void Editor::Debounce::trigger(void) {
-	_lastModificationTimestamp = 1;
+	const long long now = DateTime::ticks();
+	_lastModificationTimestamp = Math::max(now - _interval, 1ll);
 }
 
 void Editor::Debounce::modified(void) {

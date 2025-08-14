@@ -242,7 +242,7 @@
 #endif /* GBBASIC_WINDOW_MIN_WIDTH */
 // The minimum height of window.
 #ifndef GBBASIC_WINDOW_MIN_HEIGHT
-#	define GBBASIC_WINDOW_MIN_HEIGHT 180
+#	define GBBASIC_WINDOW_MIN_HEIGHT 182 /* 144 + 19 + 19 */
 #endif /* GBBASIC_WINDOW_MIN_HEIGHT */
 // The default width of window.
 #ifndef GBBASIC_WINDOW_DEFAULT_WIDTH

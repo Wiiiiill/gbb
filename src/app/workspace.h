@@ -384,6 +384,7 @@ public:
 	/**< External events. */
 
 	enum class ExternalEventTypes : unsigned {
+		RESIZE_WINDOW,
 		LOAD_PROJECT,
 		PATCH_PROJECT,
 		TO_CATEGORY,
@@ -442,7 +443,7 @@ public:
 	GBBASIC_PROPERTY(Activities, activities)
 	GBBASIC_PROPERTY(bool, showRecentProjects)
 	GBBASIC_FIELD_READONLY(Categories, category)
-	GBBASIC_PROPERTY_READONLY(AssetsBundle::Categories, categoryOfAudio)
+	GBBASIC_PROPERTY_READONLY(Categories, categoryOfAudio)
 	GBBASIC_PROPERTY_READONLY(Categories, categoryBeforeCompiling)
 	GBBASIC_PROPERTY_READONLY(bool, interactable)
 	GBBASIC_PROPERTY_READONLY(bool, toRun)

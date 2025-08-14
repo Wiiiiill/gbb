@@ -6,6 +6,7 @@
 ** For the latest info, see https://paladin-t.github.io/kits/gbb/
 */
 
+#include "encoding.h"
 #include "platform.h"
 #include "text.h"
 #include <SDL.h>
@@ -199,16 +200,16 @@ std::string Platform::absoluteOf(const std::string &path) {
 	return result;
 }
 
+char platformBinPath[GBBASIC_MAX_PATH + 1];
+
+std::string Platform::executableFile(void) {
+	return platformBinPath;
+}
+
 static std::string (* platformDocumentPathResolver)(void) = nullptr;
 
 void platformSetDocumentPathResolver(std::string (* resolver)(void)) {
 	platformDocumentPathResolver = resolver;
-}
-
-std::string platformBinPath;
-
-std::string Platform::executableFile(void) {
-	return platformBinPath;
 }
 
 std::string Platform::documentDirectory(void) {
@@ -216,6 +217,14 @@ std::string Platform::documentDirectory(void) {
 		return platformDocumentPathResolver();
 
 	return "";
+}
+
+std::string Platform::writableDirectory(void) {
+	const char* cstr = SDL_GetPrefPath("gbbasic", "data");
+	const std::string osstr = Unicode::toOs(cstr);
+	SDL_free((void*)cstr);
+
+	return osstr;
 }
 
 std::string Platform::savedGamesDirectory(void) {
@@ -265,6 +274,25 @@ void Platform::browse(const char*) {
 ** {===========================================================================
 ** Clipboard
 */
+
+bool Platform::hasClipboardText(void) {
+	return !!SDL_HasClipboardText();
+}
+
+std::string Platform::getClipboardText(void) {
+	const char* cstr = SDL_GetClipboardText();
+	const std::string txt = cstr;
+	const std::string osstr = Unicode::toOs(txt);
+	SDL_free((void*)cstr);
+
+	return osstr;
+}
+
+void Platform::setClipboardText(const char* txt) {
+	const std::string utfstr = Unicode::fromOs(txt);
+
+	SDL_SetClipboardText(utfstr.c_str());
+}
 
 bool Platform::isClipboardImageSupported(void) {
 	return false;
