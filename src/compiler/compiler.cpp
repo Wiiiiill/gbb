@@ -13068,6 +13068,9 @@ public:
 };
 
 class NodePeek : public Node {
+private:
+	bool _withInt = false;
+
 public:
 	NodePeek() {
 	}
@@ -13075,6 +13078,10 @@ public:
 	}
 
 	NODE_TYPE(Types::PEEK)
+
+	virtual void options(const IDictionary::Ptr &options) override {
+		_withInt = (bool)options->get("with_int");
+	}
 
 	virtual void generate(Bytes::Ptr &bytes, Context::Stack &context, Error::Handler onError) override {
 		const Generator_Void_Void generator = [&] (void) -> void {
@@ -13096,6 +13103,7 @@ public:
 				})) { THROW_INVALID_SYNTAX(onError); }
 			}
 			if (!consume(Token::Types::KEYWORD, "peek")) { THROW_INVALID_SYNTAX(onError); }
+			if (_withInt && !consume(Token::Types::KEYWORD, "int")) { THROW_INVALID_SYNTAX(onError); }
 			if (consume(Token::Types::OPERATOR, "(")) {
 				if (!consume(Token::Types::OPERATOR, ")")) { THROW_INVALID_SYNTAX(onError); }
 			}
@@ -13125,7 +13133,7 @@ public:
 
 					// Emit a `VM_PEEK` instruction.
 					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PEEK]);
-					args = fill(args, (UInt8)FALSE);
+					args = fill(args, (UInt8)BOOLEAN(_withInt));
 					args = fill(args, (Int16)ARG0);
 					args = fill(args, (Int16)ARG1);
 				}, 1, true,
@@ -13140,17 +13148,26 @@ public:
 	}
 
 	virtual Abstract abstract(void) const override {
-		return abstract("PEEK");
+		if (_withInt)
+			return abstract("PEEK INT");
+		else
+			return abstract("PEEK");
 	}
 	using Node::abstract;
 
 	virtual std::string dump(int depth) const override {
-		return dump(depth, "PEEK");
+		if (_withInt)
+			return dump(depth, "PEEK INT");
+		else
+			return dump(depth, "PEEK");
 	}
 	using Node::dump;
 };
 
 class NodePoke : public Node {
+private:
+	bool _withInt = false;
+
 public:
 	NodePoke() {
 	}
@@ -13158,6 +13175,10 @@ public:
 	}
 
 	NODE_TYPE(Types::POKE)
+
+	virtual void options(const IDictionary::Ptr &options) override {
+		_withInt = (bool)options->get("with_int");
+	}
 
 	virtual void generate(Bytes::Ptr &bytes, Context::Stack &context, Error::Handler onError) override {
 		const Generator_Void_Void generator = [&] (void) -> void {
@@ -13179,6 +13200,7 @@ public:
 				})) { THROW_INVALID_SYNTAX(onError); }
 			}
 			if (!consume(Token::Types::KEYWORD, "poke")) { THROW_INVALID_SYNTAX(onError); }
+			if (_withInt && !consume(Token::Types::KEYWORD, "int")) { THROW_INVALID_SYNTAX(onError); }
 			if (consume(Token::Types::OPERATOR, "(")) {
 				if (!consume(Token::Types::OPERATOR, ")")) { THROW_INVALID_SYNTAX(onError); }
 			}
@@ -13201,7 +13223,7 @@ public:
 
 			// Emit a `VM_POKE` instruction.
 			Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POKE]);
-			args = fill(args, (UInt8)FALSE);
+			args = fill(args, (UInt8)BOOLEAN(_withInt));
 			args = fill(args, (Int16)ARG0);
 			args = fill(args, (Int16)ARG1);
 
@@ -13217,172 +13239,18 @@ public:
 	}
 
 	virtual Abstract abstract(void) const override {
-		return abstract("POKE");
+		if (_withInt)
+			return abstract("POKE INT");
+		else
+			return abstract("POKE");
 	}
 	using Node::abstract;
 
 	virtual std::string dump(int depth) const override {
-		return dump(depth, "POKE");
-	}
-	using Node::dump;
-};
-
-class NodePeekW : public Node {
-public:
-	NodePeekW() {
-	}
-	virtual ~NodePeekW() override {
-	}
-
-	NODE_TYPE(Types::PEEKW)
-
-	virtual void generate(Bytes::Ptr &bytes, Context::Stack &context, Error::Handler onError) override {
-		const Generator_Void_Void generator = [&] (void) -> void {
-			// Prepare.
-			Context &ctx = context.top();
-			State &state = top();
-
-			const Asm::Instructions &INSTRUCTIONS = *ctx.instructions;
-
-			// Determine the location in the ROM.
-			state.inRom.bank = ctx.bank;
-			state.inRom.address = ctx.addressCursor;
-			state.inRom.size = 0;
-
-			// Consume the tokens.
-			if (ctx.expect.lnno) {
-				if (!consume(Token::Types::INTEGER, ANYTHING, [&] (Token::Ptr tk) -> void {
-					state.inCode = SourceLocation(tk->begin().page, (int)tk->data());
-				})) { THROW_INVALID_SYNTAX(onError); }
-			}
-			if (!consume(Token::Types::KEYWORD, "peekw")) { THROW_INVALID_SYNTAX(onError); }
-			if (consume(Token::Types::OPERATOR, "(")) {
-				if (!consume(Token::Types::OPERATOR, ")")) { THROW_INVALID_SYNTAX(onError); }
-			}
-
-			// Check the children.
-			if (_children.empty()) {
-				THROW_TOO_FEW_ARGUMENTS(onError);
-			} else if (_children.size() == 1) {
-				// Do nothing.
-			} else {
-				THROW_TOO_MANY_ARGUMENTS(onError);
-			}
-
-			// Set the stack footprint guard.
-			COND_VAR_GUARD(ctx.expect.lnno, ctx.stackFootprint, Counter::Ptr(new Counter()));
-			COUNTER_GUARD(ctx, stk);
-
-			// Set the expression slot guard.
-			VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
-
-			// Emit the right hand value.
-			writeRightHand(
-				bytes, context, stk,
-				[&] (void) -> void {
-					// Emit the arguments.
-					writeChildren(bytes, context, Range(0), stk, onError);
-
-					// Emit a `VM_PEEK` instruction.
-					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PEEK]);
-					args = fill(args, (UInt8)TRUE);
-					args = fill(args, (Int16)ARG0);
-					args = fill(args, (Int16)ARG1);
-				}, 1, true,
-				onError
-			);
-
-			// Check the stack footprint.
-			CHECK_COUNTER(ctx, onError);
-		};
-
-		write(bytes, context, generator, false, onError);
-	}
-
-	virtual Abstract abstract(void) const override {
-		return abstract("PEEKW");
-	}
-	using Node::abstract;
-
-	virtual std::string dump(int depth) const override {
-		return dump(depth, "PEEKW");
-	}
-	using Node::dump;
-};
-
-class NodePokeW : public Node {
-public:
-	NodePokeW() {
-	}
-	virtual ~NodePokeW() override {
-	}
-
-	NODE_TYPE(Types::POKEW)
-
-	virtual void generate(Bytes::Ptr &bytes, Context::Stack &context, Error::Handler onError) override {
-		const Generator_Void_Void generator = [&] (void) -> void {
-			// Prepare.
-			Context &ctx = context.top();
-			State &state = top();
-
-			const Asm::Instructions &INSTRUCTIONS = *ctx.instructions;
-
-			// Determine the location in the ROM.
-			state.inRom.bank = ctx.bank;
-			state.inRom.address = ctx.addressCursor;
-			state.inRom.size = 0;
-
-			// Consume the tokens.
-			if (ctx.expect.lnno) {
-				if (!consume(Token::Types::INTEGER, ANYTHING, [&] (Token::Ptr tk) -> void {
-					state.inCode = SourceLocation(tk->begin().page, (int)tk->data());
-				})) { THROW_INVALID_SYNTAX(onError); }
-			}
-			if (!consume(Token::Types::KEYWORD, "pokew")) { THROW_INVALID_SYNTAX(onError); }
-			if (consume(Token::Types::OPERATOR, "(")) {
-				if (!consume(Token::Types::OPERATOR, ")")) { THROW_INVALID_SYNTAX(onError); }
-			}
-
-			// Check the children.
-			if (_children.size() <= 1) {
-				THROW_TOO_FEW_ARGUMENTS(onError);
-			} else if (_children.size() == 2) {
-				// Do nothing.
-			} else {
-				THROW_TOO_MANY_ARGUMENTS(onError);
-			}
-
-			// Set the stack footprint guard.
-			VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
-			COUNTER_GUARD(ctx, stk);
-
-			// Emit the evaluations.
-			writeChildren(bytes, context, Range(0, (int)_children.size() - 1), stk, onError);
-
-			// Emit a `VM_POKE` instruction.
-			Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POKE]);
-			args = fill(args, (UInt8)TRUE);
-			args = fill(args, (Int16)ARG0);
-			args = fill(args, (Int16)ARG1);
-
-			// Emit a `VM_POP` instruction to remove the temporary values.
-			args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]); DEC_COUNTER(stk, 2 * 2);
-			args = fill(args, (UInt8)2);
-
-			// Check the stack footprint.
-			CHECK_COUNTER(ctx, onError);
-		};
-
-		write(bytes, context, generator, false, onError);
-	}
-
-	virtual Abstract abstract(void) const override {
-		return abstract("POKEW");
-	}
-	using Node::abstract;
-
-	virtual std::string dump(int depth) const override {
-		return dump(depth, "POKEW");
+		if (_withInt)
+			return dump(depth, "POKE INT");
+		else
+			return dump(depth, "POKE");
 	}
 	using Node::dump;
 };
@@ -13930,12 +13798,17 @@ public:
 			}
 
 			// Check the children.
+			bool withNibbles = false;
 			if (_children.size() < 2) {
 				THROW_TOO_FEW_ARGUMENTS(onError);
+			} else if (_children.size() > 4) {
+				THROW_TOO_MANY_ARGUMENTS(onError);
 			} else if (_children.size() == 2) {
 				// Do nothing.
+			} else if (_children.size() == 4) {
+				withNibbles = true;
 			} else {
-				THROW_TOO_MANY_ARGUMENTS(onError);
+				THROW_ARGUMENT_COUNT_DOES_NOT_MATCH(onError);
 			}
 
 			// Set the stack footprint guard.
@@ -13952,8 +13825,10 @@ public:
 				[&] (void) -> void {
 					// Get the children.
 					Indices vars;
-					vars.push_back(0);
-					vars.push_back(0);
+					if (!withNibbles) {
+						vars.push_back(0);
+						vars.push_back(0);
+					}
 					Indices exprs;
 					int arg = ARG0;
 
@@ -13991,7 +13866,7 @@ public:
 
 						// Emit a `VM_PACK` instruction.
 						Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PACK]);
-						args = fill(args, (UInt8)FALSE);
+						args = fill(args, (UInt8)BOOLEAN(withNibbles));
 						for (int a : vars)
 							args = fill(args, (Int16)a);
 	
@@ -14057,84 +13932,203 @@ public:
 			}
 
 			// Check the children.
+			bool withNibbles = false;
 			if (_children.size() < 3) {
 				THROW_TOO_FEW_ARGUMENTS(onError);
+			} else if (_children.size() > 5) {
+				THROW_TOO_MANY_ARGUMENTS(onError);
 			} else if (_children.size() == 3) {
 				// Do nothing.
+			} else if (_children.size() == 5) {
+				withNibbles = true;
 			} else {
-				THROW_TOO_MANY_ARGUMENTS(onError);
+				THROW_ARGUMENT_COUNT_DOES_NOT_MATCH(onError);
 			}
 
-			// Get the children.
-			const Ptr &child1 = _children[0];
-			Token::Ptr idtk1 = nullptr;
-			std::string id1;
-			idtk1 = child1->onlyToken();
-			if (!idtk1) { THROW_INVALID_SYNTAX(onError); }
-			id1 = (std::string)idtk1->data();
+			// Unpack with or without nibbles.
+			if (withNibbles) {
+				// Get the children.
+				const Ptr &child1 = _children[0];
+				Token::Ptr idtk1 = nullptr;
+				std::string id1;
+				idtk1 = child1->onlyToken();
+				if (!idtk1) { THROW_INVALID_SYNTAX(onError); }
+				id1 = (std::string)idtk1->data();
 
-			const Ptr &child2 = _children[1];
-			Token::Ptr idtk2 = nullptr;
-			std::string id2;
-			idtk2 = child2->onlyToken();
-			if (!idtk2) { THROW_INVALID_SYNTAX(onError); }
-			id2 = (std::string)idtk2->data();
+				const Ptr &child2 = _children[1];
+				Token::Ptr idtk2 = nullptr;
+				std::string id2;
+				idtk2 = child2->onlyToken();
+				if (!idtk2) { THROW_INVALID_SYNTAX(onError); }
+				id2 = (std::string)idtk2->data();
 
-			const Ptr &child3 = _children[2];
-			Token::Ptr idtk3 = nullptr;
-			std::string id3;
-			idtk3 = child3->onlyToken();
-			if (!idtk3) { THROW_INVALID_SYNTAX(onError); }
-			id3 = (std::string)idtk3->data();
+				const Ptr &child3 = _children[2];
+				Token::Ptr idtk3 = nullptr;
+				std::string id3;
+				idtk3 = child3->onlyToken();
+				if (!idtk3) { THROW_INVALID_SYNTAX(onError); }
+				id3 = (std::string)idtk3->data();
 
-			// Find the ID in RAM.
-			RamLocation inRam1;
-			std::string fuzzyName1;
-			const RamLocation* ramLocation1 = ctx.findPageAndGlobal(id1, fuzzyName1);
-			if (ramLocation1) {
-				inRam1 = *ramLocation1;
-			} else {
-				if (!fuzzyName1.empty()) {
-					THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk1, fuzzyName1);
+				const Ptr &child4 = _children[3];
+				Token::Ptr idtk4 = nullptr;
+				std::string id4;
+				idtk4 = child4->onlyToken();
+				if (!idtk4) { THROW_INVALID_SYNTAX(onError); }
+				id4 = (std::string)idtk4->data();
+
+				const Ptr &child5 = _children[4];
+				Token::Ptr idtk5 = nullptr;
+				std::string id5;
+				idtk5 = child5->onlyToken();
+				if (!idtk5) { THROW_INVALID_SYNTAX(onError); }
+				id5 = (std::string)idtk5->data();
+
+				// Find the ID in RAM.
+				RamLocation inRam1;
+				std::string fuzzyName1;
+				const RamLocation* ramLocation1 = ctx.findPageAndGlobal(id1, fuzzyName1);
+				if (ramLocation1) {
+					inRam1 = *ramLocation1;
+				} else {
+					if (!fuzzyName1.empty()) {
+						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk1, fuzzyName1);
+					}
+
+					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk1);
 				}
 
-				THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk1);
-			}
+				RamLocation inRam2;
+				std::string fuzzyName2;
+				const RamLocation* ramLocation2 = ctx.findPageAndGlobal(id2, fuzzyName2);
+				if (ramLocation2) {
+					inRam2 = *ramLocation2;
+				} else {
+					if (!fuzzyName2.empty()) {
+						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk2, fuzzyName2);
+					}
 
-			RamLocation inRam2;
-			std::string fuzzyName2;
-			const RamLocation* ramLocation2 = ctx.findPageAndGlobal(id2, fuzzyName2);
-			if (ramLocation2) {
-				inRam2 = *ramLocation2;
-			} else {
-				if (!fuzzyName2.empty()) {
-					THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk2, fuzzyName2);
+					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk2);
 				}
 
-				THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk2);
-			}
+				RamLocation inRam3;
+				std::string fuzzyName3;
+				const RamLocation* ramLocation3 = ctx.findPageAndGlobal(id3, fuzzyName3);
+				if (ramLocation3) {
+					inRam3 = *ramLocation3;
+				} else {
+					if (!fuzzyName3.empty()) {
+						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk3, fuzzyName3);
+					}
 
-			RamLocation inRam3;
-			std::string fuzzyName3;
-			const RamLocation* ramLocation3 = ctx.findPageAndGlobal(id3, fuzzyName3);
-			if (ramLocation3) {
-				inRam3 = *ramLocation3;
-			} else {
-				if (!fuzzyName3.empty()) {
-					THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk3, fuzzyName3);
+					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk3);
 				}
 
-				THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk3);
-			}
+				RamLocation inRam4;
+				std::string fuzzyName4;
+				const RamLocation* ramLocation4 = ctx.findPageAndGlobal(id4, fuzzyName4);
+				if (ramLocation4) {
+					inRam4 = *ramLocation4;
+				} else {
+					if (!fuzzyName4.empty()) {
+						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk4, fuzzyName4);
+					}
 
-			// Emit a `VM_UNPACK` instruction.
-			Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::UNPACK]);
-			args = fill(args, (UInt8)FALSE);
-			args = fill(args, (Int16)0);
-			args = fill(args, (Int16)0);
-			args = fill(args, (Int16)inRam3.address);
-			args = fill(args, (Int16)inRam2.address);
-			args = fill(args, (Int16)inRam1.address);
+					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk4);
+				}
+
+				RamLocation inRam5;
+				std::string fuzzyName5;
+				const RamLocation* ramLocation5 = ctx.findPageAndGlobal(id5, fuzzyName5);
+				if (ramLocation5) {
+					inRam5 = *ramLocation5;
+				} else {
+					if (!fuzzyName5.empty()) {
+						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk5, fuzzyName5);
+					}
+
+					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk5);
+				}
+
+				// Emit a `VM_UNPACK` instruction.
+				Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::UNPACK]);
+				args = fill(args, (UInt8)TRUE);
+				args = fill(args, (Int16)inRam5.address);
+				args = fill(args, (Int16)inRam4.address);
+				args = fill(args, (Int16)inRam3.address);
+				args = fill(args, (Int16)inRam2.address);
+				args = fill(args, (Int16)inRam1.address);
+			} else {
+				// Get the children.
+				const Ptr &child1 = _children[0];
+				Token::Ptr idtk1 = nullptr;
+				std::string id1;
+				idtk1 = child1->onlyToken();
+				if (!idtk1) { THROW_INVALID_SYNTAX(onError); }
+				id1 = (std::string)idtk1->data();
+
+				const Ptr &child2 = _children[1];
+				Token::Ptr idtk2 = nullptr;
+				std::string id2;
+				idtk2 = child2->onlyToken();
+				if (!idtk2) { THROW_INVALID_SYNTAX(onError); }
+				id2 = (std::string)idtk2->data();
+
+				const Ptr &child3 = _children[2];
+				Token::Ptr idtk3 = nullptr;
+				std::string id3;
+				idtk3 = child3->onlyToken();
+				if (!idtk3) { THROW_INVALID_SYNTAX(onError); }
+				id3 = (std::string)idtk3->data();
+
+				// Find the ID in RAM.
+				RamLocation inRam1;
+				std::string fuzzyName1;
+				const RamLocation* ramLocation1 = ctx.findPageAndGlobal(id1, fuzzyName1);
+				if (ramLocation1) {
+					inRam1 = *ramLocation1;
+				} else {
+					if (!fuzzyName1.empty()) {
+						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk1, fuzzyName1);
+					}
+
+					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk1);
+				}
+
+				RamLocation inRam2;
+				std::string fuzzyName2;
+				const RamLocation* ramLocation2 = ctx.findPageAndGlobal(id2, fuzzyName2);
+				if (ramLocation2) {
+					inRam2 = *ramLocation2;
+				} else {
+					if (!fuzzyName2.empty()) {
+						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk2, fuzzyName2);
+					}
+
+					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk2);
+				}
+
+				RamLocation inRam3;
+				std::string fuzzyName3;
+				const RamLocation* ramLocation3 = ctx.findPageAndGlobal(id3, fuzzyName3);
+				if (ramLocation3) {
+					inRam3 = *ramLocation3;
+				} else {
+					if (!fuzzyName3.empty()) {
+						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk3, fuzzyName3);
+					}
+
+					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk3);
+				}
+
+				// Emit a `VM_UNPACK` instruction.
+				Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::UNPACK]);
+				args = fill(args, (UInt8)FALSE);
+				args = fill(args, (Int16)0);
+				args = fill(args, (Int16)0);
+				args = fill(args, (Int16)inRam3.address);
+				args = fill(args, (Int16)inRam2.address);
+				args = fill(args, (Int16)inRam1.address);
+			}
 		};
 
 		write(bytes, context, generator, false, onError);
@@ -14147,301 +14141,6 @@ public:
 
 	virtual std::string dump(int depth) const override {
 		return dump(depth, "UNPACK");
-	}
-	using Node::dump;
-};
-
-class NodePackN : public Node {
-public:
-	NodePackN() {
-	}
-	virtual ~NodePackN() override {
-	}
-
-	NODE_TYPE(Types::PACKN)
-
-	virtual void generate(Bytes::Ptr &bytes, Context::Stack &context, Error::Handler onError) override {
-		typedef std::vector<int> Indices;
-
-		const Generator_Void_Void generator = [&] (void) -> void {
-			// Prepare.
-			Context &ctx = context.top();
-			State &state = top();
-
-			const Asm::Instructions &INSTRUCTIONS = *ctx.instructions;
-
-			// Determine the location in the ROM.
-			state.inRom.bank = ctx.bank;
-			state.inRom.address = ctx.addressCursor;
-			state.inRom.size = 0;
-
-			// Consume the tokens.
-			if (ctx.expect.lnno) {
-				if (!consume(Token::Types::INTEGER, ANYTHING, [&] (Token::Ptr tk) -> void {
-					state.inCode = SourceLocation(tk->begin().page, (int)tk->data());
-				})) { THROW_INVALID_SYNTAX(onError); }
-			}
-			if (!consume(Token::Types::KEYWORD, "packn")) { THROW_INVALID_SYNTAX(onError); }
-			if (consume(Token::Types::OPERATOR, "(")) {
-				if (!consume(Token::Types::OPERATOR, ")")) { THROW_INVALID_SYNTAX(onError); }
-			}
-
-			// Check the children.
-			if (_children.size() < 4) {
-				THROW_TOO_FEW_ARGUMENTS(onError);
-			} else if (_children.size() == 4) {
-				// Do nothing.
-			} else {
-				THROW_TOO_MANY_ARGUMENTS(onError);
-			}
-
-			// Set the stack footprint guard.
-			COND_VAR_GUARD(ctx.expect.lnno, ctx.stackFootprint, Counter::Ptr(new Counter()));
-			COUNTER_GUARD(ctx, stk);
-
-			// Set the expression slot guard.
-			VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
-
-			// Emit the right hand value.
-			const bool withDeclaring = ctx.declaration.declaring != -1;
-			writeRightHand(
-				bytes, context, stk,
-				[&] (void) -> void {
-					// Get the children.
-					Indices vars;
-					Indices exprs;
-					int arg = ARG0;
-
-					for (int i = (int)_children.size() - 1; i >= 0; --i) {
-						// Get the token.
-						const Ptr &child = _children[i];
-						Token::Ptr idtk = nullptr;
-						std::string id;
-						idtk = child->onlyToken();
-						if (idtk) id = (std::string)idtk->data();
-
-						// Find the ID in RAM.
-						RamLocation inRam;
-						const RamLocation* ramLocation = id.empty() ? nullptr : ctx.findPageAndGlobal(id);
-
-						// Determine whether it's a variable or expression.
-						if (ramLocation) {
-							inRam = *ramLocation;
-							vars.push_back(inRam.address);
-						} else {
-							vars.push_back(arg--);
-							exprs.push_back(i);
-						}
-					}
-
-					vars.push_back(arg); // For return value.
-
-					// Emit the instructions.
-					do {
-						// Emit the expression arguments.
-						for (int i = (int)exprs.size() - 1; i >= 0; --i) {
-							const int j = exprs[i];
-							writeChildren(bytes, context, Range(j), stk, onError);
-						}
-
-						// Emit a `VM_PACK` instruction.
-						Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PACK]);
-						args = fill(args, (UInt8)TRUE);
-						for (int a : vars)
-							args = fill(args, (Int16)a);
-
-						// Emit a `VM_POP` instruction to remove the temporary values.
-						if (!exprs.empty()) {
-							args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]); DEC_COUNTER(stk, 2 * (int)exprs.size());
-							args = fill(args, (UInt8)exprs.size());
-						}
-					} while (false);
-				}, withDeclaring ? 0 : 1, true,
-				onError
-			);
-
-			// Check the stack footprint.
-			CHECK_COUNTER(ctx, onError);
-		};
-
-		write(bytes, context, generator, false, onError);
-	}
-
-	virtual Abstract abstract(void) const override {
-		return abstract("PACKN");
-	}
-	using Node::abstract;
-
-	virtual std::string dump(int depth) const override {
-		return dump(depth, "PACKN");
-	}
-	using Node::dump;
-};
-
-class NodeUnpackN : public Node {
-public:
-	NodeUnpackN() {
-	}
-	virtual ~NodeUnpackN() override {
-	}
-
-	NODE_TYPE(Types::UNPACKN)
-
-	virtual void generate(Bytes::Ptr &bytes, Context::Stack &context, Error::Handler onError) override {
-		const Generator_Void_Void generator = [&] (void) -> void {
-			// Prepare.
-			Context &ctx = context.top();
-			State &state = top();
-
-			const Asm::Instructions &INSTRUCTIONS = *ctx.instructions;
-
-			// Determine the location in the ROM.
-			state.inRom.bank = ctx.bank;
-			state.inRom.address = ctx.addressCursor;
-			state.inRom.size = 0;
-
-			// Consume the tokens.
-			if (ctx.expect.lnno) {
-				if (!consume(Token::Types::INTEGER, ANYTHING, [&] (Token::Ptr tk) -> void {
-					state.inCode = SourceLocation(tk->begin().page, (int)tk->data());
-				})) { THROW_INVALID_SYNTAX(onError); }
-			}
-			if (!consume(Token::Types::KEYWORD, "unpackn")) { THROW_INVALID_SYNTAX(onError); }
-			if (consume(Token::Types::OPERATOR, "(")) {
-				if (!consume(Token::Types::OPERATOR, ")")) { THROW_INVALID_SYNTAX(onError); }
-			}
-
-			// Check the children.
-			if (_children.size() < 5) {
-				THROW_TOO_FEW_ARGUMENTS(onError);
-			} else if (_children.size() == 5) {
-				// Do nothing.
-			} else {
-				THROW_TOO_MANY_ARGUMENTS(onError);
-			}
-
-			// Get the children.
-			const Ptr &child1 = _children[0];
-			Token::Ptr idtk1 = nullptr;
-			std::string id1;
-			idtk1 = child1->onlyToken();
-			if (!idtk1) { THROW_INVALID_SYNTAX(onError); }
-			id1 = (std::string)idtk1->data();
-
-			const Ptr &child2 = _children[1];
-			Token::Ptr idtk2 = nullptr;
-			std::string id2;
-			idtk2 = child2->onlyToken();
-			if (!idtk2) { THROW_INVALID_SYNTAX(onError); }
-			id2 = (std::string)idtk2->data();
-
-			const Ptr &child3 = _children[2];
-			Token::Ptr idtk3 = nullptr;
-			std::string id3;
-			idtk3 = child3->onlyToken();
-			if (!idtk3) { THROW_INVALID_SYNTAX(onError); }
-			id3 = (std::string)idtk3->data();
-
-			const Ptr &child4 = _children[3];
-			Token::Ptr idtk4 = nullptr;
-			std::string id4;
-			idtk4 = child4->onlyToken();
-			if (!idtk4) { THROW_INVALID_SYNTAX(onError); }
-			id4 = (std::string)idtk4->data();
-
-			const Ptr &child5 = _children[4];
-			Token::Ptr idtk5 = nullptr;
-			std::string id5;
-			idtk5 = child5->onlyToken();
-			if (!idtk5) { THROW_INVALID_SYNTAX(onError); }
-			id5 = (std::string)idtk5->data();
-
-			// Find the ID in RAM.
-			RamLocation inRam1;
-			std::string fuzzyName1;
-			const RamLocation* ramLocation1 = ctx.findPageAndGlobal(id1, fuzzyName1);
-			if (ramLocation1) {
-				inRam1 = *ramLocation1;
-			} else {
-				if (!fuzzyName1.empty()) {
-					THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk1, fuzzyName1);
-				}
-
-				THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk1);
-			}
-
-			RamLocation inRam2;
-			std::string fuzzyName2;
-			const RamLocation* ramLocation2 = ctx.findPageAndGlobal(id2, fuzzyName2);
-			if (ramLocation2) {
-				inRam2 = *ramLocation2;
-			} else {
-				if (!fuzzyName2.empty()) {
-					THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk2, fuzzyName2);
-				}
-
-				THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk2);
-			}
-
-			RamLocation inRam3;
-			std::string fuzzyName3;
-			const RamLocation* ramLocation3 = ctx.findPageAndGlobal(id3, fuzzyName3);
-			if (ramLocation3) {
-				inRam3 = *ramLocation3;
-			} else {
-				if (!fuzzyName3.empty()) {
-					THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk3, fuzzyName3);
-				}
-
-				THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk3);
-			}
-
-			RamLocation inRam4;
-			std::string fuzzyName4;
-			const RamLocation* ramLocation4 = ctx.findPageAndGlobal(id4, fuzzyName4);
-			if (ramLocation4) {
-				inRam4 = *ramLocation4;
-			} else {
-				if (!fuzzyName4.empty()) {
-					THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk4, fuzzyName4);
-				}
-
-				THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk4);
-			}
-
-			RamLocation inRam5;
-			std::string fuzzyName5;
-			const RamLocation* ramLocation5 = ctx.findPageAndGlobal(id5, fuzzyName5);
-			if (ramLocation5) {
-				inRam5 = *ramLocation5;
-			} else {
-				if (!fuzzyName5.empty()) {
-					THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk5, fuzzyName5);
-				}
-
-				THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk5);
-			}
-
-			// Emit a `VM_UNPACK` instruction.
-			Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::UNPACK]);
-			args = fill(args, (UInt8)TRUE);
-			args = fill(args, (Int16)inRam5.address);
-			args = fill(args, (Int16)inRam4.address);
-			args = fill(args, (Int16)inRam3.address);
-			args = fill(args, (Int16)inRam2.address);
-			args = fill(args, (Int16)inRam1.address);
-		};
-
-		write(bytes, context, generator, false, onError);
-	}
-
-	virtual Abstract abstract(void) const override {
-		return abstract("UNPACKN");
-	}
-	using Node::abstract;
-
-	virtual std::string dump(int depth) const override {
-		return dump(depth, "UNPACKN");
 	}
 	using Node::dump;
 };
@@ -27080,11 +26779,9 @@ public:
 			ADD_STATEMENT("locate",            node<NodeLocate>(),                         Token::Types::KEYWORD,    false);
 			ADD_STATEMENT("print",             node<NodePrint>(),                          Token::Types::KEYWORD,    false);
 
-			// Data stream.
+			// Peek and poke.
 			ADD_STATEMENT("peek",              node<NodePeek>(),                           Token::Types::KEYWORD,     true);
 			ADD_STATEMENT("poke",              node<NodePoke>(),                           Token::Types::KEYWORD,    false);
-			ADD_STATEMENT("peekw",             node<NodePeekW>(),                          Token::Types::KEYWORD,     true);
-			ADD_STATEMENT("pokew",             node<NodePokeW>(),                          Token::Types::KEYWORD,    false);
 
 			// Stack.
 			ADD_STATEMENT("reserve",           node<NodeReserve>(),                        Token::Types::KEYWORD,    false);
@@ -27100,8 +26797,6 @@ public:
 			// Variable.
 			ADD_STATEMENT("pack",              node<NodePack>(),                           Token::Types::KEYWORD,    false);
 			ADD_STATEMENT("unpack",            node<NodeUnpack>(),                         Token::Types::KEYWORD,    false);
-			ADD_STATEMENT("packn",             node<NodePackN>(),                          Token::Types::KEYWORD,    false);
-			ADD_STATEMENT("unpackn",           node<NodeUnpackN>(),                        Token::Types::KEYWORD,    false);
 			ADD_STATEMENT("swap",              node<NodeSwap>(),                           Token::Types::KEYWORD,    false);
 			ADD_STATEMENT("inc",               node<NodeInc>(),                            Token::Types::KEYWORD,    false);
 			ADD_STATEMENT("dec",               node<NodeDec>(),                            Token::Types::KEYWORD,    false);
@@ -28416,6 +28111,9 @@ private:
 			return result;
 		};
 
+		auto inspect = [] (const Token::Ptr &tk) -> void {
+			(void)tk;
+		};
 		auto backwardN = [&] (int n, Token::Types y, Variant d = nullptr) -> auto {
 			GBBASIC_ASSERT(n > 0 && "Wrong data.");
 
@@ -28429,10 +28127,15 @@ private:
 				const Token::Ptr &tk = tokens[index];
 				if (tk->isNot(y))
 					return nullptr;
-				if (d == ANYTHING)
+				if (d == ANYTHING) {
+					inspect(tk);
+
 					return tk;
+				}
 				if (d != nullptr && tk->data() != d)
 					return nullptr;
+
+				inspect(tk);
 
 				return tk;
 			};
@@ -28454,10 +28157,15 @@ private:
 				const Token::Ptr &tk = tokens[index];
 				if (tk->isNot(y))
 					return nullptr;
-				if (d == ANYTHING)
+				if (d == ANYTHING) {
+					inspect(tk);
+
 					return tk;
+				}
 				if (d != nullptr && tk->data() != d)
 					return nullptr;
+
+				inspect(tk);
 
 				return tk;
 			};
@@ -28476,13 +28184,18 @@ private:
 				const Token::Ptr &tk = tokens[q.index];
 				if (tk->isNot(y))
 					return nullptr;
-				if (d == ANYTHING)
+				if (d == ANYTHING) {
+					inspect(tk);
+
 					return tk;
+				}
 				if (d != nullptr && tk->data() != d)
 					return nullptr;
 
 				q.tokens.push_back(tk);
 				++q.index;
+
+				inspect(tk);
 
 				return tk;
 			};
@@ -28499,6 +28212,8 @@ private:
 					++q.index;
 				}
 
+				inspect(tk);
+
 				return tk;
 			};
 		};
@@ -28512,6 +28227,8 @@ private:
 				q.tokens.push_back(tk);
 				++q.index;
 
+				inspect(tk);
+
 				return tk;
 			};
 		};
@@ -28524,6 +28241,8 @@ private:
 					return nullptr;
 
 				next(q);
+
+				inspect(tk);
 
 				return tk;
 			};
@@ -28676,6 +28395,9 @@ private:
 			onError(err, err.format(), tk->begin());
 
 			return false;
+		};
+		auto throwArgumentCountDoesNotMatch = [&] (int index) -> bool {
+			return throwError("Argument count does not match", index, false);
 		};
 		auto throwDataInsideStructureAlwaysTakesEffectOnceAndOnlyOnce = [&] (int index, const std::string &struct_) -> bool {
 			const std::string msg = Text::format("Data inside structure \"{0}\" always takes effect once and only once", { struct_ });
@@ -29351,6 +29073,50 @@ private:
 
 			return true;
 		};
+		auto PeekAt = [&] (State &q, Node::Array &children, bool expEol) -> bool { // Peek at.
+			State q1 = begin();
+			q1.index = q.index;
+			Node::Array children_;
+			bool withInt = false;
+
+			if (!must(Token::Types::KEYWORD, "peek")(q1)) return false;
+			if (forward(Token::Types::KEYWORD, "int")(q1.index)) {
+				any()(q1);
+				withInt = true;
+			}
+			if (must(Token::Types::OPERATOR, "(")(q1)) {
+				if (!forward(Token::Types::OPERATOR, ")")(q1.index)) {
+					Arguments(q1, children_);
+					CHECK_UNEXPECTED(q1);
+				}
+				if (!must(Token::Types::OPERATOR, ")")(q1)) return false;
+			} else {
+				Arguments(q1, children_);
+				CHECK_UNEXPECTED(q1);
+			}
+			if (expEol) {
+				maybe(Token::Types::OPERATOR, ";")(q1);
+				if (!EndOfLine(q1)) return throwInvalidSyntax(q1.index);
+			}
+
+			Node::Ptr node = createNode(
+				"peek", "_",
+				{
+					{ "allow_call", true },
+					{ "with_int", withInt }
+				}
+			);
+			if (!node) return false;
+			node->concat(q1.tokens);
+			node->add(children_);
+			children.push_back(node);
+
+			q1.success = true;
+			end(q1);
+			q.index = q1.index;
+
+			return true;
+		};
 		auto Invoking = [&] (State &q, Node::Array &children, bool expEol) -> bool { // An invoking sequence.
 			State q1 = begin();
 			q1.index = q.index;
@@ -29958,6 +29724,13 @@ private:
 
 			return true;
 		};
+		auto Intermedia = [&] (State &q, Node::Array &children, Token::Types y) -> void { // Intermedia value.
+			Token::Ptr node(new Token());
+			node
+				->type(y)
+				->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
+			q.tokens.push_back(node);
+		};
 
 		Evaluation = [&] (State &q, Node::Array &children) -> int { // An evaluable sequence.
 			int n = 0;
@@ -30003,11 +29776,7 @@ private:
 
 						if (Rnd(q1, children)) {
 							{
-								Token::Ptr node(new Token());
-								node
-									->type(Token::Types::MATH)
-									->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-								q.tokens.push_back(node);
+								Intermedia(q, children, Token::Types::MATH);
 								n += q1.index - q.index;
 							}
 
@@ -30023,11 +29792,7 @@ private:
 
 						if (StackN(q1, children, stackN)) {
 							{
-								Token::Ptr node(new Token());
-								node
-									->type(Token::Types::MATH)
-									->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-								q.tokens.push_back(node);
+								Intermedia(q, children, Token::Types::MATH);
 								n += q1.index - q.index;
 							}
 
@@ -30043,11 +29808,7 @@ private:
 
 						if (Hits(q1, children)) {
 							{
-								Token::Ptr node(new Token());
-								node
-									->type(Token::Types::MATH)
-									->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-								q.tokens.push_back(node);
+								Intermedia(q, children, Token::Types::MATH);
 								n += q1.index - q.index;
 							}
 
@@ -30065,11 +29826,7 @@ private:
 
 							if (Math(q1, children)) {
 								{
-									Token::Ptr node(new Token());
-									node
-										->type(Token::Types::MATH)
-										->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-									q.tokens.push_back(node);
+									Intermedia(q, children, Token::Types::MATH);
 									n += q1.index - q.index;
 								}
 
@@ -30084,15 +29841,20 @@ private:
 				}
 				if ((id = forward(Token::Types::SYMBOL)(q.index))) {
 					name = (std::string)id->data();
+					if (name == "peek") {
+						const int qi = q.index;
+						if (PeekAt(q, children, false)) {
+							Intermedia(q, children, Token::Types::STATEMENT);
+							n += q.index - qi;
+
+							continue;
+						}
+					}
 					Text::Array::const_iterator it = std::find(returned.begin(), returned.end(), name);
 					if (it != returned.end()) { // Statement with return value.
 						const int qi = q.index;
 						if (Invoking(q, children, false)) {
-							Token::Ptr node(new Token());
-							node
-								->type(Token::Types::STATEMENT)
-								->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-							q.tokens.push_back(node);
+							Intermedia(q, children, Token::Types::STATEMENT);
 							n += q.index - qi;
 
 							continue;
@@ -30108,11 +29870,7 @@ private:
 					if (fnEntry) { // User defined macro function.
 						const int qi = q.index;
 						if (MacroFn(q, children, name)) {
-							Token::Ptr node(new Token());
-							node
-								->type(Token::Types::MACRO)
-								->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-							q.tokens.push_back(node);
+							Intermedia(q, children, Token::Types::MACRO);
 							n += q.index - qi;
 
 							continue;
@@ -30144,11 +29902,7 @@ private:
 					if (stackRefEntry) { // User defined stack reference.
 						const int qi = q.index;
 						if (MacroStackN(q, children, name)) {
-							Token::Ptr node(new Token());
-							node
-								->type(Token::Types::MATH)
-								->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-							q.tokens.push_back(node);
+							Intermedia(q, children, Token::Types::MACRO);
 							n += q.index - qi;
 
 							continue;
@@ -30166,11 +29920,7 @@ private:
 							!!forwardN(3, Token::Types::KEYWORD, "height")(q.index);
 						const int qi = q.index;
 						if (targets && size && SizeR(q, children, false)) {
-							Token::Ptr node(new Token());
-							node
-								->type(Token::Types::STATEMENT)
-								->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-							q.tokens.push_back(node);
+							Intermedia(q, children, Token::Types::STATEMENT);
 							n += q.index - qi;
 
 							continue;
@@ -30184,11 +29934,7 @@ private:
 						const bool len = !!forwardN(3, Token::Types::KEYWORD, "len")(q.index);
 						const int qi = q.index;
 						if (targets && len && LenR(q, children, false)) {
-							Token::Ptr node(new Token());
-							node
-								->type(Token::Types::STATEMENT)
-								->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-							q.tokens.push_back(node);
+							Intermedia(q, children, Token::Types::STATEMENT);
 							n += q.index - qi;
 
 							continue;
@@ -30202,11 +29948,7 @@ private:
 						const bool prop = !!forwardN(3, Token::Types::KEYWORD, "property")(q.index);
 						const int qi = q.index;
 						if (targets && prop && PropertyR(q, children, false)) {
-							Token::Ptr node(new Token());
-							node
-								->type(Token::Types::STATEMENT)
-								->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-							q.tokens.push_back(node);
+							Intermedia(q, children, Token::Types::STATEMENT);
 							n += q.index - qi;
 
 							continue;
@@ -30220,11 +29962,7 @@ private:
 						const bool prop = !!forwardN(3, Token::Types::KEYWORD, "property")(q.index);
 						const int qi = q.index;
 						if (targets && !prop && TileR(q, children, false)) {
-							Token::Ptr node(new Token());
-							node
-								->type(Token::Types::STATEMENT)
-								->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-							q.tokens.push_back(node);
+							Intermedia(q, children, Token::Types::STATEMENT);
 							n += q.index - qi;
 
 							continue;
@@ -30235,11 +29973,7 @@ private:
 							!!forwardN(2, Token::Types::KEYWORD, "actor")(q.index);
 						const int qi = q.index;
 						if (targets && ObjectF(q, children, false)) {
-							Token::Ptr node(new Token());
-							node
-								->type(Token::Types::STATEMENT)
-								->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-							q.tokens.push_back(node);
+							Intermedia(q, children, Token::Types::STATEMENT);
 							n += q.index - qi;
 
 							continue;
@@ -30250,11 +29984,7 @@ private:
 							!!forwardN(2, Token::Types::KEYWORD, "projectile")(q.index);
 						const int qi = q.index;
 						if (targets && ObjectS(q, children, false)) { // Projectile.
-							Token::Ptr node(new Token());
-							node
-								->type(Token::Types::STATEMENT)
-								->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-							q.tokens.push_back(node);
+							Intermedia(q, children, Token::Types::STATEMENT);
 							n += q.index - qi;
 
 							continue;
@@ -30268,11 +29998,7 @@ private:
 							!!forwardN(2, Token::Types::KEYWORD, "projectile")(q.index);
 						const int qi = q.index;
 						if (threaded && !targets && Start(q, children, false, true)) { // Thread.
-							Token::Ptr node(new Token());
-							node
-								->type(Token::Types::STATEMENT)
-								->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-							q.tokens.push_back(node);
+							Intermedia(q, children, Token::Types::STATEMENT);
 							n += q.index - qi;
 
 							continue;
@@ -30284,11 +30010,7 @@ private:
 							!!forwardN(2, Token::Types::KEYWORD, "projectile")(q.index);
 						const int qi = q.index;
 						if (targets && Is(q, children, false)) { // Macro before, type after.
-							Token::Ptr node(new Token());
-							node
-								->type(Token::Types::STATEMENT)
-								->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-							q.tokens.push_back(node);
+							Intermedia(q, children, Token::Types::STATEMENT);
 							n += q.index - qi;
 
 							continue;
@@ -30303,11 +30025,7 @@ private:
 							!!forwardN(3, Token::Types::KEYWORD, "projectile")(q.index);
 						const int qi = q.index;
 						if (targets && Is(q, children, false)) { // Variable before, type after.
-							Token::Ptr node(new Token());
-							node
-								->type(Token::Types::STATEMENT)
-								->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-							q.tokens.push_back(node);
+							Intermedia(q, children, Token::Types::STATEMENT);
 							n += q.index - qi;
 
 							continue;
@@ -30323,11 +30041,7 @@ private:
 
 						if (ArrayR(q1, children)) {
 							{
-								Token::Ptr node(new Token());
-								node
-									->type(Token::Types::ARRAY)
-									->data((Variant::Int)children.size() - 1); // The data is the intermedia value's index.
-								q.tokens.push_back(node);
+								Intermedia(q, children, Token::Types::ARRAY);
 								n += q1.index - q.index;
 							}
 
@@ -30826,6 +30540,7 @@ private:
 							q.index = q1.index;
 						} else if (
 							forward(Token::Types::IDENTIFIER)(q.index) && (
+								forwardN(2, Token::Types::KEYWORD, "else")(q.index) ||
 								forwardN(2, Token::Types::COMMENT)(q.index) ||
 								forwardN(2, Token::Types::END_OF_LINE)(q.index)
 							)
@@ -32683,6 +32398,94 @@ private:
 				return true;
 			}
 		);
+		const Combinator Peek( // `PEEK`.
+			[&] (Node::Ptr &p, const Combinator::Options &opts) -> bool {
+				State q = begin();
+				Node::Array children;
+				bool withInt = false;
+
+				if (!LineNumber(q, opts)) return false;
+				if (!must(Token::Types::KEYWORD, "peek")(q)) return false;
+				if (forward(Token::Types::KEYWORD, "int")(q.index)) {
+					any()(q);
+					withInt = true;
+				}
+				if (must(Token::Types::OPERATOR, "(")(q)) {
+					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
+						Arguments(q, children);
+						CHECK_UNEXPECTED(q);
+					}
+					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
+				} else {
+					Arguments(q, children);
+					CHECK_UNEXPECTED(q);
+				}
+				maybe(Token::Types::OPERATOR, ";")(q);
+				if (!EndOfLine(q)) return throwInvalidSyntax(q.index);
+
+				Node::Ptr node = createNode(
+					"peek", "_",
+					{
+						{ "allow_call", false },
+						{ "with_int", withInt }
+					}
+				);
+				if (!node) return false;
+				node->concat(q.tokens);
+				p->add(node);
+
+				q.success = true;
+				end(q);
+
+				node->add(children);
+
+				return true;
+			}
+		);
+		const Combinator Poke( // `POKE`.
+			[&] (Node::Ptr &p, const Combinator::Options &opts) -> bool {
+				State q = begin();
+				Node::Array children;
+				bool withInt = false;
+
+				if (!LineNumber(q, opts)) return false;
+				if (!must(Token::Types::KEYWORD, "poke")(q)) return false;
+				if (forward(Token::Types::KEYWORD, "int")(q.index)) {
+					any()(q);
+					withInt = true;
+				}
+				if (must(Token::Types::OPERATOR, "(")(q)) {
+					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
+						Arguments(q, children);
+						CHECK_UNEXPECTED(q);
+					}
+					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
+				} else {
+					Arguments(q, children);
+					CHECK_UNEXPECTED(q);
+				}
+				maybe(Token::Types::OPERATOR, ";")(q);
+				if (!EndOfLine(q)) return throwInvalidSyntax(q.index);
+
+				Node::Ptr node = createNode(
+					"poke", "_",
+					{
+						{ "allow_call", false },
+						{ "with_int", withInt }
+					}
+				);
+				if (!node) return false;
+				node->concat(q.tokens);
+				p->add(node);
+
+				q.success = true;
+				end(q);
+
+				node->add(children);
+
+				return true;
+			}
+		);
 		const Combinator Reserve( // `RESERVE`.
 			[&] (Node::Ptr &p, const Combinator::Options &opts) -> bool {
 				State q = begin();
@@ -32797,7 +32600,10 @@ private:
 				if (!EndOfLine(q)) return throwInvalidSyntax(q.index);
 
 				if (children.size() < 2) return throwTooFewArguments(r);
-				else if (children.size() > 2) return throwTooManyArguments(r);
+				else if (children.size() > 4) return throwTooManyArguments(r);
+				if (children.size() == 2) { /* Do nothing. */ }
+				else if (children.size() == 4) { /* Do nothing. */ }
+				else return throwArgumentCountDoesNotMatch(r);
 
 				Node::Ptr node = createNode(
 					"pack", "_",
@@ -32841,96 +32647,13 @@ private:
 				if (!EndOfLine(q)) return throwInvalidSyntax(q.index);
 
 				if (children.size() < 3) return throwTooFewArguments(r);
-				else if (children.size() > 3) return throwTooManyArguments(r);
+				else if (children.size() > 5) return throwTooManyArguments(r);
+				if (children.size() == 3) { /* Do nothing. */ }
+				else if (children.size() == 5) { /* Do nothing. */ }
+				else return throwArgumentCountDoesNotMatch(r);
 
 				Node::Ptr node = createNode(
 					"unpack", "_",
-					{
-						{ "allow_call", false }
-					}
-				);
-				if (!node) return false;
-				node->concat(q.tokens);
-				p->add(node);
-
-				q.success = true;
-				end(q);
-
-				node->add(children);
-
-				return true;
-			}
-		);
-		const Combinator PackN( // `PACKN`.
-			[&] (Node::Ptr &p, const Combinator::Options &opts) -> bool {
-				State q = begin();
-				Node::Array children;
-
-				if (!LineNumber(q, opts)) return false;
-				if (!must(Token::Types::KEYWORD, "packn")(q)) return false;
-				if (must(Token::Types::OPERATOR, "(")(q)) {
-					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
-						Arguments(q, children);
-						CHECK_UNEXPECTED(q);
-					}
-					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
-				} else {
-					Arguments(q, children);
-					CHECK_UNEXPECTED(q);
-				}
-				const int r = q.index;
-				maybe(Token::Types::OPERATOR, ";")(q);
-				if (!EndOfLine(q)) return throwInvalidSyntax(q.index);
-
-				if (children.size() < 4) return throwTooFewArguments(r);
-				else if (children.size() > 4) return throwTooManyArguments(r);
-
-				Node::Ptr node = createNode(
-					"packn", "_",
-					{
-						{ "allow_call", false }
-					}
-				);
-				if (!node) return false;
-				node->concat(q.tokens);
-				p->add(node);
-
-				q.success = true;
-				end(q);
-
-				node->add(children);
-
-				return true;
-			}
-		);
-		const Combinator UnpackN( // `UNPACKN`.
-			[&] (Node::Ptr &p, const Combinator::Options &opts) -> bool {
-				State q = begin();
-				Node::Array children;
-				Token::Ptr id = nullptr;
-				std::string name;
-
-				if (!LineNumber(q, opts)) return false;
-				if (!must(Token::Types::KEYWORD, "unpackn")(q)) return false;
-				if (must(Token::Types::OPERATOR, "(")(q)) {
-					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
-						Parameters(q, children);
-						CHECK_UNEXPECTED(q);
-					}
-					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
-				} else {
-					Parameters(q, children);
-					CHECK_UNEXPECTED(q);
-				}
-				const int r = q.index;
-				maybe(Token::Types::OPERATOR, ";")(q);
-				if (!EndOfLine(q)) return throwInvalidSyntax(q.index);
-
-				if (children.size() < 5) return throwTooFewArguments(r);
-				else if (children.size() > 5) return throwTooManyArguments(r);
-
-				Node::Ptr node = createNode(
-					"unpackn", "_",
 					{
 						{ "allow_call", false }
 					}
@@ -34929,6 +34652,10 @@ private:
 			DefIdentifierAlias,
 			DefStackN,
 
+			/**< Peek and poke. */
+
+			Peek, Poke,
+
 			/**< Stack. */
 
 			Reserve,
@@ -34936,7 +34663,7 @@ private:
 
 			/**< Variable. */
 
-			Pack, Unpack, PackN, UnpackN,
+			Pack, Unpack,
 			Swap,
 			Inc, Dec,
 
