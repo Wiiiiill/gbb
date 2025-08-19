@@ -1101,6 +1101,8 @@ private:
 					[wnd, rnd, ws, this] (const char* path) -> void {
 						const std::string path_ = path;
 						importFromVgmFile(wnd, rnd, ws, path_, true);
+
+						ws->popupBox(nullptr);
 					},
 					nullptr
 				);
@@ -1192,6 +1194,8 @@ private:
 					[wnd, rnd, ws, this] (const char* path, const Math::Vec2i &index_) -> void {
 						const std::string path_ = path;
 						importFromFxHammerFile(wnd, rnd, ws, path_, index_, true);
+
+						ws->popupBox(nullptr);
 					},
 					nullptr
 				);
@@ -1467,6 +1471,8 @@ private:
 					[wnd, rnd, ws, this] (const char* path) -> void {
 						const std::string path_ = path;
 						importFromVgmFile(wnd, rnd, ws, path_, false);
+
+						ws->popupBox(nullptr);
 					},
 					nullptr
 				);
@@ -1558,6 +1564,8 @@ private:
 					[wnd, rnd, ws, this] (const char* path, int index) -> void {
 						const std::string path_ = path;
 						importFromFxHammerFile(wnd, rnd, ws, path_, Math::Vec2i(index, index), false);
+
+						ws->popupBox(nullptr);
 					},
 					nullptr
 				);
@@ -1642,6 +1650,7 @@ private:
 					GBBASIC_FX_HAMMER_FILE_FILTER,
 					true,
 					0, 0, 0, ws->theme()->dialogPrompt_Index().c_str(),
+					false,
 					confirm,
 					cancel,
 					select,
@@ -2084,8 +2093,6 @@ private:
 			_refresh(cmd);
 		}
 
-		ws->popupBox(nullptr);
-
 		ws->bubble(ws->theme()->dialogPrompt_ImportedAsset(), nullptr);
 
 		return true;
@@ -2251,8 +2258,6 @@ private:
 
 			_refresh(cmd);
 		}
-
-		ws->popupBox(nullptr);
 
 		ws->bubble(ws->theme()->dialogPrompt_ImportedAsset(), nullptr);
 

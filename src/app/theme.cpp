@@ -1066,8 +1066,8 @@ bool Theme::open(class Renderer* rnd) {
 	tooltipCode_InfoWord("word");
 	tooltipCode_InfoWords("words");
 
-	tooltipEmulator_AlternativeSpeed("Alternative speed (Shift+Tab)");
-	tooltipEmulator_NormalSpeed("Normal speed (Shift+Tab)");
+	tooltipEmulator_AlternativeSpeed("Alternative speed (" GBBASIC_MODIFIER_KEY_NAME "+/" ")");
+	tooltipEmulator_NormalSpeed("Normal speed (" GBBASIC_MODIFIER_KEY_NAME "+/" ")");
 	tooltipEmulator_StatusNote(tooltipEmulator_StatusNote() + "Cartridge flag: {0}\n");
 	tooltipEmulator_StatusNote(tooltipEmulator_StatusNote() + "Cartridge ext.: {1}\n");
 	tooltipEmulator_StatusNote(tooltipEmulator_StatusNote() + "   Device flag: {2}\n");

@@ -374,10 +374,10 @@ EM_JS(
 			};
 			fileReader.readAsArrayBuffer(evt.target.files[0]);
 		};
-		fileSelector.oncancel = (evt) => {
+		fileSelector.addEventListener('cancel', (evt) => {
 			const ret = ccall('onOpenFileCanceled', 'number', [ ], [ ]);
 			console.log('[JS WEB] Canceled to open local file.');
-		};
+		});
 		fileSelector.click();
 	}
 );

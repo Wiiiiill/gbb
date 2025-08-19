@@ -1,6 +1,6 @@
 ![](docs/logo.png)
 
-[Home](https://paladin-t.github.io/kits/gbb/) | [Steam](https://store.steampowered.com/app/2308700/) | [Documents](https://paladin-t.github.io/kits/gbb/manual.html) | [About](https://paladin-t.github.io/kits/gbb/about.html)
+[Home](https://paladin-t.github.io/kits/gbb/) | [Steam](https://store.steampowered.com/app/2308700/) | [Itch.io](https://tonywang.itch.io/gbbasic) | [Documents](https://paladin-t.github.io/kits/gbb/manual.html) | [About](https://paladin-t.github.io/kits/gbb/about.html)
 
 ## About GB BASIC
 
@@ -92,9 +92,10 @@ GB BASIC is programmable in a brand new BASIC dialect. The integrated assets edi
 
 ## Installation
 
-### Installing from Prebuilt
+### Using Prebuilt
 
 - [Steam](https://store.steampowered.com/app/2308700/)
+- [Itch.io](https://tonywang.itch.io/gbbasic)
 
 ### Compiling from Source
 

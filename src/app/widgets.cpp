@@ -3149,6 +3149,16 @@ FileResolverPopupBox::FileResolverPopupBox(
 FileResolverPopupBox::~FileResolverPopupBox() {
 }
 
+bool FileResolverPopupBox::toSave(void) const {
+	return _toSave;
+}
+
+FileResolverPopupBox* FileResolverPopupBox::toSave(bool val) {
+	_toSave = val;
+
+	return this;
+}
+
 const std::string &FileResolverPopupBox::path(void) const {
 	return _path;
 }
@@ -3256,14 +3266,26 @@ void FileResolverPopupBox::update(Workspace* ws) {
 #if defined GBBASIC_OS_WIN
 			path_ = Text::replace(path_, "/", "\\");
 #endif /* GBBASIC_OS_WIN */
-			pfd::open_file open(
-				_theme->generic_Open(),
-				path_,
-				_filter,
-				pfd::opt::none
-			);
-			if (!open.result().empty() && !open.result().front().empty()) {
-				std::string path = open.result().front();
+			std::string path;
+			if (_toSave) {
+				pfd::save_file save(
+					ws->theme()->generic_SaveTo(),
+					"",
+					_filter
+				);
+				path = save.result();
+			} else {
+				pfd::open_file open(
+					_theme->generic_Open(),
+					path_,
+					_filter,
+					pfd::opt::none
+				);
+				if (!open.result().empty() && !open.result().front().empty()) {
+					path = open.result().front();
+				}
+			}
+			if (!path.empty()) {
 				Path::uniform(path);
 				_path = path;
 				_exists = Path::existsFile(_path.c_str());

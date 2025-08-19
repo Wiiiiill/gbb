@@ -803,6 +803,7 @@ private:
 	Theme* _theme = nullptr; // Foreign.
 	std::string _title;
 	std::string _content;
+	bool _toSave = false;
 	std::string _path;
 	bool _exists = false;
 	Text::Array _filter;
@@ -894,6 +895,9 @@ public:
 	);
 
 	virtual ~FileResolverPopupBox() override;
+
+	bool toSave(void) const;
+	FileResolverPopupBox* toSave(bool val);
 
 	const std::string &path(void) const;
 	bool exists(void) const;

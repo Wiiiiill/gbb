@@ -824,6 +824,7 @@ public:
 		const Text::Array &filter,
 		bool requireExisting,
 		int default_, int min, int max, const char* optTxt,
+		bool toSave,
 		const ImGui::FileResolverPopupBox::ConfirmedHandler_PathInteger &confirm /* nullable */,
 		const ImGui::FileResolverPopupBox::CanceledHandler &cancel /* nullable */,
 		const ImGui::FileResolverPopupBox::SelectedHandler &select /* nullable */,
@@ -964,7 +965,7 @@ private:
 	void loadDocuments(void);
 	void unloadDocuments(void);
 
-	bool execute(Window* wnd, Renderer* rnd, double delta);
+	bool execute(Window* wnd, Renderer* rnd, double delta, unsigned* fpsReq);
 	bool perform(Window* wnd, Renderer* rnd, double delta, unsigned* fpsReq, Device::AudioHandler handleAudio /* nullable */);
 
 	void prepare(Window* wnd, Renderer* rnd);

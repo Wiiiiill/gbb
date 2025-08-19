@@ -301,21 +301,69 @@ void Platform::browse(const char*) {
 
 EM_JS(void, platformHtmlCopy, (const char* str), {
 	Asyncify.handleAsync(async () => {
-		document.getElementById('clipping').focus();
-		const _ = await navigator.clipboard.writeText(UTF8ToString(str));
-		document.getElementById('canvas').focus();
+		try {
+			document.getElementById('clipping').focus();
+			const _ = await navigator.clipboard.writeText(UTF8ToString(str));
+			document.getElementById('canvas').focus();
+		} catch (_) {
+			do {
+				if (Module.__GBBASIC_CLIPBOARD_TIPS_SHOWN_TIMES__ == undefined)
+					Module.__GBBASIC_CLIPBOARD_TIPS_SHOWN_TIMES__ = 0;
+
+				if (Module.__GBBASIC_CLIPBOARD_TIPS_SHOWN_TIMES__ >= 1) // Only prompt once.
+					break;
+
+				if (typeof showTips == 'function') {
+					showTips({
+						content: 'No permission to use system clipboard, fallback to browser simulated.',
+						type: 'warning'
+					});
+				}
+				++Module.__GBBASIC_CLIPBOARD_TIPS_SHOWN_TIMES__;
+			} while (false);
+
+			Module.clipboardText = UTF8ToString(str); // Fallback to JS variable.
+		}
 	});
 });
 EM_JS(char*, platformHtmlPaste, (), {
 	return Asyncify.handleAsync(async () => {
-		document.getElementById('clipping').focus();
-		const str = await navigator.clipboard.readText();
-		document.getElementById('canvas').focus();
-		const lengthBytes = lengthBytesUTF8(str) + 1;
-		const stringOnWasmHeap = _malloc(lengthBytes);
-		stringToUTF8(str, stringOnWasmHeap, lengthBytes);
+		try {
+			document.getElementById('clipping').focus();
+			const str = await navigator.clipboard.readText();
+			document.getElementById('canvas').focus();
+			const lengthBytes = lengthBytesUTF8(str) + 1;
+			const stringOnWasmHeap = _malloc(lengthBytes);
+			stringToUTF8(str, stringOnWasmHeap, lengthBytes);
 
-		return stringOnWasmHeap;
+			return stringOnWasmHeap;
+		} catch (_) {
+			do {
+				if (Module.__GBBASIC_CLIPBOARD_TIPS_SHOWN_TIMES__ == undefined)
+					Module.__GBBASIC_CLIPBOARD_TIPS_SHOWN_TIMES__ = 0;
+
+				if (Module.__GBBASIC_CLIPBOARD_TIPS_SHOWN_TIMES__ >= 1) // Only prompt once.
+					break;
+
+				if (typeof showTips == 'function') {
+					showTips({
+						content: 'No permission to use system clipboard, fallback to browser simulated.',
+						type: 'warning'
+					});
+				}
+				++Module.__GBBASIC_CLIPBOARD_TIPS_SHOWN_TIMES__;
+			} while (false);
+
+			if (typeof Module.clipboardText == 'undefined' || !Module.clipboardText)
+				return null;
+
+			const str = Module.clipboardText;
+			const lengthBytes = lengthBytesUTF8(str) + 1;
+			const stringOnWasmHeap = _malloc(lengthBytes);
+			stringToUTF8(str, stringOnWasmHeap, lengthBytes);
+
+			return stringOnWasmHeap;
+		}
 	});
 });
 
@@ -326,8 +374,8 @@ bool Platform::hasClipboardText(void) {
 std::string Platform::getClipboardText(void) {
 	const char* cstr = platformHtmlPaste();
 	const std::string txt = cstr;
-	const std::string osstr = Unicode::toOs(txt);
 	platformHtmlFree((void*)cstr);
+	const std::string osstr = Unicode::toOs(txt);
 
 	return osstr;
 }

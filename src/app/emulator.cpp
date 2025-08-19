@@ -342,16 +342,16 @@ static void shortcuts(const Context &context) {
 	const bool modifier = io.KeySuper;
 #endif /* GBBASIC_MODIFIER_KEY */
 
-	const bool g   = ImGui::IsKeyPressed(SDL_SCANCODE_G);
-	const bool tab = ImGui::IsKeyPressed(SDL_SCANCODE_TAB);
+	const bool g     = ImGui::IsKeyPressed(SDL_SCANCODE_G);
+	const bool slash = ImGui::IsKeyPressed(SDL_SCANCODE_SLASH);
 
 	// Overlay operations.
 	if (modifier && !io.KeyShift && !io.KeyAlt) {
 		if (g)
 			*context.onscreenGamepadEnabled = !*context.onscreenGamepadEnabled;
 	}
-	if (!modifier && io.KeyShift && !io.KeyAlt) {
-		if (tab) {
+	if (modifier && !io.KeyShift && !io.KeyAlt) {
+		if (slash) {
 			if (*context.emulatorSpeed == DEVICE_BASE_SPEED_FACTOR * 1) {
 				*context.emulatorSpeed = Math::clamp(*context.emulatorPreferedSpeed, DEVICE_BASE_SPEED_FACTOR / 10, DEVICE_BASE_SPEED_FACTOR * 16);
 				context.canvasDevice->speed(Math::clamp(*context.emulatorPreferedSpeed, DEVICE_BASE_SPEED_FACTOR / 10, DEVICE_BASE_SPEED_FACTOR * 16));

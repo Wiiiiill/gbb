@@ -633,6 +633,15 @@ void Exporter::gotoWeb(const char* path_, Bytes::Ptr /* rom */, std::string* hos
 					bytes->poke(0);
 					web->respond(bytes.get(), "text/css");
 					arc->close();
+				} else if (ext == "txt") {
+					const std::string entry = getFullPath(hostEntry, uri_);
+					Archive::Ptr arc(Archive::create(Archive::ZIP));
+					arc->open(pathstr.c_str(), Stream::READ);
+					Bytes::Ptr bytes(Bytes::create());
+					arc->toBytes(bytes.get(), entry.c_str());
+					bytes->poke(0);
+					web->respond(bytes.get(), "text/plain");
+					arc->close();
 				} else if (ext == "json") {
 					const std::string entry = getFullPath(hostEntry, uri_);
 					Archive::Ptr arc(Archive::create(Archive::ZIP));

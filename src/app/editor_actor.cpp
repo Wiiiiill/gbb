@@ -2644,9 +2644,9 @@ private:
 						file->writeBytes(bytes.get());
 						file->close(); FileMonitor::unuse(path_);
 
-						ws->popupBox(nullptr);
-
 						ws->bubble(ws->theme()->dialogPrompt_ExportedAsset(), nullptr);
+
+						ws->popupBox(nullptr);
 					},
 					nullptr
 				);
@@ -2662,6 +2662,7 @@ private:
 					GBBASIC_IMAGE_FILE_FILTER,
 					false,
 					3, 1, 8, ws->theme()->dialogPrompt_Pitch().c_str(),
+					true,
 					confirm,
 					cancel,
 					nullptr,

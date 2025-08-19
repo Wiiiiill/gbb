@@ -1586,7 +1586,7 @@ bool Workspace::update(Window* wnd, Renderer* rnd, double delta, unsigned fps, u
 	bool result = false;
 
 	// Execute.
-	result = execute(wnd, rnd, delta);
+	result = execute(wnd, rnd, delta, fpsReq);
 
 	// Perform.
 	perform(wnd, rnd, delta, fpsReq, nullptr);
@@ -3327,6 +3327,7 @@ void Workspace::showExternalFileBrowser(
 	const Text::Array &filter,
 	bool requireExisting,
 	int default_, int min, int max, const char* optTxt,
+	bool toSave,
 	const ImGui::FileResolverPopupBox::ConfirmedHandler_PathInteger &confirm_,
 	const ImGui::FileResolverPopupBox::CanceledHandler &cancel,
 	const ImGui::FileResolverPopupBox::SelectedHandler &select,
@@ -3350,20 +3351,23 @@ void Workspace::showExternalFileBrowser(
 
 	popupBox(
 		ImGui::PopupBox::Ptr(
-			new ImGui::FileResolverPopupBox(
-				rnd,
-				theme(),
-				GBBASIC_TITLE,
-				content, "",
-				filter,
-				requireExisting,
-				theme()->generic_Browse().c_str(),
-				default_, min, max, optTxt,
-				confirm, cancel,
-				btnConfirm, btnCancel,
-				select,
-				custom
+			(
+				new ImGui::FileResolverPopupBox(
+					rnd,
+					theme(),
+					GBBASIC_TITLE,
+					content, "",
+					filter,
+					requireExisting,
+					theme()->generic_Browse().c_str(),
+					default_, min, max, optTxt,
+					confirm, cancel,
+					btnConfirm, btnCancel,
+					select,
+					custom
+				)
 			)
+			->toSave(toSave)
 		)
 	);
 }
@@ -5747,11 +5751,13 @@ void Workspace::unloadDocuments(void) {
 	documents().clear();
 }
 
-bool Workspace::execute(Window* wnd, Renderer* rnd, double delta) {
+bool Workspace::execute(Window* wnd, Renderer* rnd, double delta, unsigned* fpsReq) {
 	ImGuiIO &io = ImGui::GetIO();
 
 	if (!canvasDevice())
 		return false;
+
+	*fpsReq = GBBASIC_ACTIVE_FRAME_RATE;
 
 	if (!canvasTexture()) {
 		canvasTexture(Texture::Ptr(Texture::create()));
@@ -7214,6 +7220,7 @@ void Workspace::menu(Window* wnd, Renderer* rnd) {
 			}
 #endif /* WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED */
 			if (exampleCount() > 0) {
+#if !WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED
 				if (showRecentProjects()) {
 					if (ImGui::MenuItem(theme()->menu_ImportExamples())) {
 						closeFilter();
@@ -7244,7 +7251,7 @@ void Workspace::menu(Window* wnd, Renderer* rnd) {
 							);
 					}
 				} else {
-#if !defined GBBASIC_OS_HTML
+#	if !defined GBBASIC_OS_HTML
 					if (ImGui::MenuItem(theme()->menu_OpenExample())) {
 						stopProject(wnd, rnd);
 
@@ -7271,8 +7278,9 @@ void Workspace::menu(Window* wnd, Renderer* rnd) {
 								}
 							);
 					}
-#endif /* GBBASIC_OS_HTML */
+#	endif /* GBBASIC_OS_HTML */
 				}
+#endif /* WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED */
 #if !defined GBBASIC_OS_HTML
 				if (ImGui::MenuItem(theme()->menu_BrowseExamples())) {
 					Operations::fileBrowseExamples(wnd, rnd, this);
@@ -9035,6 +9043,8 @@ void Workspace::tabs(Window* wnd, Renderer* rnd) {
 #if WORKSPACE_HEAD_BAR_ADJUSTING_ENABLED
 	if (!wnd->bordered() && rnd->width() >= 440) {
 		if (ImGui::MenuBarImageButton(theme()->iconMinimize()->pointer(rnd), ImVec2(13, 13), ImVec4(1, 1, 1, 1))) {
+			if (wnd->maximized())
+				wnd->restore();
 			wnd->minimize();
 		}
 		ImGui::SameLine();
