@@ -99,7 +99,7 @@ GB BASIC is programmable in a brand new BASIC dialect. The integrated assets edi
 
 ### Compiling from Source
 
-A C++14 capable compiler is required, any compiler came after 2014 should be ok. You need to get this repository and its submodules before build:
+A C++14 capable compiler is required, any compiler came after 2014 should be ok. You need to get this repository before build:
 
 ```sh
 git clone https://github.com/paladin-t/gbb.git
