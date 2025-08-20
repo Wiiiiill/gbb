@@ -104,6 +104,7 @@ EMSCRIPTEN_BINDINGS(Categories) {
 EMSCRIPTEN_BINDINGS(ExternalEventTypes) {
 	emscripten::enum_<Workspace::ExternalEventTypes>("ExternalEventTypes")
 		.value("RESIZE_WINDOW", Workspace::ExternalEventTypes::RESIZE_WINDOW)
+		.value("UNLOAD_WINDOW", Workspace::ExternalEventTypes::UNLOAD_WINDOW)
 		.value("LOAD_PROJECT",  Workspace::ExternalEventTypes::LOAD_PROJECT)
 		.value("PATCH_PROJECT", Workspace::ExternalEventTypes::PATCH_PROJECT)
 		.value("TO_CATEGORY",   Workspace::ExternalEventTypes::TO_CATEGORY)
@@ -2053,6 +2054,13 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 			size = wnd->size();
 
 			fprintf(stdout, "SDL: RESIZE_WINDOW prefered [%d, %d], was [%d, %d], now [%d, %d].\n", width, height, oldSize.x, oldSize.y, size.x, size.y);
+		}
+
+		break;
+	case ExternalEventTypes::UNLOAD_WINDOW: {
+			fprintf(stdout, "SDL: UNLOAD_WINDOW.\n");
+
+			save(wnd, rnd);
 		}
 
 		break;

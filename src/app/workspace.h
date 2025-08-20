@@ -385,6 +385,7 @@ public:
 
 	enum class ExternalEventTypes : unsigned {
 		RESIZE_WINDOW,
+		UNLOAD_WINDOW,
 		LOAD_PROJECT,
 		PATCH_PROJECT,
 		TO_CATEGORY,
