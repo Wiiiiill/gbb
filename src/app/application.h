@@ -17,9 +17,9 @@
 */
 
 class Application* createApplication(class Workspace* workspace, int argc, const char* argv[]);
-void destroyApplication(class Application* app);
+void destroyApplication(class Application* &app);
 bool updateApplication(class Application* app);
-void pushApplicationEvent(int event, int code, int data0, int data1);
+void pushApplicationEvent(class Application* app, int event, int code, int data0, int data1);
 
 /* ===========================================================================} */
 

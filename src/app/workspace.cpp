@@ -1702,6 +1702,19 @@ void Workspace::streamed(class Window* wnd, class Renderer* rnd, Bytes::Ptr byte
 	Operations::fileSaveStreamed(wnd, rnd, this, bytes);
 }
 
+void Workspace::sync(class Window* wnd, class Renderer* rnd, const char* module) {
+	if (!module)
+		return;
+
+	if (strcmp(module, "sram") == 0) {
+		fprintf(stdout, "Synced SRAM module.\n");
+
+		saveSram(wnd, rnd);
+	} else {
+		fprintf(stderr, "Unknown module \"%s\" to be synced.\n", module);
+	}
+}
+
 void Workspace::debug(const char* msg) {
 	do {
 		LockGuard<decltype(consoleLock())> guard(consoleLock());
@@ -2061,6 +2074,8 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 			fprintf(stdout, "SDL: UNLOAD_WINDOW.\n");
 
 			save(wnd, rnd);
+
+			saveSram(wnd, rnd);
 		}
 
 		break;
@@ -5798,6 +5813,19 @@ bool Workspace::perform(Window* wnd, Renderer* rnd, double delta, unsigned* fpsR
 	updateAudioDevice(wnd, rnd, delta_, fpsReq, handleAudio);
 
 	return true;
+}
+
+void Workspace::saveSram(Window* wnd, Renderer* rnd) {
+	if (!canvasDevice())
+		return;
+
+	const Project::Ptr &prj = currentProject();
+	if (!prj)
+		return;
+
+	Bytes::Ptr sram(Bytes::create());
+	canvasDevice()->writeSram(sram.get());
+	Operations::projectSaveSram(wnd, rnd, this, prj, sram);
 }
 
 void Workspace::prepare(Window*, Renderer*) {

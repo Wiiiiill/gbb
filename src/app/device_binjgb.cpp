@@ -1168,6 +1168,8 @@ bool DeviceBinjgb::processShellCommand(class Window* wnd, class Renderer* rnd) {
 		Text::startsWith(cmd, "https://", false);
 	const bool isBrowse =
 		Text::startsWith(cmd, "file://", false);
+	const bool isSync =
+		Text::startsWith(cmd, "@", false);
 	const bool isDebug =
 		Text::startsWith(cmd, ">", false);
 	const bool isCursor =
@@ -1176,6 +1178,7 @@ bool DeviceBinjgb::processShellCommand(class Window* wnd, class Renderer* rnd) {
 		Text::startsWith(cmd, "||", false);
 	const bool isStop =
 		Text::startsWith(cmd, "[]", false);
+
 	if (isSurf) {
 		const std::string osstr = Unicode::toOs(cmd);
 
@@ -1189,6 +1192,9 @@ bool DeviceBinjgb::processShellCommand(class Window* wnd, class Renderer* rnd) {
 				Platform::browse(osstr.c_str());
 			}
 		}
+	} else if (isSync) {
+		if (_debugListener)
+			_debugListener->sync(wnd, rnd, cmd.c_str() + 1);
 	} else if (isDebug) {
 		if (_debugListener)
 			_debugListener->debug(cmd.c_str() + 1);
