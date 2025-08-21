@@ -48,9 +48,11 @@ EM_JS(
 );
 #endif /* GBBASIC_OS_HTML */
 
+static Application* app = nullptr;
+
 static int entry(int argc, const char* argv[]) {
 #if defined GBBASIC_OS_IOS || defined GBBASIC_OS_ANDROID
-	Application* app = createApplication(new Workspace(), argc, argv);
+	app = createApplication(new Workspace(), argc, argv);
 	while (updateApplication(app)) { /* Do nothing. */ }
 	destroyApplication(app);
 #elif defined GBBASIC_OS_HTML
@@ -59,19 +61,19 @@ static int entry(int argc, const char* argv[]) {
 	while (!mainIsFsSynced()) {
 		emscripten_sleep(STEP);
 	}
-	Application* app = createApplication(new Workspace(), argc, argv);
+	app = createApplication(new Workspace(), argc, argv);
 	emscripten_cancel_main_loop();
 	emscripten_set_main_loop_arg(
 		[] (void* arg) -> void {
-			Application* app = (Application*)arg;
-			updateApplication(app);
+			Application* app_ = (Application*)arg;
+			updateApplication(app_);
 		},
 		app,
 		mainGetActiveFrameRate(), 1
 	);
 	destroyApplication(app);
 #else /* Platform macro. */
-	Application* app = createApplication(new Workspace(), argc, argv);
+	app = createApplication(new Workspace(), argc, argv);
 	while (updateApplication(app)) { /* Do nothing. */ }
 	destroyApplication(app);
 #endif /* Platform macro. */
@@ -104,6 +106,7 @@ extern void platformSetWritablePathResolver(std::string(*)(void));
 
 EM_JS(
 	void, initializeHtml, (const char* docPath, const char* writablePath), {
+		// Initialize the file system.
 		const MAIN_DOCUMENT_PATH = UTF8ToString(docPath);
 		const MAIN_WRITABLE_PATH = UTF8ToString(writablePath);
 
@@ -121,13 +124,31 @@ EM_JS(
 			Module.print("HTML filesystem initialized.");
 			Module.syncdone = 1;
 		});
+
+		// Initialize unload event handler.
+		document.addEventListener('DOMContentLoaded', function () {
+			window.addEventListener('unload', function (event) {
+				if (typeof ccall == 'function' && !!(Module.ExternalEventTypes)) {
+					ccall(
+						'pushEvent',
+						'number', [ 'number', 'number', 'number', 'number' ],
+						[
+							Module.ExternalEventTypes.UNLOAD_WINDOW,
+							0,
+							0,
+							0
+						]
+					);
+				}
+			});
+		});
 	}
 );
 
 extern "C" {
 
 EMSCRIPTEN_KEEPALIVE int pushEvent(int event, int code, int data0, int data1) {
-	pushApplicationEvent(event, code, data0, data1);
+	pushApplicationEvent(app, event, code, data0, data1);
 
 	return 0;
 }

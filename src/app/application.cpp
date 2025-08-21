@@ -1497,7 +1497,7 @@ class Application* createApplication(class Workspace* workspace, int argc, const
 	return result;
 }
 
-void destroyApplication(class Application* app) {
+void destroyApplication(class Application* &app) {
 	// Dispose event handler.
 	SDL_SetEventFilter(nullptr, nullptr);
 
@@ -1506,6 +1506,7 @@ void destroyApplication(class Application* app) {
 	// Destroy the application instance.
 	app->close();
 	delete app;
+	app = nullptr;
 
 	// Dispose the file monitor.
 	FileMonitor::dispose();
@@ -1521,14 +1522,24 @@ bool updateApplication(class Application* app) {
 	return result;
 }
 
-void pushApplicationEvent(int event, int code, int data0, int data1) {
+void pushApplicationEvent(class Application* app, int event, int code, int data0, int data1) {
 	SDL_Event evt;
 	SDL_memset(&evt, 0, sizeof(SDL_Event));
 	evt.type = EVENTS.BEGIN + (UInt32)event;
 	evt.user.code = (UInt32)code;
 	evt.user.data1 = (void*)(intptr_t)data0;
 	evt.user.data2 = (void*)(intptr_t)data1;
-	SDL_PushEvent(&evt);
+
+	if (evt.type >= EVENTS.BEGIN && evt.type <= EVENTS.END) {
+		const Workspace::ExternalEventTypes y = (Workspace::ExternalEventTypes)(evt.type - EVENTS.BEGIN);
+		if (y == Workspace::ExternalEventTypes::UNLOAD_WINDOW) {
+			app->sendWithAppEvents(&evt); // Send immediate event.
+
+			return;
+		}
+	}
+
+	SDL_PushEvent(&evt); // Push queued event.
 }
 
 /* ===========================================================================} */

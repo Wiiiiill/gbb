@@ -89,7 +89,10 @@ public:
 	public:
 		virtual void streamed(class Window* wnd, class Renderer* rnd, Bytes::Ptr bytes) = 0;
 
+		virtual void sync(class Window* wnd, class Renderer* rnd, const char* module) = 0;
+
 		virtual void debug(const char* msg) = 0;
+
 		virtual void cursor(CursorTypes mode) = 0;
 
 		virtual bool running(void) const = 0;

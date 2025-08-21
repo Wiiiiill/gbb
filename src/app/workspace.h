@@ -642,6 +642,7 @@ public:
 	bool error(const char* msg);
 	void stroke(int key);
 	virtual void streamed(class Window* wnd, class Renderer* rnd, Bytes::Ptr bytes) override;
+	virtual void sync(class Window* wnd, class Renderer* rnd, const char* module) override;
 	virtual void debug(const char* msg) override;
 	void debug(void);
 	virtual void cursor(Device::CursorTypes mode) override;
@@ -968,6 +969,7 @@ private:
 
 	bool execute(Window* wnd, Renderer* rnd, double delta, unsigned* fpsReq);
 	bool perform(Window* wnd, Renderer* rnd, double delta, unsigned* fpsReq, Device::AudioHandler handleAudio /* nullable */);
+	void saveSram(Window* wnd, Renderer* rnd);
 
 	void prepare(Window* wnd, Renderer* rnd);
 	void finish(Window* wnd, Renderer* rnd);
