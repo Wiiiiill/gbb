@@ -1768,7 +1768,7 @@ void Workspace::stop(class Window* wnd, class Renderer* rnd) {
 				if (ok && settings().deviceSaveSramOnStop) {
 					const Project::Ptr &prj = currentProject();
 
-					Operations::projectSaveSram(wnd, rnd, this, prj, sram);
+					Operations::projectSaveSram(wnd, rnd, this, prj, sram, false);
 				}
 			}
 		);
@@ -1912,7 +1912,7 @@ void Workspace::dropEnded(Window* wnd, Renderer* rnd) {
 						if (ok && settings().deviceSaveSramOnStop) {
 							const Project::Ptr &prj = currentProject();
 
-							Operations::projectSaveSram(wnd, rnd, this, prj, sram);
+							Operations::projectSaveSram(wnd, rnd, this, prj, sram, false);
 						}
 
 						next();
@@ -1935,7 +1935,7 @@ void Workspace::dropEnded(Window* wnd, Renderer* rnd) {
 						if (ok && settings().deviceSaveSramOnStop) {
 							const Project::Ptr &prj = currentProject();
 
-							Operations::projectSaveSram(wnd, rnd, this, prj, sram);
+							Operations::projectSaveSram(wnd, rnd, this, prj, sram, false);
 						}
 
 						next();
@@ -1979,7 +1979,7 @@ void Workspace::dropEnded(Window* wnd, Renderer* rnd) {
 						if (ok && settings().deviceSaveSramOnStop) {
 							const Project::Ptr &prj = currentProject();
 
-							Operations::projectSaveSram(wnd, rnd, this, prj, sram);
+							Operations::projectSaveSram(wnd, rnd, this, prj, sram, false);
 						}
 
 						next();
@@ -2006,7 +2006,7 @@ bool Workspace::quit(Window* wnd, Renderer* rnd) {
 						if (ok && settings().deviceSaveSramOnStop) {
 							const Project::Ptr &prj = currentProject();
 
-							Operations::projectSaveSram(wnd, rnd, this, prj, sram)
+							Operations::projectSaveSram(wnd, rnd, this, prj, sram, false)
 								.always(
 									[wnd, rnd, this] (void) -> void {
 										Operations::fileClose(wnd, rnd, this);
@@ -5825,7 +5825,7 @@ void Workspace::saveSram(Window* wnd, Renderer* rnd) {
 
 	Bytes::Ptr sram(Bytes::create());
 	canvasDevice()->writeSram(sram.get());
-	Operations::projectSaveSram(wnd, rnd, this, prj, sram);
+	Operations::projectSaveSram(wnd, rnd, this, prj, sram, true);
 }
 
 void Workspace::prepare(Window*, Renderer*) {
@@ -11479,7 +11479,7 @@ void Workspace::stopProject(Window* wnd, Renderer* rnd) {
 				if (ok && settings().deviceSaveSramOnStop) {
 					const Project::Ptr &prj = currentProject();
 
-					Operations::projectSaveSram(wnd, rnd, this, prj, sram);
+					Operations::projectSaveSram(wnd, rnd, this, prj, sram, false);
 				}
 			}
 		);

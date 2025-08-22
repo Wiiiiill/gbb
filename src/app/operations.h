@@ -93,7 +93,7 @@ public:
 	static promise::Promise projectStop(Window* wnd, Renderer* rnd, Workspace* ws);
 	static promise::Promise projectReload(Window* wnd, Renderer* rnd, Workspace* ws, Project::Ptr &prj, const char* fontConfigPath);
 	static promise::Promise projectLoadSram(Window* wnd, Renderer* rnd, Workspace* ws, const Project::Ptr &prj, Bytes::Ptr sram);
-	static promise::Promise projectSaveSram(Window* wnd, Renderer* rnd, Workspace* ws, const Project::Ptr &prj, const Bytes::Ptr sram);
+	static promise::Promise projectSaveSram(Window* wnd, Renderer* rnd, Workspace* ws, const Project::Ptr &prj, const Bytes::Ptr sram, bool immediate);
 	static promise::Promise projectRemoveSram(Window* wnd, Renderer* rnd, Workspace* ws, const Project::Ptr &prj, bool toTrashBin);
 };
 

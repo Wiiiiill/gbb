@@ -4381,7 +4381,7 @@ promise::Promise Operations::projectLoadSram(Window*, Renderer*, Workspace* ws, 
 	);
 }
 
-promise::Promise Operations::projectSaveSram(Window* wnd, Renderer* rnd, Workspace* ws, const Project::Ptr &prj, const Bytes::Ptr sram) {
+promise::Promise Operations::projectSaveSram(Window* wnd, Renderer* rnd, Workspace* ws, const Project::Ptr &prj, const Bytes::Ptr sram, bool immediate) {
 	return promise::newPromise(
 		[&] (promise::Defer df) -> void {
 			if (!prj) {
@@ -4457,12 +4457,21 @@ promise::Promise Operations::projectSaveSram(Window* wnd, Renderer* rnd, Workspa
 #endif /* OPERATIONS_GBBASIC_TIME_STAT_ENABLED */
 			};
 
-			popupWait(wnd, rnd, ws, ws->theme()->dialogPrompt_Saving().c_str())
-				.then(
-					[next, df] (void) -> promise::Promise {
-						return promise::newPromise(std::bind(next, df));
-					}
-				);
+			if (immediate) {
+				always(wnd, rnd, ws, true)
+					.then(
+						[next, df] (void) -> promise::Promise {
+							return promise::newPromise(std::bind(next, df));
+						}
+					);
+			} else {
+				popupWait(wnd, rnd, ws, ws->theme()->dialogPrompt_Saving().c_str())
+					.then(
+						[next, df] (void) -> promise::Promise {
+							return promise::newPromise(std::bind(next, df));
+						}
+					);
+			}
 		}
 	);
 }
