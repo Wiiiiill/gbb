@@ -193,17 +193,27 @@ void vm_option(SCRIPT_CTX * THIS) OLDCALL BANKED {
         break;
     case DEVICE_OPTION_SCREEN_MODE:
         if (val == DEVICE_SCREEN_TEXT) {
+            // Uninstall VBL and LCD ISRs if they were installed by the graphics mode.
+            const UINT8 m = get_mode();
+            if ((m & 0x07) == M_DRAWING) // Was graphics mode.
+                mode(M_TEXT_OUT);
+
+            // To the text mode.
             SHOW_BKG;
             WX_REG = 0, HIDE_WIN;
             HIDE_SPRITES;
             move_bkg(0, 0);
-            load_default_font();
+            load_default_font(); // Initialize the text mode.
         } else if (val == DEVICE_SCREEN_GRAPHICS) {
+            // To the graphics mode.
             move_bkg(0, 0);
             color(WHITE, WHITE, AND);
             plot_point(0xFF, 0xFF); // Initialize the graphics mode.
         } else if (val == DEVICE_SCREEN_OBJECTS) {
-            // Do nothing.
+            // Uninstall VBL and LCD ISRs if they were installed by the graphics mode.
+            const UINT8 m = get_mode();
+            if ((m & 0x07) == M_DRAWING) // Was graphics mode.
+                mode(M_TEXT_OUT);
         }
         *(THIS->stack_ptr++) = TRUE;
 
