@@ -1529,7 +1529,9 @@ private:
 			},
 			nullptr
 		);
-		std::string default_ = GetSelectionText("\n");
+		std::string default_ = _shared.finding ? _shared.word() : "";
+		if (default_.empty())
+			default_ = GetSelectionText("\n");
 		if (default_.empty())
 			default_ = GetWordUnderCursor();
 		const size_t eol = Text::indexOf(default_, '\n');
