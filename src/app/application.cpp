@@ -167,6 +167,28 @@ static void applicationLoadArgsString(const char* str, Text::Dictionary &options
 		applicationParseArgs(argc, &argv.front(), options);
 }
 
+typedef std::function<void(Text::Dictionary::const_iterator)> ArgSetter;
+static bool applicationGetArgValue(Text::Dictionary &options, const char* key, ArgSetter setArg) {
+	Text::Dictionary::const_iterator opt = options.find(key);
+	if (opt != options.end()) {
+		setArg(opt);
+
+		return true;
+	}
+
+	return false;
+}
+template<typename T> static bool applicationGetArgValue(Text::Dictionary &options, const char* key, T &var, const T &val) {
+	Text::Dictionary::const_iterator opt = options.find(key);
+	if (opt != options.end()) {
+		var = val;
+
+		return true;
+	}
+
+	return false;
+}
+
 /* ===========================================================================} */
 
 /*
@@ -263,15 +285,9 @@ public:
 		_options = options;
 
 		// Parse the options.
-		Text::Dictionary::const_iterator cloOpt = _options.find(WORKSPACE_OPTION_APPLICATION_COMMANDLINE_ONLY_KEY);
-		if (cloOpt != _options.end())
-			_commandlineOnly = true;
-		Text::Dictionary::const_iterator upgOpt = _options.find(WORKSPACE_OPTION_APPLICATION_UPGRADE_ONLY_KEY);
-		if (upgOpt != _options.end())
-			_toUpgrade = true;
-		Text::Dictionary::const_iterator cplOpt = _options.find(COMPILER_OUTPUT_OPTION_KEY);
-		if (cplOpt != _options.end())
-			_toCompile = true;
+		applicationGetArgValue(_options, WORKSPACE_OPTION_APPLICATION_COMMANDLINE_ONLY_KEY, _commandlineOnly, true);
+		applicationGetArgValue(_options, WORKSPACE_OPTION_APPLICATION_UPGRADE_ONLY_KEY, _toUpgrade, true);
+		applicationGetArgValue(_options, COMPILER_OUTPUT_OPTION_KEY, _toCompile, true);
 
 		// Initialize the platform.
 		Platform::open();
@@ -284,22 +300,18 @@ public:
 		bool maximized = false;
 		if (!_commandlineOnly) {
 			int scale = 2; // Defaults to 2.
-			if (_options.find(WORKSPACE_OPTION_RENDERER_X1_KEY) != _options.end())
-				scale = 1;
-			else if (_options.find(WORKSPACE_OPTION_RENDERER_X2_KEY) != _options.end())
-				scale = 2;
-			else if (_options.find(WORKSPACE_OPTION_RENDERER_X3_KEY) != _options.end())
-				scale = 3;
-			else if (_options.find(WORKSPACE_OPTION_RENDERER_X4_KEY) != _options.end())
-				scale = 4;
-			else if (_options.find(WORKSPACE_OPTION_RENDERER_X5_KEY) != _options.end())
-				scale = 5;
-			else if (_options.find(WORKSPACE_OPTION_RENDERER_X6_KEY) != _options.end())
-				scale = 6;
+			applicationGetArgValue(_options, WORKSPACE_OPTION_RENDERER_X1_KEY, scale, 1) ||
+			applicationGetArgValue(_options, WORKSPACE_OPTION_RENDERER_X2_KEY, scale, 2) ||
+			applicationGetArgValue(_options, WORKSPACE_OPTION_RENDERER_X3_KEY, scale, 3) ||
+			applicationGetArgValue(_options, WORKSPACE_OPTION_RENDERER_X4_KEY, scale, 4) ||
+			applicationGetArgValue(_options, WORKSPACE_OPTION_RENDERER_X5_KEY, scale, 5) ||
+			applicationGetArgValue(_options, WORKSPACE_OPTION_RENDERER_X6_KEY, scale, 6);
 
 #if defined GBBASIC_OS_WIN || defined GBBASIC_OS_MAC || defined GBBASIC_OS_LINUX
-			const bool borderless = _options.find(WORKSPACE_OPTION_WINDOW_BORDERLESS_ENABLED_KEY) != _options.end();
-			const bool highDpi = _options.find(WORKSPACE_OPTION_WINDOW_HIGH_DPI_DISABLED_KEY) == _options.end();
+			bool borderless = false;
+			bool highDpi = true;
+			applicationGetArgValue(_options, WORKSPACE_OPTION_WINDOW_BORDERLESS_ENABLED_KEY, borderless, true);
+			applicationGetArgValue(_options, WORKSPACE_OPTION_WINDOW_HIGH_DPI_DISABLED_KEY, highDpi, false);
 			SDL_SetHintWithPriority(SDL_HINT_RENDER_SCALE_QUALITY, "0", SDL_HINT_OVERRIDE);
 			SDL_SetHintWithPriority(SDL_HINT_RENDER_VSYNC, "1", SDL_HINT_OVERRIDE);
 			SDL_SetHintWithPriority(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1", SDL_HINT_OVERRIDE);
@@ -311,13 +323,17 @@ public:
 			SDL_SetHintWithPriority(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1", SDL_HINT_OVERRIDE);
 			SDL_SetHintWithPriority(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1", SDL_HINT_OVERRIDE);
 #elif defined GBBASIC_OS_HTML
-			const bool borderless = _options.find(WORKSPACE_OPTION_WINDOW_BORDERLESS_ENABLED_KEY) != _options.end();
-			const bool highDpi = _options.find(WORKSPACE_OPTION_WINDOW_HIGH_DPI_DISABLED_KEY) == _options.end();
+			bool borderless = false;
+			bool highDpi = true;
+			applicationGetArgValue(_options, WORKSPACE_OPTION_WINDOW_BORDERLESS_ENABLED_KEY, borderless, true);
+			applicationGetArgValue(_options, WORKSPACE_OPTION_WINDOW_HIGH_DPI_DISABLED_KEY, highDpi, false);
 			SDL_SetHintWithPriority(SDL_HINT_RENDER_SCALE_QUALITY, "0", SDL_HINT_OVERRIDE);
 			SDL_SetHintWithPriority(SDL_HINT_RENDER_VSYNC, "1", SDL_HINT_OVERRIDE);
 #else /* Platform macro. */
-			const bool borderless = _options.find(WORKSPACE_OPTION_WINDOW_BORDERLESS_ENABLED_KEY) != _options.end();
-			const bool highDpi = _options.find(WORKSPACE_OPTION_WINDOW_HIGH_DPI_DISABLED_KEY) == _options.end();
+			bool borderless = false;
+			bool highDpi = true;
+			applicationGetArgValue(_options, WORKSPACE_OPTION_WINDOW_BORDERLESS_ENABLED_KEY, borderless, true);
+			applicationGetArgValue(_options, WORKSPACE_OPTION_WINDOW_HIGH_DPI_DISABLED_KEY, highDpi, false);
 			SDL_SetHintWithPriority(SDL_HINT_RENDER_VSYNC, "1", SDL_HINT_OVERRIDE);
 			SDL_SetHintWithPriority(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1", SDL_HINT_OVERRIDE);
 #endif /* Platform macro. */
@@ -386,8 +402,8 @@ public:
 #endif /* GBBASIC_OS_HTML */
 
 			const bool opengl = false;
-			const bool alwaysOnTop = _options.find(WORKSPACE_OPTION_WINDOW_ALWAYS_ON_TOP_ENABLED_KEY) != _options.end();
-
+			bool alwaysOnTop = false;
+			applicationGetArgValue(_options, WORKSPACE_OPTION_WINDOW_ALWAYS_ON_TOP_ENABLED_KEY, alwaysOnTop, true);
 			_window = Window::create();
 			_window->open(
 				GBBASIC_TITLE " v" GBBASIC_VERSION_STRING,
@@ -403,11 +419,13 @@ public:
 				Platform::useDarkMode(_window);
 
 			int driver = 0;
-			Text::Dictionary::const_iterator drvOpt = _options.find(WORKSPACE_OPTION_RENDERER_DRIVER_KEY);
-			if (drvOpt != _options.end()) {
-				const std::string drvStr = drvOpt->second;
-				Text::fromString(drvStr, driver);
-			}
+			applicationGetArgValue(
+				_options, WORKSPACE_OPTION_RENDERER_DRIVER_KEY,
+				[&] (Text::Dictionary::const_iterator opt) -> void {
+					const std::string str = opt->second;
+					Text::fromString(str, driver);
+				}
+			);
 			_renderer = Renderer::create();
 			_renderer->open(_window, !!driver);
 
@@ -430,24 +448,23 @@ public:
 
 		// Initialize the FPS.
 		unsigned fps = _context.expectedFrameRate;
-		Text::Dictionary::const_iterator fpsOpt = _options.find(WORKSPACE_OPTION_APPLICATION_FPS_KEY);
-		if (fpsOpt != _options.end()) {
-			const std::string fpsStr = fpsOpt->second;
-			if (Text::fromString(fpsStr, fps) && fps >= 1)
-				_context.expectedFrameRate = fps;
-			else
-				fps = _context.expectedFrameRate;
-		}
+		applicationGetArgValue(
+			_options, WORKSPACE_OPTION_APPLICATION_FPS_KEY,
+			[&] (Text::Dictionary::const_iterator opt) -> void {
+				const std::string str = opt->second;
+				if (Text::fromString(str, fps) && fps >= 1)
+					_context.expectedFrameRate = fps;
+				else
+					fps = _context.expectedFrameRate;
+			}
+		);
 
 		// Initialize the home screen mode.
 #if defined GBBASIC_OS_HTML
 		constexpr const bool showRecent = false; // Always use the nodepad mode for HTML.
 #else /* Platform macro. */
 		bool showRecent = true;
-		Text::Dictionary::const_iterator ntpOpt = _options.find(WORKSPACE_OPTION_APPLICATION_NOTEPAD_MODE_KEY);
-		if (ntpOpt != _options.end()) {
-			showRecent = false;
-		}
+		applicationGetArgValue(_options, WORKSPACE_OPTION_APPLICATION_NOTEPAD_MODE_KEY, showRecent, false);
 #endif /* Platform macro. */
 
 		// Initialize the icon.
@@ -480,18 +497,21 @@ public:
 
 		// Initialize the workspace.
 		if (!_commandlineOnly) {
+			bool hideSplash = false;
+			applicationGetArgValue(_options, WORKSPACE_OPTION_APPLICATION_HIDE_SPLASH_KEY, hideSplash, true);
+
 			bool forceWritable = false;
-			Text::Dictionary::const_iterator ntpOpt = _options.find(WORKSPACE_OPTION_APPLICATION_FORCE_WRITABLE_KEY);
-			if (ntpOpt != _options.end()) {
-				forceWritable = true;
-			}
+			applicationGetArgValue(_options, WORKSPACE_OPTION_APPLICATION_FORCE_WRITABLE_KEY, forceWritable, true);
 
 			std::string font;
-			Text::Dictionary::const_iterator fntOpt = _options.find(COMPILER_FONT_OPTION_KEY);
-			if (fntOpt != _options.end())
-				font = fntOpt->second;
+			applicationGetArgValue(
+				_options, COMPILER_FONT_OPTION_KEY,
+				[&] (Text::Dictionary::const_iterator opt) -> void {
+					font = opt->second;
+				}
+			);
 
-			_workspace->open(_window, _renderer, font.empty() ? nullptr : font.c_str(), fps, showRecent, forceWritable, _toUpgrade, _toCompile);
+			_workspace->open(_window, _renderer, font.empty() ? nullptr : font.c_str(), fps, showRecent, hideSplash, forceWritable, _toUpgrade, _toCompile);
 			if (explicitWndSize)
 				_workspace->load(_window, _renderer, &wndWidth, &wndHeight);
 			else

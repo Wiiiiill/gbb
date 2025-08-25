@@ -419,7 +419,7 @@ Workspace::~Workspace() {
 	input(nullptr);
 }
 
-bool Workspace::open(Window* wnd, Renderer* rnd, const char* font, unsigned fps, bool showRecent, bool forceWritable_, bool toUpgrade, bool toCompile) {
+bool Workspace::open(Window* wnd, Renderer* rnd, const char* font, unsigned fps, bool showRecent, bool hideSplashImage, bool forceWritable_, bool toUpgrade, bool toCompile) {
 	// Prepare.
 	if (_opened)
 		return false;
@@ -431,7 +431,7 @@ bool Workspace::open(Window* wnd, Renderer* rnd, const char* font, unsigned fps,
 	_toCompile = toCompile;
 
 	// Begin the splash.
-	beginSplash(wnd, rnd);
+	beginSplash(wnd, rnd, hideSplashImage);
 
 	// Setup ImGui.
 	ImGuiStyle &style = ImGui::GetStyle();
@@ -566,7 +566,7 @@ bool Workspace::open(Window* wnd, Renderer* rnd, const char* font, unsigned fps,
 	loadDocuments();
 
 	// End the splash.
-	endSplash(wnd, rnd);
+	endSplash(wnd, rnd, hideSplashImage);
 
 	// Popup a notice for file dialog requirements if needed.
 #if defined GBBASIC_OS_LINUX
@@ -5207,8 +5207,17 @@ Bytes::Ptr Workspace::compile(
 	return rom_;
 }
 
-void Workspace::beginSplash(Window* wnd, Renderer* rnd) {
+void Workspace::beginSplash(Window* wnd, Renderer* rnd, bool hideSplashImage) {
 #if GBBASIC_SPLASH_ENABLED
+	if (hideSplashImage) {
+		const Colour color(224, 248, 208, 255);
+		rnd->clear(&color);
+
+		rnd->flush();
+
+		return;
+	}
+
 	if (workspaceHasSplashImage()) {
 		splashCustomized(true);
 
@@ -5221,13 +5230,18 @@ void Workspace::beginSplash(Window* wnd, Renderer* rnd) {
 #else /* GBBASIC_SPLASH_ENABLED */
 	(void)wnd;
 
-	const Color color(0x2e, 0x32, 0x38, 0xff);
+	const Colour color(224, 248, 208, 255);
 	rnd->clear(&color);
+
+	rnd->flush();
 #endif /* GBBASIC_SPLASH_ENABLED */
 }
 
-void Workspace::endSplash(Window* wnd, Renderer* rnd) {
+void Workspace::endSplash(Window* wnd, Renderer* rnd, bool hideSplashImage) {
 #if GBBASIC_SPLASH_ENABLED
+	if (hideSplashImage)
+		return;
+
 	if (splashCustomized()) {
 		if (splashGbbasic()) {
 			theme()->destroyTexture(rnd, splashGbbasic(), nullptr);
@@ -5259,8 +5273,10 @@ void Workspace::endSplash(Window* wnd, Renderer* rnd) {
 #else /* GBBASIC_SPLASH_ENABLED */
 	(void)wnd;
 
-	const Color color(0x2e, 0x32, 0x38, 0xff);
+	const Colour color(224, 248, 208, 255);
 	rnd->clear(&color);
+
+	rnd->flush();
 #endif /* GBBASIC_SPLASH_ENABLED */
 }
 

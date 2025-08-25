@@ -43,6 +43,9 @@
 #ifndef WORKSPACE_OPTION_APPLICATION_FPS_KEY
 #	define WORKSPACE_OPTION_APPLICATION_FPS_KEY "A"
 #endif /* WORKSPACE_OPTION_APPLICATION_FPS_KEY */
+#ifndef WORKSPACE_OPTION_APPLICATION_HIDE_SPLASH_KEY
+#	define WORKSPACE_OPTION_APPLICATION_HIDE_SPLASH_KEY "H"
+#endif /* WORKSPACE_OPTION_APPLICATION_HIDE_SPLASH_KEY */
 #ifndef WORKSPACE_OPTION_APPLICATION_NOTEPAD_MODE_KEY
 #	define WORKSPACE_OPTION_APPLICATION_NOTEPAD_MODE_KEY "N"
 #endif /* WORKSPACE_OPTION_APPLICATION_NOTEPAD_MODE_KEY */
@@ -601,7 +604,7 @@ public:
 	Workspace();
 	~Workspace();
 
-	bool open(Window* wnd, Renderer* rnd, const char* font, unsigned fps, bool showRecent, bool forceWritable, bool toUpgrade, bool toCompile);
+	bool open(Window* wnd, Renderer* rnd, const char* font, unsigned fps, bool showRecent, bool hideSplashImage, bool forceWritable, bool toUpgrade, bool toCompile);
 	bool close(Window* wnd, Renderer* rnd);
 
 	States state(void) const;
@@ -940,8 +943,8 @@ public:
 	);
 
 private:
-	void beginSplash(Window* wnd, Renderer* rnd);
-	void endSplash(Window* wnd, Renderer* rnd);
+	void beginSplash(Window* wnd, Renderer* rnd, bool hideSplashImage);
+	void endSplash(Window* wnd, Renderer* rnd, bool hideSplashImage);
 
 	bool loadConfig(Window* wnd, Renderer* rnd, const rapidjson::Document &doc);
 	bool saveConfig(Window* wnd, Renderer* rnd, rapidjson::Document &doc);
