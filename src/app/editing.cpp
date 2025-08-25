@@ -1481,7 +1481,7 @@ bool frame(
 	const Actor* /* ptr */,
 	const Image* img, Texture* tex,
 	float width,
-	int magnification,
+	int /* magnification */,
 	Brush* cursor, bool showCursor, Brush &&cursorStamp,
 	const Brush* selection,
 	Texture* overlay,
@@ -1540,8 +1540,8 @@ bool frame(
 						boundingBox.y1 += anchor_->y;
 					}
 					drawList->AddRect(
-						curPos + ImVec2((float)boundingBox.xMin() * magnification, (float)boundingBox.yMin() * magnification),
-						curPos + ImVec2((float)(boundingBox.xMax() + 1) * magnification, (float)(boundingBox.yMax() + 1) * magnification),
+						curPos + ImVec2((float)boundingBox.xMin() * scale, (float)boundingBox.yMin() * scale),
+						curPos + ImVec2((float)(boundingBox.xMax() + 1) * scale, (float)(boundingBox.yMax() + 1) * scale),
 						0xff0000ff
 					);
 				}
