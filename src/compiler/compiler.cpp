@@ -29396,7 +29396,7 @@ private:
 			if (!must(Token::Types::KEYWORD, "get")(q1)) return false;
 			if (!(id = must(Token::Types::SYMBOL)(q1))) return false;
 			else name = (std::string)id->data();
-			if (name == "sprite" || name == "scene" || name == "actor") {
+			if (name == "sprite" || name == "scene" || name == "actor" || name == "projectile") {
 				if (forward(Token::Types::KEYWORD, "property")(q1.index)) {
 					any()(q1);
 				}
@@ -29944,7 +29944,8 @@ private:
 						const bool targets =
 							!!forwardN(2, Token::Types::KEYWORD, "sprite")(q.index) ||
 							!!forwardN(2, Token::Types::KEYWORD, "scene")(q.index) ||
-							!!forwardN(2, Token::Types::KEYWORD, "actor")(q.index);
+							!!forwardN(2, Token::Types::KEYWORD, "actor")(q.index) ||
+							!!forwardN(2, Token::Types::KEYWORD, "projectile")(q.index);
 						const bool prop = !!forwardN(3, Token::Types::KEYWORD, "property")(q.index);
 						const int qi = q.index;
 						if (targets && prop && PropertyR(q, children, false)) {
