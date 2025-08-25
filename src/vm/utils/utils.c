@@ -58,6 +58,10 @@ UINT8 call_b_bw(UINT8 a, UINT16 b, UINT8 bank, b_bw_fn func) NONBANKED {
 
 UINT8 feature_states = 0;
 
+/**< Timing. */
+
+UINT8 game_time = 0;
+
 /**< Math. */
 
 const INT8 sine_wave[256] = {

@@ -69,6 +69,9 @@ STATIC void game_update_modules(void) {
     } else if (effects_wobble) {
         effects_wobble_update();
     }
+
+    // Tick the game time.
+    ++game_time;
 }
 
 INLINE void game_poll_input_for_auto(void) {

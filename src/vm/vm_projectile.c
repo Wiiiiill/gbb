@@ -140,7 +140,7 @@ void projectile_update(void) BANKED {
         --projectile->def.life_time;
 
         // Check whether the projectile has reached animation tick frame.
-        if ((sys_time & projectile->def.animation_interval) == 0) {
+        if ((game_time & projectile->def.animation_interval) == 0) {
             const UINT8 frame_end = projectile->def.animations[projectile->animation].end + 1;
             if (++projectile->frame == frame_end) { // Check whether the projectile has reached end of animation.
                 if (!projectile->animation_no_loop) {

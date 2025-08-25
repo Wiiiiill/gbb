@@ -225,7 +225,7 @@ void actor_update(void) BANKED {
         }
 
         // Animate the actor.
-        if (actor->animation_interval != ACTOR_ANIMATION_PAUSED && (sys_time & actor->animation_interval) == 0) {
+        if (actor->animation_interval != ACTOR_ANIMATION_PAUSED && (game_time & actor->animation_interval) == 0) {
             const UINT8 frame_end = actor->animations[actor->animation].end + 1;
             if (++actor->frame >= frame_end) {
                 if (actor->animation_loop) {
