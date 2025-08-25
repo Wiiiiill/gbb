@@ -561,6 +561,13 @@ void vm_set_projectile_prop(SCRIPT_CTX * THIS, UINT8 src) OLDCALL BANKED {
     const UINT8 p = (UINT8)*(--THIS->stack_ptr);
     switch (p) {
     // Definition properties.
+    case PROPERTY_BOUNDS:
+        projectile_def_of(obj)->bounds.left   = (INT8)*(--THIS->stack_ptr);
+        projectile_def_of(obj)->bounds.right  = (INT8)*(--THIS->stack_ptr);
+        projectile_def_of(obj)->bounds.top    = (INT8)*(--THIS->stack_ptr);
+        projectile_def_of(obj)->bounds.bottom = (INT8)*(--THIS->stack_ptr);
+
+        break;
     case PROPERTY_BOUNDS_LEFT:
         projectile_def_of(obj)->bounds.left = (INT8)*(--THIS->stack_ptr);
 
