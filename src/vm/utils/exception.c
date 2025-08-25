@@ -9,6 +9,7 @@
 #include "utils/text.h"
 #include "utils/utils.h"
 
+#if VM_EXCEPTION_ENABLED
 BOOLEAN exception_handle_vm_raised(void) BANKED {
     switch (vm_exception_code) {
     case EXCEPTION_UNKNOWN_PARAMETER: {
@@ -16,6 +17,10 @@ BOOLEAN exception_handle_vm_raised(void) BANKED {
             unsigned char display_text[8];
             UINT8 n = uint16_to_hex_full(vm_exception_data, display_text);
             unsigned char* d = display_text + n;
+
+            const UINT8 m = get_mode();
+            if ((m & 0x07) == M_DRAWING) // Was graphics mode.
+                mode(M_TEXT_OUT); // Uninstall VBL and LCD ISRs of the graphics mode.
 
             SHOW_BKG;
             WX_REG = 0, HIDE_WIN;
@@ -33,3 +38,4 @@ BOOLEAN exception_handle_vm_raised(void) BANKED {
         return FALSE;
     }
 }
+#endif /* VM_EXCEPTION_ENABLED */

@@ -349,7 +349,10 @@ inline void vector_translate_angle(point16_t * vector, UINT8 angle, UINT8 speed)
 
 #define EXCEPTION_UNKNOWN_PARAMETER              1
 
-#define EXCEPTION_DEVICE_ERROR                   0x01
+#define EXCEPTION_DEVICE_ERROR                   1
+#define EXCEPTION_ACTOR_ERROR                    2
+#define EXCEPTION_PROJECTILE_ERROR               3
+#define EXCEPTION_SCENE_ERROR                    4
 
 /**< Animation. */
 

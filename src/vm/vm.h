@@ -121,9 +121,12 @@ extern UINT16 current_data_address;
 // The lock state.
 extern UINT8 vm_lock_state;
 // The exception flag and parameters.
+#define VM_EXCEPTION_ENABLED             1
+#if VM_EXCEPTION_ENABLED
 extern UINT8 vm_exception_code;   // Exception type.
 extern UINT8 vm_exception_source; // Exception source or parameters bank.
 extern UINT16 vm_exception_data;  // Exception data or parameters address.
+#endif /* VM_EXCEPTION_ENABLED */
 
 // Operators.
 #define VM_OP_EQ                         1
@@ -222,7 +225,9 @@ BOOLEAN script_detach_hthread(UINT8 ID) BANKED;
 #define RUNNER_DONE                      0
 #define RUNNER_IDLE                      1
 #define RUNNER_BUSY                      2
+#if VM_EXCEPTION_ENABLED
 #define RUNNER_EXCEPTION                 3
+#endif /* VM_EXCEPTION_ENABLED */
 
 #define EXCEPTION_CODE_NONE              0
 

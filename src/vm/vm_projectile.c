@@ -461,6 +461,12 @@ void vm_get_projectile_prop(SCRIPT_CTX * THIS) OLDCALL BANKED {
     default:
         *(THIS->stack_ptr++) = FALSE;
 
+#if VM_EXCEPTION_ENABLED
+        vm_exception_code   = EXCEPTION_UNKNOWN_PARAMETER;
+        vm_exception_source = EXCEPTION_PROJECTILE_ERROR;
+        vm_exception_data   = p;
+#endif /* VM_EXCEPTION_ENABLED */
+
         break;
     }
 }
@@ -664,6 +670,16 @@ void vm_set_projectile_prop(SCRIPT_CTX * THIS, UINT8 src) OLDCALL BANKED {
         break;
     case PROPERTY_ANIMATION_INDEX:
         obj.ptr->animation = (UINT8)*(--THIS->stack_ptr);
+
+        break;
+    default:
+        --THIS->stack_ptr;
+
+#if VM_EXCEPTION_ENABLED
+        vm_exception_code   = EXCEPTION_UNKNOWN_PARAMETER;
+        vm_exception_source = EXCEPTION_PROJECTILE_ERROR;
+        vm_exception_data   = p;
+#endif /* VM_EXCEPTION_ENABLED */
 
         break;
     }

@@ -836,9 +836,11 @@ SCRIPT_CTX * first_ctx, * free_ctxs;
 // The lock state.
 UINT8 vm_lock_state;
 // The exception flag and parameters.
+#if VM_EXCEPTION_ENABLED
 UINT8 vm_exception_code;   // Exception type.
 UINT8 vm_exception_source; // Exception source or parameters bank.
 UINT16 vm_exception_data;  // Exception data or parameters address.
+#endif /* VM_EXCEPTION_ENABLED */
 
 void VBL_isr(void) NONBANKED {
     if (FEATURE_MAP_MOVEMENT_FLAG) {
@@ -1019,7 +1021,9 @@ UINT8 script_runner_update(void) NONBANKED {
     // Iterate all the contexts.
     while (ctx) {
         // Prepare.
+#if VM_EXCEPTION_ENABLED
         vm_exception_code = EXCEPTION_CODE_NONE;
+#endif /* VM_EXCEPTION_ENABLED */
         ctx->waitable = FALSE;
         if ((ctx->terminated != FALSE) || (!VM_STEP(ctx))) {
             // Update the lock state.
@@ -1039,7 +1043,9 @@ UINT8 script_runner_update(void) NONBANKED {
             if (old_ctx) ctx = old_ctx->next; else ctx = first_ctx;
         } else {
             // Check exception.
+#if VM_EXCEPTION_ENABLED
             if (vm_exception_code) return RUNNER_EXCEPTION;
+#endif /* VM_EXCEPTION_ENABLED */
 
             // Loop until waitable state or quant is expired.
             if (!(ctx->waitable) && (counter--)) continue;

@@ -31,10 +31,12 @@ inline void update(void) {
             break;
         case RUNNER_BUSY:
             break;
+#if VM_EXCEPTION_ENABLED
         case RUNNER_EXCEPTION:
             exception_handle_vm_raised();
 
             return;
+#endif /* VM_EXCEPTION_ENABLED */
         default:
             break;
         }
