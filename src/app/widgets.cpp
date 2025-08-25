@@ -24,6 +24,17 @@
 
 /*
 ** {===========================================================================
+** Macros and constants
+*/
+
+#ifndef WIDGETS_ABOUT_REVISION
+#	define WIDGETS_ABOUT_REVISION "r00004"
+#endif /* WIDGETS_ABOUT_REVISION */
+
+/* ===========================================================================} */
+
+/*
+** {===========================================================================
 ** Utilities
 */
 
@@ -4498,6 +4509,7 @@ AboutPopupBox::AboutPopupBox(
 	_confirmedHandler(confirm)
 {
 	_desc = "v" GBBASIC_VERSION_STRING_WITH_SUFFIX;
+	_desc += " " WIDGETS_ABOUT_REVISION;
 
 	_specs += "Built for " GBBASIC_OS ", ";
 	_specs += Platform::isLittleEndian() ? "little-endian" : "big-endian";
