@@ -133,7 +133,7 @@ EM_JS(
 						'pushEvent',
 						'number', [ 'number', 'number', 'number', 'number' ],
 						[
-							Module.ExternalEventTypes.UNLOAD_WINDOW,
+							Module.ExternalEventTypes.UNLOAD_WINDOW.value,
 							0,
 							0,
 							0

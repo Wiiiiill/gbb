@@ -278,7 +278,6 @@ public:
 	bool dirty(void);
 
 	bool open(const char* path);
-	bool open(const char* title, const char* content);
 	bool close(bool deep);
 
 	bool exists(void) const;

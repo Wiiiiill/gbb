@@ -1578,7 +1578,7 @@ bool Project::sramExists(class Workspace* ws) const {
 std::string Project::sramPath(class Workspace* ws) const {
 	if (path().empty()) {
 		const std::string name = title().empty() ? GBBASIC_NONAME_PROJECT_NAME : title();
-		const std::string writableDir = Platform::writableDirectory();
+		const std::string writableDir = Path::writableDirectory();
 		const std::string path_ = Path::combine(writableDir.c_str(), name.c_str()) + "." GBBASIC_SRAM_STATE_EXT;
 
 		return path_;
@@ -1595,12 +1595,12 @@ std::string Project::sramPath(class Workspace* ws) const {
 	}
 
 #if defined GBBASIC_OS_HTML
-	const std::string writableDir = Platform::writableDirectory();
+	const std::string writableDir = Path::writableDirectory();
 	const std::string path_ = Path::combine(writableDir.c_str(), name.c_str()) + "." GBBASIC_SRAM_STATE_EXT;
 #else /* GBBASIC_OS_HTML */
 	std::string path_ = Path::combine(dir.c_str(), name.c_str()) + "." GBBASIC_SRAM_STATE_EXT;
 	if (ws->isUnderExamplesDirectory(path_.c_str()) || ws->isUnderKitsDirectory(path_.c_str())) {
-		const std::string writableDir = Platform::writableDirectory();
+		const std::string writableDir = Path::writableDirectory();
 		const std::string sramDir = Path::combine(writableDir.c_str(), "sram");
 		if (!Path::existsDirectory(sramDir.c_str()))
 			Path::touchDirectory(sramDir.c_str());
@@ -1804,71 +1804,6 @@ bool Project::open(const char* path_) {
 
 		isPlain(true);
 		preferPlain(ext == GBBASIC_PLAIN_PROJECT_EXT);
-
-		// Finish.
-		return true;
-	} else { // Is a rich project file.
-		content = Text::trim(source);
-		isPlain(false);
-		preferPlain(false);
-	}
-
-	// Parse the information.
-	const bool result = loadInformation(content, nullptr);
-
-	// Finish.
-	return result;
-}
-
-bool Project::open(const char* title_, const char* content_) {
-	// Prepare.
-	path().clear();
-
-	// Read from the file.
-	const std::string source = content_;
-
-	// Determine the source type.
-	std::string content;
-	const std::string sectionBegin = COMPILER_PROGRAM_BEGIN;
-	const std::string sectionEnd = COMPILER_PROGRAM_END;
-	const size_t beginIndex = Text::indexOf(source, sectionBegin);
-	const size_t endIndex = Text::indexOf(source, sectionEnd, beginIndex + sectionBegin.length());
-	if (beginIndex == std::string::npos && endIndex == std::string::npos) { // Is a plain source code file.
-		// Fill the information.
-		title(title_);
-
-		const long long now = DateTime::now();
-		contentType(ContentTypes::BASIC);
-		cartridgeType(PROJECT_CARTRIDGE_TYPE_CLASSIC PROJECT_CARTRIDGE_TYPE_SEPARATOR PROJECT_CARTRIDGE_TYPE_COLORED PROJECT_CARTRIDGE_TYPE_SEPARATOR PROJECT_CARTRIDGE_TYPE_EXTENSION);
-		sramType("0");
-		hasRtc(false);
-		caseInsensitive(true);
-		description("");
-		author("");
-		genre("");
-		version("1.0.0");
-		url("");
-		created(now);
-		modified(now);
-		preferencesFontSize(Math::Vec2i(-1, GBBASIC_FONT_DEFAULT_SIZE));
-		preferencesFontOffset(GBBASIC_FONT_DEFAULT_OFFSET);
-		preferencesFontIsTwoBitsPerPixel(GBBASIC_FONT_DEFAULT_IS_2BPP);
-		preferencesFontPreferFullWord(GBBASIC_FONT_DEFAULT_PREFER_FULL_WORD);
-		preferencesFontPreferFullWordForNonAscii(GBBASIC_FONT_DEFAULT_PREFER_FULL_WORD_FOR_NON_ASCII);
-		preferencesMapRef(0);
-		preferencesMusicPreviewStroke(true);
-		preferencesSfxShowSoundShape(true);
-		preferencesActorApplyPropertiesToAllFrames(true);
-		preferencesActorUses8x16Sprites(true);
-		preferencesSceneRefMap(0);
-		preferencesSceneShowActors(true);
-		preferencesSceneShowTriggers(true);
-		preferencesSceneShowProperties(true);
-		preferencesSceneShowAttributes(false);
-		preferencesSceneUseGravity(false);
-
-		isPlain(true);
-		preferPlain(true);
 
 		// Finish.
 		return true;
