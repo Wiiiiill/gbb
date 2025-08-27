@@ -31970,6 +31970,9 @@ private:
 							if (errors > errorCount) // Already raised error.
 								return false;
 
+							if (index != q.index)
+								throwInvalidSyntax(q.index);
+
 							return throwIncompleteStructure(index);
 						}
 					}

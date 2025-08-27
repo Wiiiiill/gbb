@@ -99,6 +99,8 @@ private:
 	} _inCodeDefinitions;
 
 	struct Tools {
+		typedef std::function<void(void)> GlobalSearchingHandler;
+
 		bool initialized = false;
 		bool focused = false;
 
@@ -106,6 +108,7 @@ private:
 
 		Editing::Tools::Marker marker;
 		int direction = 0;
+		GlobalSearchingHandler search = nullptr;
 
 		void clear(void) {
 			initialized = false;
@@ -256,6 +259,8 @@ public:
 
 		SetHeadClickedHandler(std::bind(&EditorCodeImpl::headClicked, this, ws, std::placeholders::_1, std::placeholders::_2));
 
+		_tools.search = std::bind(&EditorCodeImpl::searchGlobally, this, wnd, rnd, ws);
+
 		fprintf(stdout, "Code editor opened: #%d.\n", _index);
 	}
 	virtual void close(int /* index */) override {
@@ -283,6 +288,7 @@ public:
 		_inCodeDefinitions.clear(true);
 
 		_tools.clear();
+		_tools.search = nullptr;
 	}
 
 	virtual int index(void) const override {
@@ -604,6 +610,14 @@ public:
 
 			return Variant(true);
 		case FIND: {
+				const bool withPopup = unpack<bool>(argc, argv, 0, true);
+
+				if (withPopup) {
+					_tools.search();
+
+					return Variant(true);
+				}
+
 				_tools.initialized = false;
 
 				_shared.jumping = false;
