@@ -360,6 +360,7 @@ bool Theme::open(class Renderer* rnd) {
 	menu_Examples("Examples");
 	menu_ExportSelection("Export Selection");
 	menu_Find("Find");
+	menu_FindInProject("Find in Project...");
 	menu_Font("Font");
 	menu_ForSprite("For Sprite");
 	menu_ForTiles("For Tiles");

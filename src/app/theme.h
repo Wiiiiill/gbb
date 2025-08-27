@@ -159,6 +159,7 @@ public:
 	GBBASIC_PROPERTY_READONLY(std::string, menu_Examples)
 	GBBASIC_PROPERTY_READONLY(std::string, menu_ExportSelection)
 	GBBASIC_PROPERTY_READONLY(std::string, menu_Find)
+	GBBASIC_PROPERTY_READONLY(std::string, menu_FindInProject)
 	GBBASIC_PROPERTY_READONLY(std::string, menu_Font)
 	GBBASIC_PROPERTY_READONLY(std::string, menu_ForSprite)
 	GBBASIC_PROPERTY_READONLY(std::string, menu_ForTiles)

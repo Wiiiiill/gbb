@@ -28,7 +28,7 @@
 */
 
 #ifndef WIDGETS_ABOUT_REVISION
-#	define WIDGETS_ABOUT_REVISION "r5"
+#	define WIDGETS_ABOUT_REVISION "r6"
 #endif /* WIDGETS_ABOUT_REVISION */
 
 /* ===========================================================================} */
@@ -426,7 +426,7 @@ void MessagePopupBox::update(Workspace*) {
 			++count;
 		CentralizeButton(count);
 
-		if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN) || IsKeyReleased(SDL_SCANCODE_SPACE) || IsKeyReleased(SDL_SCANCODE_Y) || (_deniedHandler.empty() && _canceledHandler.empty() && IsKeyReleased(SDL_SCANCODE_ESCAPE))) {
+		if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN) || IsKeyReleased(SDL_SCANCODE_Y) || (_deniedHandler.empty() && _canceledHandler.empty() && IsKeyReleased(SDL_SCANCODE_ESCAPE))) {
 			toConfirm = true;
 
 			CloseCurrentPopup();
@@ -727,7 +727,7 @@ void StarterKitsPopupBox::update(Workspace* ws) {
 
 		CentralizeButton(2);
 
-		if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN) || IsKeyReleased(SDL_SCANCODE_SPACE)) {
+		if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN)) {
 			toConfirm = true;
 
 			CloseCurrentPopup();
@@ -2491,7 +2491,7 @@ void FontResolverPopupBox::update(Workspace* ws) {
 		CentralizeButton(2);
 
 		if ((_requireExisting && _exists) || (!_requireExisting && !_path.empty())) {
-			if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN) || IsKeyReleased(SDL_SCANCODE_SPACE)) {
+			if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN)) {
 				toConfirm = true;
 
 				CloseCurrentPopup();
@@ -2771,7 +2771,7 @@ void MapResolverPopupBox::update(Workspace* ws) {
 		CentralizeButton(2);
 
 		if (_withTilesIndex || (_requireExisting && _exists) || (!_requireExisting && !_path.empty()) || (!_requireExisting && _withImageText.empty())) {
-			if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN) || IsKeyReleased(SDL_SCANCODE_SPACE)) {
+			if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN)) {
 				toConfirm = true;
 
 				CloseCurrentPopup();
@@ -2957,7 +2957,7 @@ void SceneResolverPopupBox::update(Workspace* ws) {
 
 		CentralizeButton(2);
 
-		if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN) || IsKeyReleased(SDL_SCANCODE_SPACE)) {
+		if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN)) {
 			toConfirm = true;
 
 			CloseCurrentPopup();
@@ -3385,7 +3385,7 @@ void FileResolverPopupBox::update(Workspace* ws) {
 		CentralizeButton(2);
 
 		if ((_requireExisting && _exists) || (!_requireExisting && !_path.empty())) {
-			if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN) || IsKeyReleased(SDL_SCANCODE_SPACE)) {
+			if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN)) {
 				toConfirm = true;
 
 				CloseCurrentPopup();
@@ -4324,7 +4324,7 @@ void PreferencesPopupBox::update(Workspace*) {
 
 		CentralizeButton(3);
 
-		if ((Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN) || IsKeyReleased(SDL_SCANCODE_Y)) && _init.end()) {
+		if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) && _init.end()) {
 			toConfirm = true;
 
 			CloseCurrentPopup();
@@ -4461,7 +4461,7 @@ void ActivitiesPopupBox::update(Workspace* ws) {
 
 		CentralizeButton();
 
-		if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN) || IsKeyReleased(SDL_SCANCODE_SPACE) || IsKeyReleased(SDL_SCANCODE_Y)) {
+		if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN) || IsKeyReleased(SDL_SCANCODE_Y)) {
 			toConfirm = true;
 
 			CloseCurrentPopup();
@@ -4600,7 +4600,7 @@ void AboutPopupBox::update(Workspace*) {
 
 		CentralizeButton();
 
-		if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN) || IsKeyReleased(SDL_SCANCODE_SPACE) || IsKeyReleased(SDL_SCANCODE_Y)) {
+		if (Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || IsKeyReleased(SDL_SCANCODE_RETURN) || IsKeyReleased(SDL_SCANCODE_Y)) {
 			toConfirm = true;
 
 			CloseCurrentPopup();

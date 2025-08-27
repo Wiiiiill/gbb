@@ -472,6 +472,7 @@ bool Workspace::open(Window* wnd, Renderer* rnd, const char* font, unsigned fps,
 	splashCustomized(false);
 
 	activeKernelIndex(-1);
+	hasKernelSourceCode(false);
 
 	exampleCount(0);
 
@@ -3781,6 +3782,25 @@ void Workspace::showAbout(Renderer* rnd) {
 	);
 }
 
+std::string Workspace::getSourceCodePath(std::string* name_) const {
+	if (name_)
+		name_->clear();
+
+	if (kernels().empty())
+		return "";
+
+	const std::string &krnlPath = kernels().front()->kernelSourceCode();
+	std::string name;
+	Path::split(krnlPath, &name, nullptr, nullptr);
+
+	const std::string src = Path::combine(KERNEL_BINARIES_DIR, (name + ".zip").c_str());
+
+	if (name_)
+		*name_ = name;
+
+	return src;
+}
+
 void Workspace::ejectSourceCode(Window* wnd, Renderer* rnd) {
 	if (kernels().empty()) {
 		const std::string msg = "Cannot find valid kernel.";
@@ -3788,11 +3808,9 @@ void Workspace::ejectSourceCode(Window* wnd, Renderer* rnd) {
 
 		return;
 	}
-	const std::string &krnlPath = kernels().front()->kernelSourceCode();
-	std::string name;
-	Path::split(krnlPath, &name, nullptr, nullptr);
 
-	const std::string src = Path::combine(KERNEL_BINARIES_DIR, (name + ".zip").c_str());
+	std::string name;
+	const std::string src = getSourceCodePath(&name);
 	if (!Path::existsFile(src.c_str())) {
 		const std::string msg = "Cannot find source code \"" + src + "\".";
 		error(msg.c_str());
@@ -5546,6 +5564,9 @@ void Workspace::loadKernels(void) {
 
 	const int index = Math::clamp(settings().kernelActiveIndex, 0, (int)kernels().size());
 	activeKernelIndex(index);
+
+	const std::string src = getSourceCodePath(nullptr);
+	hasKernelSourceCode(Path::existsFile(src.c_str()));
 }
 
 void Workspace::unloadKernels(void) {
@@ -6242,7 +6263,7 @@ void Workspace::shortcuts(Window* wnd, Renderer* rnd) {
 					editor->post(Editable::INDENT, true);
 				}
 			);
-		} else if (tab && !modifier && io.KeyShift && !io.KeyAlt) {
+		} else if (tab /* && !modifier */ && io.KeyShift && !io.KeyAlt) {
 			withCurrentAsset(
 				[] (Categories /* cat */, BaseAssets::Entry* /* entry */, Editable* editor) -> void {
 					editor->post(Editable::UNINDENT, true);
@@ -6281,7 +6302,7 @@ void Workspace::shortcuts(Window* wnd, Renderer* rnd) {
 		} else if (f && modifier && !io.KeyShift && !io.KeyAlt) {
 			withCurrentAsset(
 				[] (Categories /* cat */, BaseAssets::Entry* /* entry */, Editable* editor) -> void {
-					editor->post(Editable::FIND);
+					editor->post(Editable::FIND, false);
 				}
 			);
 		} else if (f3 && !modifier && !io.KeyShift && !io.KeyAlt) {
@@ -7378,9 +7399,11 @@ void Workspace::menu(Window* wnd, Renderer* rnd) {
 					toggleDocument(path.c_str());
 				}
 			}
-			ImGui::Separator();
-			if (ImGui::MenuItem(theme()->menu_EjectSourceCodeVm())) {
-				ejectSourceCode(wnd, rnd);
+			if (hasKernelSourceCode()) {
+				ImGui::Separator();
+				if (ImGui::MenuItem(theme()->menu_EjectSourceCodeVm())) {
+					ejectSourceCode(wnd, rnd);
+				}
 			}
 			ImGui::Separator();
 			if (ImGui::MenuItem(theme()->menu_About())) {
@@ -7511,7 +7534,14 @@ void Workspace::menu(Window* wnd, Renderer* rnd) {
 						if (ImGui::MenuItem(theme()->menu_Find(), GBBASIC_MODIFIER_KEY_NAME "+F")) {
 							withCurrentAsset(
 								[] (Categories /* cat */, BaseAssets::Entry* /* entry */, Editable* editor) -> void {
-									editor->post(Editable::FIND);
+									editor->post(Editable::FIND, false);
+								}
+							);
+						}
+						if (ImGui::MenuItem(theme()->menu_FindInProject(), GBBASIC_MODIFIER_KEY_NAME "+Shift+F")) {
+							withCurrentAsset(
+								[] (Categories /* cat */, BaseAssets::Entry* /* entry */, Editable* editor) -> void {
+									editor->post(Editable::FIND, true);
 								}
 							);
 						}

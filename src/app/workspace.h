@@ -484,6 +484,7 @@ public:
 
 	GBBASIC_PROPERTY(GBBASIC::Kernel::Array, kernels)
 	GBBASIC_PROPERTY_READONLY(int, activeKernelIndex)
+	GBBASIC_PROPERTY_READONLY(bool, hasKernelSourceCode)
 
 	GBBASIC_PROPERTY(Exporter::Array, exporters)
 	GBBASIC_PROPERTY(std::string, exporterLicenses)
@@ -864,6 +865,7 @@ public:
 	void showPreferences(Window* wnd, Renderer* rnd);
 	void showActivities(Renderer* rnd);
 	void showAbout(Renderer* rnd);
+	std::string getSourceCodePath(std::string* name /* nullable */) const;
 	void ejectSourceCode(Window* wnd, Renderer* rnd);
 	void toggleDocument(const char* path /* nullable */);
 
