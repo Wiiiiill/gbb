@@ -51,6 +51,9 @@ public:
 	virtual void text(const std::string &txt) override {
 		_text = txt;
 	}
+	virtual void clear(void) override {
+		_text.clear();
+	}
 };
 
 void Text::locale(const char* loc) {

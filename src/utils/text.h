@@ -40,6 +40,7 @@ public:
 	virtual const std::string &text(void) const = 0;
 	virtual std::string &text(void) = 0;
 	virtual void text(const std::string &txt) = 0;
+	virtual void clear(void) = 0;
 
 	static void locale(const char* loc);
 

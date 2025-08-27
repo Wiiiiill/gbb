@@ -2092,15 +2092,15 @@ promise::Promise Operations::fileImport(Window* wnd, Renderer* rnd, Workspace* w
 	);
 }
 
-promise::Promise Operations::fileImportStringForNotepad(Window* wnd, Renderer* rnd, Workspace* ws, const char* content) {
-	const std::string content_ = content;
+promise::Promise Operations::fileImportStringForNotepad(Window* wnd, Renderer* rnd, Workspace* ws, const Text::Ptr &content) {
+	const Text::Ptr content_ = content;
 
 	auto next = [wnd, rnd, ws, content_] (promise::Defer df) -> void {
 		Project::Ptr prj(new Project(wnd, rnd, ws));
 		prj->fileSync()->initialize("", FileSync::Filters::PROJECT);
 
-		auto import = [wnd, rnd, ws, prj, df] (const std::string &content, int total) -> bool {
-			if (!prj->open(GBBASIC_TITLE, content.c_str())) {
+		auto import = [wnd, rnd, ws, prj, df] (const std::string &path, int total) -> bool {
+			if (!prj->open(path.c_str())) {
 				if (total == 1) {
 					df.reject();
 
@@ -2124,7 +2124,23 @@ promise::Promise Operations::fileImportStringForNotepad(Window* wnd, Renderer* r
 		const long long start = DateTime::ticks();
 #endif /* OPERATIONS_GBBASIC_TIME_STAT_ENABLED */
 
-		if (!import(content_, 1))
+		const std::string dir = Path::documentDirectory();
+		const std::string path = Path::combine(dir.c_str(), "Program." GBBASIC_RICH_PROJECT_EXT);
+		File::Ptr file(File::create());
+		if (!file->open(path.c_str(), Stream::Accesses::WRITE)) {
+			df.reject();
+
+			popupMessage(wnd, rnd, ws, ws->theme()->dialogPrompt_CannotOpenProject().c_str());
+
+			return;
+		}
+		file->writeString(content_->text());
+		file->close();
+		file.reset();
+
+		content_->clear();
+
+		if (!import(path, 1))
 			return;
 
 #if defined OPERATIONS_GBBASIC_TIME_STAT_ENABLED

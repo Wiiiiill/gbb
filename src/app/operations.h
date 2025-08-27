@@ -57,7 +57,7 @@ public:
 	static promise::Promise fileDragAndDropFile(Window* wnd, Renderer* rnd, Workspace* ws, const char* path);
 	static promise::Promise fileDragAndDropFileForNotepad(Window* wnd, Renderer* rnd, Workspace* ws, const char* path);
 	static promise::Promise fileImport(Window* wnd, Renderer* rnd, Workspace* ws);                                                         // Shows open file dialog if necessary.
-	static promise::Promise fileImportStringForNotepad(Window* wnd, Renderer* rnd, Workspace* ws, const char* content);
+	static promise::Promise fileImportStringForNotepad(Window* wnd, Renderer* rnd, Workspace* ws, const Text::Ptr &content);
 	static promise::Promise fileImportForNotepad(Window* wnd, Renderer* rnd, Workspace* ws);                                               // Shows open file dialog if necessary.
 	static promise::Promise fileImportExamples(Window* wnd, Renderer* rnd, Workspace* ws, const char* path /* nullable */);                // Shows open file dialog if necessary.
 	static promise::Promise fileImportExampleForNotepad(Window* wnd, Renderer* rnd, Workspace* ws);                                        // Shows open file dialog if necessary.

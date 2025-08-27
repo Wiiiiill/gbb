@@ -2055,6 +2055,29 @@ bool Workspace::quit(Window* wnd, Renderer* rnd) {
 
 void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes type, void* event) {
 #if defined GBBASIC_OS_HTML
+	auto toCompile = [this] (Window* wnd, Renderer* rnd) -> void {
+		if (!currentProject()) {
+			messagePopupBox(theme()->dialogPrompt_NoValidProject(), nullptr, nullptr, nullptr);
+
+			fprintf(stderr, "No valid project.\n");
+
+			return;
+		}
+
+		compileProject(wnd, rnd, nullptr, nullptr, nullptr, false, -1);
+	};
+	auto toRun = [this] (Window* wnd, Renderer* rnd) -> void {
+		if (!currentProject()) {
+			messagePopupBox(theme()->dialogPrompt_NoValidProject(), nullptr, nullptr, nullptr);
+
+			fprintf(stderr, "No valid project.\n");
+
+			return;
+		}
+
+		compileProject(wnd, rnd, nullptr, nullptr, nullptr, true, -1);
+	};
+
 	SDL_Event* evt = (SDL_Event*)event;
 	switch (type) {
 	case ExternalEventTypes::RESIZE_WINDOW: {
@@ -2093,10 +2116,9 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 
 				break;
 			}
+			if (!*content) {
+				workspaceFree((void*)content); content = nullptr;
 
-			const std::string content_ = content;
-			workspaceFree((void*)content); content = nullptr;
-			if (content_.empty()) {
 				messagePopupBox(theme()->dialogPrompt_NoValidContent(), nullptr, nullptr, nullptr);
 
 				fprintf(stderr, "No valid content.\n");
@@ -2104,9 +2126,15 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 				break;
 			}
 
-			Operations::fileImportStringForNotepad(wnd, rnd, this, content_.c_str())
+			Text::Ptr content_(Text::create());
+			content_->text(content);
+			workspaceFree((void*)content); content = nullptr;
+			content_->text(Text::replace(content_->text(), "\r\n", "\n"));
+			content_->text(Text::replace(content_->text(), "\r", "\n"));
+
+			Operations::fileImportStringForNotepad(wnd, rnd, this, content_)
 				.then(
-					[wnd, rnd, this, cat, page] (Project::Ptr prj) -> void {
+					[wnd, rnd, this, cat, page, toCompile, toRun] (Project::Ptr prj) -> void {
 						if (!prj)
 							return;
 
@@ -2117,14 +2145,31 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 
 						Operations::fileOpen(wnd, rnd, this, prj, fontConfig().empty() ? nullptr : fontConfig().c_str())
 							.then(
-								[wnd, rnd, this, cat, page, prj] (bool ok) -> void {
+								[wnd, rnd, this, cat, page, prj, toCompile, toRun] (bool ok) -> void {
 									if (!ok)
 										return;
 
 									validateProject(prj.get());
 
 									category((Workspace::Categories)cat);
-									changePage(wnd, rnd, currentProject().get(), category(), page);
+									switch ((Workspace::Categories)cat) {
+									case Workspace::Categories::CONSOLE:
+										fprintf(stdout, "SDL: TO COMPILE.\n");
+
+										toCompile(wnd, rnd);
+
+										break;
+									case Workspace::Categories::EMULATOR:
+										fprintf(stdout, "SDL: TO RUN.\n");
+
+										toRun(wnd, rnd);
+
+										break;
+									default:
+										changePage(wnd, rnd, currentProject().get(), category(), page);
+
+										break;
+									}
 								}
 							);
 					}
@@ -2231,30 +2276,14 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 	case ExternalEventTypes::COMPILE: {
 			fprintf(stdout, "SDL: COMPILE.\n");
 
-			if (!currentProject()) {
-				messagePopupBox(theme()->dialogPrompt_NoValidProject(), nullptr, nullptr, nullptr);
-
-				fprintf(stderr, "No valid project.\n");
-
-				break;
-			}
-
-			compileProject(wnd, rnd, nullptr, nullptr, nullptr, false, -1);
+			toCompile(wnd, rnd);
 		}
 
 		break;
 	case ExternalEventTypes::RUN: {
 			fprintf(stdout, "SDL: RUN.\n");
 
-			if (!currentProject()) {
-				messagePopupBox(theme()->dialogPrompt_NoValidProject(), nullptr, nullptr, nullptr);
-
-				fprintf(stderr, "No valid project.\n");
-
-				break;
-			}
-
-			compileProject(wnd, rnd, nullptr, nullptr, nullptr, true, -1);
+			toRun(wnd, rnd);
 		}
 
 		break;
