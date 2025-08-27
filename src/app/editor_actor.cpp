@@ -1177,7 +1177,7 @@ public:
 					)
 				);
 				if (
-					(_painting && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) ||
+					_painting ||
 					_tools.painting == Editing::Tools::STAMP
 				) {
 					_cursor = cursor;
