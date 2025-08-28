@@ -109,6 +109,7 @@ EMSCRIPTEN_BINDINGS(ExternalEventTypes) {
 		.value("PATCH_PROJECT", Workspace::ExternalEventTypes::PATCH_PROJECT)
 		.value("TO_CATEGORY",   Workspace::ExternalEventTypes::TO_CATEGORY)
 		.value("TO_PAGE",       Workspace::ExternalEventTypes::TO_PAGE)
+		.value("TO_LOCATION",   Workspace::ExternalEventTypes::TO_LOCATION)
 		.value("COMPILE",       Workspace::ExternalEventTypes::COMPILE)
 		.value("RUN",           Workspace::ExternalEventTypes::RUN)
 		.value("COUNT",         Workspace::ExternalEventTypes::COUNT)
@@ -2106,6 +2107,7 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 	case ExternalEventTypes::LOAD_PROJECT: {
 			fprintf(stdout, "SDL: LOAD_PROJECT.\n");
 
+			const int sub = (int)evt->user.code;
 			const int cat = (int)(intptr_t)evt->user.data1;
 			const int page = (int)(intptr_t)evt->user.data2;
 
@@ -2133,46 +2135,71 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 			content_->text(Text::replace(content_->text(), "\r\n", "\n"));
 			content_->text(Text::replace(content_->text(), "\r", "\n"));
 
-			Operations::fileImportStringForNotepad(wnd, rnd, this, content_)
-				.then(
-					[wnd, rnd, this, cat, page, toCompile, toRun] (Project::Ptr prj) -> void {
-						if (!prj)
-							return;
+			auto next = [wnd, rnd, this, cat, page, sub, toCompile, toRun, content_] (void) -> void {
+				Operations::fileImportStringForNotepad(wnd, rnd, this, content_)
+					.then(
+						[wnd, rnd, this, cat, page, sub, toCompile, toRun] (Project::Ptr prj) -> void {
+							if (!prj)
+								return;
 
-						ImGuiIO &io = ImGui::GetIO();
+							ImGuiIO &io = ImGui::GetIO();
 
-						if (io.KeyCtrl)
-							return;
+							if (io.KeyCtrl)
+								return;
 
-						Operations::fileOpen(wnd, rnd, this, prj, fontConfig().empty() ? nullptr : fontConfig().c_str())
-							.then(
-								[wnd, rnd, this, cat, page, prj, toCompile, toRun] (bool ok) -> void {
-									if (!ok)
-										return;
+							Operations::fileOpen(wnd, rnd, this, prj, fontConfig().empty() ? nullptr : fontConfig().c_str())
+								.then(
+									[wnd, rnd, this, cat, page, sub, prj, toCompile, toRun] (bool ok) -> void {
+										if (!ok)
+											return;
 
-									validateProject(prj.get());
+										validateProject(prj.get());
 
-									category((Workspace::Categories)cat);
-									switch ((Workspace::Categories)cat) {
-									case Workspace::Categories::CONSOLE:
-										fprintf(stdout, "SDL: TO COMPILE.\n");
+										category((Workspace::Categories)cat);
+										switch ((Workspace::Categories)cat) {
+										case Workspace::Categories::CONSOLE:
+											fprintf(stdout, "SDL: TO COMPILE.\n");
 
-										toCompile(wnd, rnd);
+											toCompile(wnd, rnd);
 
-										break;
-									case Workspace::Categories::EMULATOR:
-										fprintf(stdout, "SDL: TO RUN.\n");
+											break;
+										case Workspace::Categories::EMULATOR:
+											fprintf(stdout, "SDL: TO RUN.\n");
 
-										toRun(wnd, rnd);
+											toRun(wnd, rnd);
 
-										break;
-									default:
-										changePage(wnd, rnd, currentProject().get(), category(), page);
+											break;
+										default:
+											changePage(wnd, rnd, prj.get(), category(), page);
 
-										break;
+											if ((Workspace::Categories)cat == Workspace::Categories::CODE) {
+												CodeAssets::Entry* entry = prj->getCode(page);
+												if (entry) {
+													Editable* editor = entry->editor;
+													if (!editor)
+														editor = touchCodeEditor(wnd, rnd, prj.get(), page, true, entry);
+													if (editor)
+														editor->post(Editable::SET_CURSOR, (Variant::Int)sub);
+												}
+											}
+
+											break;
+										}
 									}
-								}
-							);
+								);
+						}
+					);
+			};
+			Operations::projectStop(wnd, rnd, this)
+				.then(
+					[wnd, rnd, this, next] (bool ok, const Bytes::Ptr sram) -> void {
+						if (ok && settings().deviceSaveSramOnStop) {
+							const Project::Ptr &prj = currentProject();
+
+							Operations::projectSaveSram(wnd, rnd, this, prj, sram, false);
+						}
+
+						next();
 					}
 				);
 		}
@@ -2219,10 +2246,12 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 				break;
 			}
 
-			category((Workspace::Categories)cat);
-			changePage(wnd, rnd, currentProject().get(), category(), page);
+			Project::Ptr &prj = currentProject();
 
-			CodeAssets::Entry* entry = currentProject()->getCode(page);
+			category((Workspace::Categories)cat);
+			changePage(wnd, rnd, prj.get(), category(), page);
+
+			CodeAssets::Entry* entry = prj->getCode(page);
 			if (!entry) {
 				messagePopupBox(theme()->dialogPrompt_UnsupportedOperation(), nullptr, nullptr, nullptr);
 
@@ -2270,12 +2299,50 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 				break;
 			}
 
-			changePage(wnd, rnd, currentProject().get(), category(), page);
+			Project::Ptr &prj = currentProject();
+
+			changePage(wnd, rnd, prj.get(), category(), page);
+		}
+
+		break;
+	case ExternalEventTypes::TO_LOCATION: {
+			fprintf(stdout, "SDL: TO_LOCATION.\n");
+
+			const int ln = (int)(intptr_t)evt->user.data1;
+
+			if (!currentProject()) {
+				messagePopupBox(theme()->dialogPrompt_NoValidProject(), nullptr, nullptr, nullptr);
+
+				fprintf(stderr, "No valid project.\n");
+
+				break;
+			}
+
+			Project::Ptr &prj = currentProject();
+
+			const int pg = prj->activeMajorCodeIndex();
+
+			CodeAssets::Entry* entry = prj->getCode(pg);
+			if (entry) {
+				Editable* editor = entry->editor;
+				if (!editor)
+					editor = touchCodeEditor(wnd, rnd, prj.get(), pg, true, entry);
+				if (editor)
+					editor->post(Editable::SET_CURSOR, (Variant::Int)ln);
+			}
 		}
 
 		break;
 	case ExternalEventTypes::COMPILE: {
 			fprintf(stdout, "SDL: COMPILE.\n");
+
+			if (!currentProject()) {
+				messagePopupBox(theme()->dialogPrompt_NoValidProject(), nullptr, nullptr, nullptr);
+
+				fprintf(stderr, "No valid project.\n");
+
+				break;
+			}
 
 			toCompile(wnd, rnd);
 		}
@@ -2283,6 +2350,14 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 		break;
 	case ExternalEventTypes::RUN: {
 			fprintf(stdout, "SDL: RUN.\n");
+
+			if (!currentProject()) {
+				messagePopupBox(theme()->dialogPrompt_NoValidProject(), nullptr, nullptr, nullptr);
+
+				fprintf(stderr, "No valid project.\n");
+
+				break;
+			}
 
 			toRun(wnd, rnd);
 		}

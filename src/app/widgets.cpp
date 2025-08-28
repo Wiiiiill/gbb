@@ -28,7 +28,7 @@
 */
 
 #ifndef WIDGETS_ABOUT_REVISION
-#	define WIDGETS_ABOUT_REVISION "r6"
+#	define WIDGETS_ABOUT_REVISION "r8"
 #endif /* WIDGETS_ABOUT_REVISION */
 
 /* ===========================================================================} */
