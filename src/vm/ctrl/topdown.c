@@ -302,7 +302,7 @@ STATIC BOOLEAN controller_behave_topdown_move_update(actor_t * actor) {
 
     // Check collision with another actor.
     if (moving) {
-        actor_t * hit_actor = actor_in_front_of_actor(actor, 1, FALSE);
+        actor_t * hit_actor = actor_in_front_of_actor(actor, 0, FALSE);
         if (hit_actor && controller_is_actor_toward_another(actor, hit_actor)) {
             actor_transfer_animation_to_idle(actor);
             actor_move_stop(actor);
