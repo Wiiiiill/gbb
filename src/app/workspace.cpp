@@ -800,7 +800,7 @@ std::string Workspace::serializeKernelBehaviour(int val) const {
 	return "none";
 }
 
-int Workspace::parseBehaviour(const std::string &id) const {
+int Workspace::parseKernelBehaviour(const std::string &id) const {
 	const int krnlIndex = activeKernelIndex();
 	if (krnlIndex < 0 || krnlIndex >= (int)kernels().size())
 		return 0;
@@ -4661,7 +4661,7 @@ void Workspace::upgrade(
 		prj->actorsTexture(actorstex);
 
 		prj->behaviourSerializer(std::bind(&Workspace::serializeKernelBehaviour, this, std::placeholders::_1));
-		prj->behaviourParser(std::bind(&Workspace::parseBehaviour, this, std::placeholders::_1));
+		prj->behaviourParser(std::bind(&Workspace::parseKernelBehaviour, this, std::placeholders::_1));
 
 		std::string fontConfigPath;
 		Text::Dictionary::const_iterator fntOpt = arguments.find(COMPILER_FONT_OPTION_KEY);
@@ -5180,7 +5180,7 @@ void Workspace::compile(
 		tmpPrj->actorsTexture(actorstex);
 
 		tmpPrj->behaviourSerializer(std::bind(&Workspace::serializeKernelBehaviour, this, std::placeholders::_1));
-		tmpPrj->behaviourParser(std::bind(&Workspace::parseBehaviour, this, std::placeholders::_1));
+		tmpPrj->behaviourParser(std::bind(&Workspace::parseKernelBehaviour, this, std::placeholders::_1));
 
 		std::string fontConfigPath;
 		Text::Dictionary::const_iterator fntOpt = arguments.find(COMPILER_FONT_OPTION_KEY);

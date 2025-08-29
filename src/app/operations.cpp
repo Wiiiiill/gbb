@@ -968,7 +968,7 @@ promise::Promise Operations::fileNew(Window* wnd, Renderer* rnd, Workspace* ws, 
 			templatePrj->actorsTexture(actorstex);
 
 			templatePrj->behaviourSerializer(std::bind(&Workspace::serializeKernelBehaviour, ws, std::placeholders::_1));
-			templatePrj->behaviourParser(std::bind(&Workspace::parseBehaviour, ws, std::placeholders::_1));
+			templatePrj->behaviourParser(std::bind(&Workspace::parseKernelBehaviour, ws, std::placeholders::_1));
 
 			if (!templatePrj->load(fontConfigPath, std::bind(operationsHandleWarningOrError, ws, std::placeholders::_1, std::placeholders::_2))) {
 				templatePrj->close(true);
@@ -1115,7 +1115,7 @@ promise::Promise Operations::fileOpen(Window* wnd, Renderer* rnd, Workspace* ws,
 				prj->actorsTexture(actorstex);
 
 				prj->behaviourSerializer(std::bind(&Workspace::serializeKernelBehaviour, ws, std::placeholders::_1));
-				prj->behaviourParser(std::bind(&Workspace::parseBehaviour, ws, std::placeholders::_1));
+				prj->behaviourParser(std::bind(&Workspace::parseKernelBehaviour, ws, std::placeholders::_1));
 
 				ws->clear();
 
@@ -1561,7 +1561,7 @@ promise::Promise Operations::fileRename(Window* wnd, Renderer* rnd, Workspace* w
 						prj->actorsTexture(actorstex);
 
 						prj->behaviourSerializer(std::bind(&Workspace::serializeKernelBehaviour, ws, std::placeholders::_1));
-						prj->behaviourParser(std::bind(&Workspace::parseBehaviour, ws, std::placeholders::_1));
+						prj->behaviourParser(std::bind(&Workspace::parseKernelBehaviour, ws, std::placeholders::_1));
 
 						if (!prj->load(fontConfigPath, std::bind(operationsHandleWarningOrError, ws, std::placeholders::_1, std::placeholders::_2))) {
 							df.reject();
@@ -2626,7 +2626,7 @@ promise::Promise Operations::fileDuplicate(Window* wnd, Renderer* rnd, Workspace
 		prj_->actorsTexture(actorstex);
 
 		prj->behaviourSerializer(std::bind(&Workspace::serializeKernelBehaviour, ws, std::placeholders::_1));
-		prj->behaviourParser(std::bind(&Workspace::parseBehaviour, ws, std::placeholders::_1));
+		prj->behaviourParser(std::bind(&Workspace::parseKernelBehaviour, ws, std::placeholders::_1));
 
 		if (!prj_->load(fontConfigPath, std::bind(operationsHandleWarningOrError, ws, std::placeholders::_1, std::placeholders::_2))) {
 			df.reject();
