@@ -567,6 +567,9 @@ bool Workspace::open(Window* wnd, Renderer* rnd, const char* font, unsigned fps,
 	// Load documents.
 	loadDocuments();
 
+	// Load links.
+	loadLinks();
+
 	// End the splash.
 	endSplash(wnd, rnd, hideSplashImage);
 
@@ -607,6 +610,9 @@ bool Workspace::close(Window*, Renderer* rnd) {
 
 	// Dispose the dialog box if there is any.
 	popupBox(nullptr);
+
+	// Unload links.
+	unloadLinks();
 
 	// Unload documents.
 	unloadDocuments();
@@ -5922,6 +5928,42 @@ void Workspace::unloadDocuments(void) {
 	documents().clear();
 }
 
+void Workspace::loadLinks(void) {
+	const std::string path = Path::combine(DOCUMENT_MARKDOWN_DIR, WORKSPACE_LINKS_FILE);
+	if (!Path::existsFile(path.c_str()))
+		return;
+
+	File::Ptr file(File::create());
+	if (!file->open(path.c_str(), Stream::READ))
+		return;
+
+	rapidjson::Document doc;
+	std::string buf;
+	if (!file->readString(buf)) {
+		file->close();
+
+		return;
+	}
+	file->close();
+
+	if (!Json::fromString(doc, buf.c_str()))
+		return;
+
+	const int n = Jpath::count(doc, "links");
+	for (int i = 0; i < n; ++i) {
+		std::string name;
+		std::string content;
+		if (!Jpath::get(doc, name, "links", i, "name") || !Jpath::get(doc, content, "links", i, "content"))
+			continue;
+
+		links()[Entry(name)] = content;
+	}
+}
+
+void Workspace::unloadLinks(void) {
+	links().clear();
+}
+
 bool Workspace::execute(Window* wnd, Renderer* rnd, double delta, unsigned* fpsReq) {
 	ImGuiIO &io = ImGui::GetIO();
 
@@ -7481,6 +7523,21 @@ void Workspace::menu(Window* wnd, Renderer* rnd) {
 				std::string path;
 				if (ImGui::DocumentMenu(documents(), path)) {
 					toggleDocument(path.c_str());
+				}
+			}
+			if (!links().empty()) {
+				ImGui::Separator();
+				std::string url;
+				std::string message;
+				if (ImGui::LinkMenu(links(), url, message)) {
+					if (!url.empty()) {
+						const std::string osstr = Unicode::toOs(url);
+
+						Platform::surf(osstr.c_str());
+					}
+					if (!message.empty()) {
+						messagePopupBox(message, nullptr, nullptr, nullptr);
+					}
 				}
 			}
 			if (hasKernelSourceCode()) {

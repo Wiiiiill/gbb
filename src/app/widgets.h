@@ -1245,6 +1245,11 @@ bool DocumentMenu(
 	std::string &selected
 );
 
+bool LinkMenu(
+	const Entry::Dictionary &links,
+	std::string &url, std::string &message
+);
+
 void ConfigGamepads(
 	Input* input,
 	Input::Gamepad* pads, int pad_count,

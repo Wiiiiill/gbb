@@ -7621,7 +7621,7 @@ bool MusicMenu(
 
 	for (Entry::Dictionary::value_type kv : music) {
 		const Entry &entry = kv.first;
-		const std::string path = kv.second;
+		const std::string &path = kv.second;
 		Text::Array::const_iterator begin = entry.parts().begin();
 		Text::Array::const_iterator end = entry.parts().end() - 1;
 		if (entry.parts().size() == 1) {
@@ -7668,7 +7668,7 @@ bool SfxMenu(
 
 	for (Entry::Dictionary::value_type kv : sfx) {
 		const Entry &entry = kv.first;
-		const std::string path = kv.second;
+		const std::string &path = kv.second;
 		Text::Array::const_iterator begin = entry.parts().begin();
 		Text::Array::const_iterator end = entry.parts().end() - 1;
 		if (entry.parts().size() == 1) {
@@ -7715,7 +7715,7 @@ bool DocumentMenu(
 
 	for (Entry::Dictionary::value_type kv : documents) {
 		const Entry &entry = kv.first;
-		const std::string path = kv.second;
+		const std::string &path = kv.second;
 		Text::Array::const_iterator begin = entry.parts().begin();
 		Text::Array::const_iterator end = entry.parts().end() - 1;
 		if (entry.parts().size() == 1) {
@@ -7736,6 +7736,69 @@ bool DocumentMenu(
 				clicked = MenuItem(file);
 			if (clicked) {
 				selected = path;
+
+				result = true;
+			}
+		}
+	}
+
+	hierarchy.finish();
+
+	return result;
+}
+
+bool LinkMenu(
+	const Entry::Dictionary &links,
+	std::string &url, std::string &message
+) {
+	bool result = false;
+
+	url.clear();
+	message.clear();
+
+	Hierarchy hierarchy(
+		[] (const std::string &dir) -> bool {
+			return BeginMenu(dir);
+		},
+		[] (void) -> void {
+			EndMenu();
+		}
+	);
+	hierarchy.prepare();
+
+	for (Entry::Dictionary::value_type kv : links) {
+		const Entry &entry = kv.first;
+		const std::string &content = kv.second;
+		Text::Array::const_iterator begin = entry.parts().begin();
+		Text::Array::const_iterator end = entry.parts().end() - 1;
+		if (entry.parts().size() == 1) {
+			begin = entry.parts().end();
+			end = entry.parts().end();
+		}
+
+		if (hierarchy.with(begin, end)) {
+			std::string file = entry.parts().back();
+			const std::string dotMd = "." DOCUMENT_MARKDOWN_EXT;
+			if (Text::endsWith(file, dotMd, true))
+				file = file.substr(0, file.length() - dotMd.length());
+			const bool isManual = file == DOCUMENT_MAIN_NAME;
+			bool clicked = false;
+			if (isManual)
+				clicked = MenuItem(file, "F1");
+			else
+				clicked = MenuItem(file);
+			if (clicked) {
+				const size_t httpIdx = Text::indexOf(content, "http://");
+				const size_t httpsIdx = Text::indexOf(content, "https://");
+				if (httpIdx != std::string::npos) {
+					url = content.substr(httpIdx);
+					message = content.substr(0, httpIdx);
+				} else if (httpsIdx != std::string::npos) {
+					url = content.substr(httpsIdx);
+					message = content.substr(0, httpsIdx);
+				}
+				url = Text::trim(url);
+				message = Text::trim(message);
 
 				result = true;
 			}

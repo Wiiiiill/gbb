@@ -160,6 +160,10 @@
 #	endif /* GBBASIC_DEBUG */
 #endif /* WORKSPACE_STARTER_KITS_PROJECTS_WRITABLE */
 
+#ifndef WORKSPACE_LINKS_FILE
+#	define WORKSPACE_LINKS_FILE "links.json"
+#endif /* WORKSPACE_LINKS_FILE */
+
 #ifndef WORKSPACE_ALTERNATIVE_ROOT_PATH
 #	define WORKSPACE_ALTERNATIVE_ROOT_PATH "../.."
 #endif /* WORKSPACE_ALTERNATIVE_ROOT_PATH */
@@ -508,6 +512,8 @@ public:
 	GBBASIC_PROPERTY_READONLY(int, sfxCount)
 
 	GBBASIC_PROPERTY(Entry::Dictionary, documents)
+
+	GBBASIC_PROPERTY(Entry::Dictionary, links)
 
 	/**< GUI. */
 
@@ -972,6 +978,9 @@ private:
 
 	void loadDocuments(void);
 	void unloadDocuments(void);
+
+	void loadLinks(void);
+	void unloadLinks(void);
 
 	bool execute(Window* wnd, Renderer* rnd, double delta, unsigned* fpsReq);
 	bool perform(Window* wnd, Renderer* rnd, double delta, unsigned* fpsReq, Device::AudioHandler handleAudio /* nullable */);
