@@ -219,21 +219,21 @@ UINT8 scene_get_actor(
 
     UINT8 * data  = scene.actor_address +
         1 /* actor count */ + 19 /* bytes per ref */ * idx /* which one */;
-    *tiles_count    = get_uint8 (scene.actor_bank, data++);
-    *tiles_bank     = get_uint8 (scene.actor_bank, data++);
-    *tiles_ptr      = get_ptr   (scene.actor_bank, data  ); data += 2;
-    *sprite_count   = get_uint8 (scene.actor_bank, data++);
-    *bank           = get_uint8 (scene.actor_bank, data++);
-    *ptr            = get_ptr   (scene.actor_bank, data  ); data += 2;
-    UINT8 result    = get_uint8 (scene.actor_bank, data++);
-    *x              = get_uint16(scene.actor_bank, data  ); data += 2;
-    *y              = get_uint16(scene.actor_bank, data  ); data += 2;
-    *behave_bank    = get_uint8 (scene.actor_bank, data++);
-    *behave_address = get_ptr   (scene.actor_bank, data  ); data += 2;
-    *hits_bank      = get_uint8 (scene.actor_bank, data++);
-    *hits_address   = get_ptr   (scene.actor_bank, data  ); data += 2;
+    *tiles_count        = get_uint8 (scene.actor_bank, data++);
+    *tiles_bank         = get_uint8 (scene.actor_bank, data++);
+    *tiles_ptr          = get_ptr   (scene.actor_bank, data  ); data += 2;
+    *sprite_count       = get_uint8 (scene.actor_bank, data++);
+    *bank               = get_uint8 (scene.actor_bank, data++);
+    *ptr                = get_ptr   (scene.actor_bank, data  ); data += 2;
+    UINT8 template      = get_uint8 (scene.actor_bank, data++);
+    *x                  = get_uint16(scene.actor_bank, data  ); data += 2;
+    *y                  = get_uint16(scene.actor_bank, data  ); data += 2;
+    *behave_bank        = get_uint8 (scene.actor_bank, data++);
+    *behave_address     = get_ptr   (scene.actor_bank, data  ); data += 2;
+    *hits_bank          = get_uint8 (scene.actor_bank, data++);
+    *hits_address       = get_ptr   (scene.actor_bank, data  ); data += 2;
 
-    return result;
+    return template;
 }
 
 UINT8 scene_count_triggers(void) BANKED {
@@ -363,8 +363,9 @@ STATIC void scene_def(UINT8 w, UINT8 h, UINT8 base, UINT8 def_bank, UINT8 * def_
 
 STATIC void scene_load_actors(UINT8 base_tile) {
     const UINT8 n = scene_count_actors();
+    UINT8 forward = 0;
     for (UINT8 i = 0; i != n; ++i) {
-        UINT8 tiles_count;
+        UINT8 tiles_count; // Non-zero for new actor index, otherwise for reused.
         UINT8 tiles_bank;
         UINT8 * tiles_ptr;
         UINT8 sprite_count;
@@ -375,7 +376,7 @@ STATIC void scene_load_actors(UINT8 base_tile) {
         UINT8 * behave_address;
         UINT8 hits_bank;
         UINT8 * hits_address;
-        const UINT8 tmp = scene_get_actor(
+        const UINT8 template = scene_get_actor(
             i,
             &tiles_count, &tiles_bank, &tiles_ptr,
             &sprite_count,
@@ -385,9 +386,13 @@ STATIC void scene_load_actors(UINT8 base_tile) {
             &hits_bank, &hits_address
         );
 
-        call_v_bbp_oldcall(base_tile, tiles_count, tiles_bank, tiles_ptr, set_sprite_data);
+        if (tiles_count) {
+            base_tile += forward;
+            forward = tiles_count;
+            call_v_bbp_oldcall(base_tile, tiles_count, tiles_bank, tiles_ptr, set_sprite_data);
+        }
         actor_t * actor = actor_new();
-        actor->template = tmp;
+        actor->template = template;
         actor_def(actor, x, y, base_tile, bank, ptr);
 
         actor->behave_handler_bank    = behave_bank;
@@ -396,8 +401,6 @@ STATIC void scene_load_actors(UINT8 base_tile) {
         actor->hit_handler_address    = hits_address;
         if (behave_bank)
             actor_begin_behave_thread(actor, behave_bank, behave_address);
-
-        base_tile += tiles_count;
     }
 }
 

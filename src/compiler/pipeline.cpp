@@ -1634,21 +1634,21 @@ static bool generate_toBytes(const SceneAssets::Entry* entry, Pipeline* pipeline
 				Destination::Chunk::Scheduled s_;
 				s_.argsOffset = offset;
 				scheduled.push_back(s_);
-				bytes->writeUInt8((UInt8)COMPILER_PLACEHOLDER);   // The tiles count.
-				bytes->writeUInt8((UInt8)COMPILER_PLACEHOLDER);   // The tiles bank.
-				bytes->writeUInt16((UInt16)COMPILER_PLACEHOLDER); // The tiles address.
-				bytes->writeUInt8((UInt8)COMPILER_PLACEHOLDER);   // The sprite count.
-				bytes->writeUInt8((UInt8)COMPILER_PLACEHOLDER);   // The ref bank.
-				bytes->writeUInt16((UInt16)COMPILER_PLACEHOLDER); // The ref address.
-				bytes->writeUInt8((UInt8)cel);                    // The cel.
+				bytes->writeUInt8((UInt8)COMPILER_PLACEHOLDER);       // The tiles count.
+				bytes->writeUInt8((UInt8)COMPILER_PLACEHOLDER);       // The tiles bank.
+				bytes->writeUInt16((UInt16)COMPILER_PLACEHOLDER);     // The tiles address.
+				bytes->writeUInt8((UInt8)COMPILER_PLACEHOLDER);       // The sprite count.
+				bytes->writeUInt8((UInt8)COMPILER_PLACEHOLDER);       // The ref bank.
+				bytes->writeUInt16((UInt16)COMPILER_PLACEHOLDER);     // The ref address.
+				bytes->writeUInt8((UInt8)cel);                        // The cel.
 				const int x = i * GBBASIC_TILE_SIZE;
 				const int y = j * GBBASIC_TILE_SIZE;
-				write(bytes.get(), (UInt16)x, Endians::LITTLE);   // The X position.
-				write(bytes.get(), (UInt16)y, Endians::LITTLE);   // The Y position.
-				bytes->writeUInt8((UInt8)updateRoutineBank);      // The behave routine bank.
-				bytes->writeUInt16((UInt16)updateRoutineAddress); // The behave routine address.
-				bytes->writeUInt8((UInt8)hitsRoutineBank);        // The hits routine bank.
-				bytes->writeUInt16((UInt16)hitsRoutineAddress);   // The hits routine address.
+				write(bytes.get(), (UInt16)x, Endians::LITTLE);       // The X position.
+				write(bytes.get(), (UInt16)y, Endians::LITTLE);       // The Y position.
+				bytes->writeUInt8((UInt8)updateRoutineBank);          // The behave routine bank.
+				bytes->writeUInt16((UInt16)updateRoutineAddress);     // The behave routine address.
+				bytes->writeUInt8((UInt8)hitsRoutineBank);            // The hits routine bank.
+				bytes->writeUInt16((UInt16)hitsRoutineAddress);       // The hits routine address.
 
 				++n;
 			}
@@ -1942,9 +1942,13 @@ static bool post_toBytes(const SceneAssets::Entry* entry, Pipeline* pipeline, Ta
 		int n = 0;
 		GBBASIC_ASSERT(page <= (int)orderedActorsInScene.size() && "Impossible.");
 		const Ordered<int>::Array &orderedActors = orderedActorsInScene[page];
+		int currentActorIndex = -1;
 		for (const Ordered<int> &orderedActor : orderedActors) {
 			const UInt8 cel = (UInt8)orderedActor.value;
 			GBBASIC_ASSERT(cel != Scene::INVALID_ACTOR() && "Impossible.");
+			const bool isNewActorIndex = currentActorIndex != (int)cel;
+			if (isNewActorIndex)
+				currentActorIndex = (int)cel;
 
 			if (n >= (int)scheduledActors.size())
 				return false;
@@ -1973,12 +1977,18 @@ static bool post_toBytes(const SceneAssets::Entry* entry, Pipeline* pipeline, Ta
 			Bytes::Ptr &bytesDef = chunkActors.bytes;
 			const Destination::Chunk::Scheduled &s = scheduledActors[n];
 			const Byte* ptr = bytesDef->pointer();
-			*((UInt8*)s.args(ptr))  = (UInt8)tilesCount;    ptr += sizeof(UInt8);  // The tiles count.
-			*((UInt8*)s.args(ptr))  = (UInt8)tilesBank;     ptr += sizeof(UInt8);  // The tiles bank.
-			*((UInt16*)s.args(ptr)) = (UInt16)tilesAddress; ptr += sizeof(UInt16); // The tiles address.
-			*((UInt8*)s.args(ptr))  = (UInt8)spriteCount;   ptr += sizeof(UInt8);  // The sprite count.
-			*((UInt8*)s.args(ptr))  = (UInt8)bankActor;     ptr += sizeof(UInt8);  // The ref bank.
-			*((UInt16*)s.args(ptr)) = (UInt16)addressActor; ptr += sizeof(UInt16); // The ref address.
+			if (isNewActorIndex) {
+				// When it is a new actor index, tell the tiles count, then it will fill the tiles.
+				*((UInt8*)s.args(ptr)) = (UInt8)tilesCount;    ptr += sizeof(UInt8);  // The tiles count.
+			} else {
+				// Otherwise will not re-fill or grow tiles.
+				*((UInt8*)s.args(ptr)) = (UInt8)0;             ptr += sizeof(UInt8);  // The tiles count.
+			}
+			*((UInt8*)s.args(ptr))     = (UInt8)tilesBank;     ptr += sizeof(UInt8);  // The tiles bank.
+			*((UInt16*)s.args(ptr))    = (UInt16)tilesAddress; ptr += sizeof(UInt16); // The tiles address.
+			*((UInt8*)s.args(ptr))     = (UInt8)spriteCount;   ptr += sizeof(UInt8);  // The sprite count.
+			*((UInt8*)s.args(ptr))     = (UInt8)bankActor;     ptr += sizeof(UInt8);  // The ref bank.
+			*((UInt16*)s.args(ptr))    = (UInt16)addressActor; ptr += sizeof(UInt16); // The ref address.
 
 			++n;
 		}
@@ -3059,6 +3069,11 @@ private:
 				[this, &actors] (const Ordered<int> &l, const Ordered<int> &r) -> bool {
 					const int lv = l.value;
 					const int rv = r.value;
+
+					if (lv < rv) // Ordered by asset indices.
+						return true;
+					else if (lv > rv)
+						return false;
 
 					do {
 						if (lv == rv)
