@@ -990,6 +990,7 @@ promise::Promise Operations::fileNew(Window* wnd, Renderer* rnd, Workspace* ws, 
 			prj->title(name);
 			prj->created(now);
 			prj->modified(now);
+			prj->order(PROJECT_DEFAULT_ORDER);
 		} else {
 			prj->title(name);
 			Bytes::Ptr bytes(Bytes::create());
