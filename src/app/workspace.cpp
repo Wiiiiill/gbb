@@ -7362,38 +7362,40 @@ void Workspace::menu(Window* wnd, Renderer* rnd) {
 
 		if (ImGui::BeginMenu(theme()->menu_Help())) {
 #if WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED
-			if (ImGui::BeginMenu(theme()->menu_Examples())) {
-				std::string path;
-				if (ImGui::ExampleMenu(examples(), path)) {
-					closeFilter();
+			if (exampleCount()) {
+				if (ImGui::BeginMenu(theme()->menu_Examples())) {
+					std::string path;
+					if (ImGui::ExampleMenu(examples(), path)) {
+						closeFilter();
 
-					stopProject(wnd, rnd);
+						stopProject(wnd, rnd);
 
-					Operations::fileImportExamples(wnd, rnd, this, path.c_str())
-						.then(
-							[wnd, rnd, this] (Project::Ptr prj) -> void {
-								if (!prj)
-									return;
+						Operations::fileImportExamples(wnd, rnd, this, path.c_str())
+							.then(
+								[wnd, rnd, this] (Project::Ptr prj) -> void {
+									if (!prj)
+										return;
 
-								ImGuiIO &io = ImGui::GetIO();
+									ImGuiIO &io = ImGui::GetIO();
 
-								if (io.KeyCtrl)
-									return;
+									if (io.KeyCtrl)
+										return;
 
-								Operations::fileOpen(wnd, rnd, this, prj, fontConfig().empty() ? nullptr : fontConfig().c_str())
-									.then(
-										[this, prj] (bool ok) -> void {
-											if (!ok)
-												return;
+									Operations::fileOpen(wnd, rnd, this, prj, fontConfig().empty() ? nullptr : fontConfig().c_str())
+										.then(
+											[this, prj] (bool ok) -> void {
+												if (!ok)
+													return;
 
-											validateProject(prj.get());
-										}
-									);
-							}
-						);
+												validateProject(prj.get());
+											}
+										);
+								}
+							);
+					}
+
+					ImGui::EndMenu();
 				}
-
-				ImGui::EndMenu();
 			}
 #endif /* WORKSPACE_EXAMPLE_PROJECTS_MENU_ENABLED */
 			if (exampleCount() > 0) {
