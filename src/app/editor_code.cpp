@@ -916,8 +916,10 @@ public:
 		context(wnd, rnd, ws);
 
 		if (!ws->analyzing() && _debounce.fire()) {
-			if (ws->needAnalyzing())
-				ws->analyze();
+			if (ws->needAnalyzing()) {
+				if (!ws->analyze(false)) // Analyzing not started.
+					_debounce.modified(); // Will try again later.
+			}
 		}
 
 		_actived = IsEditorFocused() || ImGui::IsWindowFocused();

@@ -186,7 +186,7 @@ public:
 		}
 
 		if (_workspace->needAnalyzing())
-			_workspace->analyze();
+			_workspace->analyze(true);
 
 		fprintf(stdout, "Code binding editor opened: #%s.\n", _index.index.destination.c_str());
 

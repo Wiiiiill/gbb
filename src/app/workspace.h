@@ -892,7 +892,7 @@ public:
 	bool working(void) const;
 
 	bool analyzing(void) const;
-	void analyze(void);
+	bool analyze(bool force);
 	void clearAnalyzingResult(void);
 	void clearLanguageDefinition(void);
 	unsigned getLanguageDefinitionRevision(void) const;

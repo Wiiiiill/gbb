@@ -3078,7 +3078,7 @@ void Workspace::showCodeBindingEditor(
 			[this, bind] (void) -> void {
 				if (needAnalyzing()) {
 					if (!analyzing())
-						analyze(); // Ensure it's analyzed.
+						analyze(true); // Ensure it's analyzed.
 
 #if defined GBBASIC_DEBUG
 					do {
@@ -3574,7 +3574,7 @@ void Workspace::showProjectProperty(Window* wnd, Renderer* rnd, Project* prj) {
 		prj->hasDirtyInformation(true);
 
 		if (needReAnalyze)
-			analyze();
+			analyze(true);
 	};
 
 	ImGui::ProjectPropertyPopupBox::ConfirmedHandler confirm(
@@ -4206,13 +4206,18 @@ bool Workspace::analyzing(void) const {
 	return staticAnalyzer()->analyzing();
 }
 
-void Workspace::analyze(void) {
+bool Workspace::analyze(bool force) {
 	if (!staticAnalyzer())
-		return;
+		return true;
 
 	const Project::Ptr &prj = currentProject();
 	if (!prj)
-		return;
+		return true;
+
+	if (!force) {
+		if (popupBox() || menuOpened() || analyzing() || _state == States::COMPILING)
+			return false;
+	}
 
 	AssetsBundle::Ptr assets(new AssetsBundle());
 	prj->assets()->clone(
@@ -4244,7 +4249,7 @@ void Workspace::analyze(void) {
 	if (kernels().empty()) {
 		finish(this);
 
-		return;
+		return true;
 	}
 
 	const GBBASIC::Kernel::Ptr &krnl = kernels().front();
@@ -4260,6 +4265,8 @@ void Workspace::analyze(void) {
 			finish(this);
 		}
 	);
+
+	return true;
 }
 
 void Workspace::clearAnalyzingResult(void) {
