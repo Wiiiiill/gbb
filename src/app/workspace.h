@@ -335,12 +335,25 @@ public:
 
 		typedef std::function<void(void)> Handler;
 
+		struct Amount {
+			enum class Types {
+				FOR_FRAMES,
+				UNTIL_TIMESTAMP
+			};
+
+			Types type = Types::FOR_FRAMES;
+			long long data = 0;
+
+			Amount();
+			Amount(Types y, long long d);
+		};
+
 		Handler handler = nullptr;
 		std::string key;
-		int delayFor = 1;
+		Amount delay = Amount(Amount::Types::FOR_FRAMES, 1);
 
 		Delayed();
-		Delayed(Handler handler_, const std::string &key_, int delayFor_);
+		Delayed(Handler handler_, const std::string &key_, const Amount &delay_);
 	};
 
 	struct AssetPageNames {
@@ -889,7 +902,7 @@ public:
 	void closeAudioDevice(void);
 	void updateAudioDevice(Window* wnd, Renderer* rnd, double delta, unsigned* fpsReq, Device::AudioHandler handleAudio /* nullable */);
 
-	bool delay(Delayed::Handler delayed, const std::string &key = "", int delayFor = 5 /* 4 or 5 frames should be sufficient, even for popup initialization */);
+	bool delay(Delayed::Handler delayed, const std::string &key = "", const Delayed::Amount &delay_ = Delayed::Amount(Delayed::Amount::Types::FOR_FRAMES, 5) /* 4 or 5 frames should be sufficient, even for popup initialization */);
 	void clearDelayed(void);
 
 	Semaphore async(WorkTaskFunction::OperationHandler op /* on work thread */, WorkTaskFunction::SealHandler seal /* nullable */ /* on main thread */, WorkTaskFunction::DisposeHandler dtor /* nullable */ /* on main thread */);

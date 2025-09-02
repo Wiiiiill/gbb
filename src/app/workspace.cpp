@@ -319,13 +319,19 @@ int Workspace::CompilingErrors::indexOf(const Entry &entry) const {
 	return -1;
 }
 
+Workspace::Delayed::Amount::Amount() {
+}
+
+Workspace::Delayed::Amount::Amount(Types y, long long d) : type(y), data(d) {
+}
+
 Workspace::Delayed::Delayed() {
 }
 
-Workspace::Delayed::Delayed(Handler handler_, const std::string &key_, int delayFor_) :
+Workspace::Delayed::Delayed(Handler handler_, const std::string &key_, const Amount &delay_) :
 	handler(handler_),
 	key(key_),
-	delayFor(delayFor_)
+	delay(delay_)
 {
 }
 
@@ -4123,7 +4129,7 @@ void Workspace::updateAudioDevice(Window* wnd, Renderer* rnd, double delta, unsi
 	audioDevice()->update(wnd, rnd, delta, nullptr, false, nullptr, handleAudio);
 }
 
-bool Workspace::delay(Delayed::Handler delayed_, const std::string &key, int delayFor) {
+bool Workspace::delay(Delayed::Handler delayed_, const std::string &key, const Delayed::Amount &delay_) {
 	if (!key.empty()) {
 		for (const Delayed &d : delayed()) {
 			if (d.key == key)
@@ -4131,7 +4137,7 @@ bool Workspace::delay(Delayed::Handler delayed_, const std::string &key, int del
 		}
 	}
 
-	delayed().push_back(Delayed(delayed_, key, delayFor));
+	delayed().push_back(Delayed(delayed_, key, delay_));
 
 	return true;
 }
@@ -6136,14 +6142,29 @@ void Workspace::finish(Window* wnd, Renderer* rnd) {
 
 	// Process delayed actions.
 	if (!delayed().empty()) {
+		const long long now = DateTime::ticks();
 		Delayed::List::iterator it = delayed().begin();
 		while (it != delayed().end()) {
 			Delayed &delay = *it;
-			if (--delay.delayFor <= 0) {
-				delay.handler();
-				it = delayed().erase(it);
-			} else {
-				++it;
+			switch (delay.delay.type) {
+			case Delayed::Amount::Types::FOR_FRAMES:
+				if (--delay.delay.data == 0) {
+					delay.handler();
+					it = delayed().erase(it);
+				} else {
+					++it;
+				}
+
+				break;
+			case Delayed::Amount::Types::UNTIL_TIMESTAMP:
+				if (delay.delay.data < now) {
+					delay.handler();
+					it = delayed().erase(it);
+				} else {
+					++it;
+				}
+
+				break;
 			}
 		}
 	}
@@ -7526,17 +7547,31 @@ void Workspace::menu(Window* wnd, Renderer* rnd) {
 				}
 			}
 			if (!links().empty()) {
+				typedef std::function<void(void)> Surf;
+
 				ImGui::Separator();
 				std::string url;
 				std::string message;
 				if (ImGui::LinkMenu(links(), url, message)) {
+					Surf surf = nullptr;
 					if (!url.empty()) {
-						const std::string osstr = Unicode::toOs(url);
+						surf = [url] (void) -> void {
+							const std::string osstr = Unicode::toOs(url);
 
-						Platform::surf(osstr.c_str());
+							Platform::surf(osstr.c_str());
+						};
 					}
-					if (!message.empty()) {
+					if (message.empty()) {
+						if (surf)
+							surf();
+					} else {
 						messagePopupBox(message, nullptr, nullptr, nullptr);
+
+						if (surf) {
+							const long long now = DateTime::ticks();
+							const long long tm = now + DateTime::fromSeconds(3);
+							delay(surf, "SURF", Delayed::Amount(Delayed::Amount::Types::UNTIL_TIMESTAMP, tm));
+						}
 					}
 				}
 			}
