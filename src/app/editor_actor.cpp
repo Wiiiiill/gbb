@@ -683,11 +683,13 @@ public:
 		if (size == 0)
 			return;
 
-		enqueue<Commands::Actor::Cut>()
+		Command* cmd = enqueue<Commands::Actor::Cut>()
 			->with(_binding.getPixel, _binding.setPixel)
 			->with(sel)
 			->with(_setFrame, _frame.cursor)
 			->exec(object(), Variant((void*)entry()));
+
+		_refresh(cmd);
 
 		_selection.clear();
 	}
@@ -783,11 +785,13 @@ public:
 		if (size == 0)
 			return;
 
-		enqueue<Commands::Actor::Delete>()
+		Command* cmd = enqueue<Commands::Actor::Delete>()
 			->with(_binding.getPixel, _binding.setPixel)
 			->with(sel)
 			->with(_setFrame, _frame.cursor)
 			->exec(object(), Variant((void*)entry()));
+
+		_refresh(cmd);
 
 		_selection.clear();
 	}
@@ -1700,9 +1704,11 @@ public:
 			}
 			inputFieldFocused |= inputFieldFocused_;
 			if (asActor != entry()->asActor) {
-				enqueue<Commands::Actor::SetViewAs>()
+				Command* cmd = enqueue<Commands::Actor::SetViewAs>()
 					->with(asActor)
 					->exec(object(), Variant((void*)entry()));
+
+				_refresh(cmd);
 			}
 
 			bool toSave = false;
@@ -1899,9 +1905,11 @@ private:
 			if (ImGui::BeginPopup("@Ctx")) {
 				if (ImGui::MenuItem(ws->theme()->menu_SetAsFigure())) {
 					const int fig = _frame.hovering >= 0 ? _frame.hovering : _frame.cursor;
-					enqueue<Commands::Actor::SetFigure>()
+					Command* cmd = enqueue<Commands::Actor::SetFigure>()
 						->with(fig)
 						->exec(object(), Variant((void*)entry()));
+
+					_refresh(cmd);
 
 					_frame.fill(object()->count(), entry()->figure);
 				}
@@ -1935,9 +1943,11 @@ private:
 				ImGui::Separator();
 				if (ImGui::MenuItem(ws->theme()->menu_SetAsFigure())) {
 					const int fig = _frame.cursor;
-					enqueue<Commands::Actor::SetFigure>()
+					Command* cmd = enqueue<Commands::Actor::SetFigure>()
 						->with(fig)
 						->exec(object(), Variant((void*)entry()));
+
+					_refresh(cmd);
 
 					_frame.fill(object()->count(), entry()->figure);
 				}
@@ -2812,13 +2822,17 @@ private:
 			Command::is<Commands::Actor::Flip>(cmd) ||
 			Command::is<Commands::Actor::Cut>(cmd) ||
 			Command::is<Commands::Actor::Paste>(cmd) ||
-			Command::is<Commands::Actor::Delete>(cmd);
+			Command::is<Commands::Actor::Delete>(cmd) ||
+			Command::is<Commands::Actor::SetProperties>(cmd) ||
+			Command::is<Commands::Actor::SetAnchor>(cmd);
 		const bool invalidateSlices =
 			Command::is<Commands::Actor::AddFrame>(cmd) ||
 			Command::is<Commands::Actor::CutFrame>(cmd) ||
 			Command::is<Commands::Actor::DeleteFrame>(cmd) ||
 			Command::is<Commands::Actor::Set8x16>(cmd) ||
+			Command::is<Commands::Actor::SetPropertiesToAll>(cmd) ||
 			Command::is<Commands::Actor::Resize>(cmd) ||
+			Command::is<Commands::Actor::SetAnchorForAll>(cmd) ||
 			Command::is<Commands::Actor::Import>(cmd) ||
 			Command::is<Commands::Actor::ImportFrame>(cmd);
 		const bool toCheck =
@@ -2885,9 +2899,10 @@ private:
 		if (size == 0)
 			return;
 
+		Command* cmd = nullptr;
 		switch (f) {
 		case Editing::Tools::ROTATE_CLOCKWISE:
-			enqueue<Commands::Actor::Rotate>()
+			cmd = enqueue<Commands::Actor::Rotate>()
 				->with(_binding.getPixel, _binding.setPixel)
 				->with(1)
 				->with(frame)
@@ -2896,7 +2911,7 @@ private:
 
 			break;
 		case Editing::Tools::ROTATE_ANTICLOCKWISE:
-			enqueue<Commands::Actor::Rotate>()
+			cmd = enqueue<Commands::Actor::Rotate>()
 				->with(_binding.getPixel, _binding.setPixel)
 				->with(-1)
 				->with(frame)
@@ -2905,7 +2920,7 @@ private:
 
 			break;
 		case Editing::Tools::HALF_TURN:
-			enqueue<Commands::Actor::Rotate>()
+			cmd = enqueue<Commands::Actor::Rotate>()
 				->with(_binding.getPixel, _binding.setPixel)
 				->with(2)
 				->with(frame)
@@ -2914,7 +2929,7 @@ private:
 
 			break;
 		case Editing::Tools::FLIP_VERTICALLY:
-			enqueue<Commands::Actor::Flip>()
+			cmd = enqueue<Commands::Actor::Flip>()
 				->with(_binding.getPixel, _binding.setPixel)
 				->with(1)
 				->with(frame)
@@ -2923,7 +2938,7 @@ private:
 
 			break;
 		case Editing::Tools::FLIP_HORIZONTALLY:
-			enqueue<Commands::Actor::Flip>()
+			cmd = enqueue<Commands::Actor::Flip>()
 				->with(_binding.getPixel, _binding.setPixel)
 				->with(0)
 				->with(frame)
@@ -2934,6 +2949,9 @@ private:
 		default: // Do nothing.
 			break;
 		}
+
+		if (cmd)
+			_refresh(cmd);
 	}
 
 	void handToolDown(Renderer*) {
@@ -2990,6 +3008,8 @@ private:
 		cmd->with(_setFrame, _frame.cursor);
 
 		cmd->exec(object(), Variant((void*)entry()));
+
+		_refresh(cmd);
 	}
 	void paintbucketToolUp(Renderer* rnd) {
 		Math::Recti sel;
@@ -3065,11 +3085,13 @@ private:
 		const int x = _cursor.position.x + area.xMin() + xOff;
 		const int y = _cursor.position.y + area.yMin() + yOff;
 
-		enqueue<Commands::Actor::Paste>()
+		Command* cmd = enqueue<Commands::Actor::Paste>()
 			->with(_binding.getPixel, _binding.setPixel)
 			->with(Math::Recti::byXYWH(x, y, area.width(), area.height()), dots)
 			->with(_setFrame, _frame.cursor)
 			->exec(object(), Variant((void*)entry()));
+
+		_refresh(cmd);
 
 		destroyOverlay();
 
@@ -3110,7 +3132,7 @@ private:
 	template<typename T> void paintToolDown(Renderer* rnd) {
 		_selection.clear();
 
-		enqueue<T>()
+		Command* cmd = enqueue<T>()
 			->with(
 				std::bind(&EditorActorImpl::getPixel, this, rnd, std::placeholders::_1, std::placeholders::_2),
 				std::bind(&EditorActorImpl::setPixel, this, rnd, std::placeholders::_1, std::placeholders::_2),
@@ -3118,6 +3140,8 @@ private:
 			)
 			->with(_setFrame, _frame.cursor)
 			->exec(object(), Variant((void*)entry()));
+
+		_refresh(cmd);
 
 		createOverlay(rnd);
 
@@ -3282,10 +3306,12 @@ private:
 			img->fromBlank(sz.x, sz.y, GBBASIC_PALETTE_DEPTH);
 			props->fromBlank(sz.x / GBBASIC_TILE_SIZE, sz.y / GBBASIC_TILE_SIZE, ACTOR_PALETTE_DEPTH);
 		}
-		enqueue<Commands::Actor::AddFrame>()
+		Command* cmd = enqueue<Commands::Actor::AddFrame>()
 			->with(append, img, props)
 			->with(_setFrame, frame)
 			->exec(object(), Variant((void*)entry()));
+
+		_refresh(cmd);
 
 		if (append)
 			_frame.cursor = object()->count() - 1;
@@ -3299,10 +3325,12 @@ private:
 		if (object()->count() == 0)
 			return;
 
-		enqueue<Commands::Actor::DeleteFrame>()
+		Command* cmd = enqueue<Commands::Actor::DeleteFrame>()
 			->with(false)
 			->with(_setFrame, frame)
 			->exec(object(), Variant((void*)entry()));
+
+		_refresh(cmd);
 
 		_frame.fill(object()->count(), entry()->figure);
 	}
