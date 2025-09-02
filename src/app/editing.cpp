@@ -1331,6 +1331,7 @@ bool frames(
 		*appended = false;
 
 	constexpr const char* const TOOLTIPS[] = {
+		"(Ctrl+Shift+`)",
 		"(Ctrl+Shift+1)",
 		"(Ctrl+Shift+2)",
 		"(Ctrl+Shift+3)",
@@ -1339,10 +1340,10 @@ bool frames(
 		"(Ctrl+Shift+6)",
 		"(Ctrl+Shift+7)",
 		"(Ctrl+Shift+8)",
-		"(Ctrl+Shift+9)",
-		"(Ctrl+Shift+0)"
+		"(Ctrl+Shift+9)"
 	};
 	const Shortcut shortcuts[] = {
+		Shortcut(SDL_SCANCODE_GRAVE, true, true),
 		Shortcut(SDL_SCANCODE_1, true, true),
 		Shortcut(SDL_SCANCODE_2, true, true),
 		Shortcut(SDL_SCANCODE_3, true, true),
@@ -1351,8 +1352,7 @@ bool frames(
 		Shortcut(SDL_SCANCODE_6, true, true),
 		Shortcut(SDL_SCANCODE_7, true, true),
 		Shortcut(SDL_SCANCODE_8, true, true),
-		Shortcut(SDL_SCANCODE_9, true, true),
-		Shortcut(SDL_SCANCODE_0, true, true)
+		Shortcut(SDL_SCANCODE_9, true, true)
 	};
 
 	const ImVec2 curPos = ImGui::GetCursorScreenPos();
