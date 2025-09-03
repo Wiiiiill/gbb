@@ -555,10 +555,12 @@ namespace GBBASIC {
 #		define CONTROLLER_BEHAVIOUR_TOPDOWN_PLAYER_ARBITRARY        0x05
 #	define CONTROLLER_BEHAVIOUR_TOPDOWN_MOVE                        0x06
 #		define CONTROLLER_BEHAVIOUR_TOPDOWN_MOVE_ARBITRARY          0x07
-#	define CONTROLLER_BEHAVIOUR_TOPDOWN_IDLE                        0x08
-#	define CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER                  0x09
-#	define CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER_WITH_MOUSE      (0x0a | CONTROLLER_ALWAYS_BEHAVE)
-#	define CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER_WITH_TOUCH      (0x0b | CONTROLLER_ALWAYS_BEHAVE)
+#	define CONTROLLER_BEHAVIOUR_TOPDOWN_RIGID_MOVE                  0x08
+#		define CONTROLLER_BEHAVIOUR_TOPDOWN_RIGID_MOVE_ARBITRARY    0x09
+#	define CONTROLLER_BEHAVIOUR_TOPDOWN_IDLE                        0x0a
+#	define CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER                  0x0b
+#	define CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER_WITH_MOUSE      (0x0c | CONTROLLER_ALWAYS_BEHAVE)
+#	define CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER_WITH_TOUCH      (0x0d | CONTROLLER_ALWAYS_BEHAVE)
 #	define CONTROLLER_MOVABLE_FLAG_NONE                             0x00
 #	define CONTROLLER_MOVABLE_FLAG_COLLISIONS                       0x01
 #	define CONTROLLER_MOVABLE_FLAG_FULL                             0x02
@@ -12253,13 +12255,18 @@ public:
 			state.inRom.size = 0;
 
 			// Get the optional argument.
+			bool isExpr = false;
 			int frames = -1;
 			if (_children.empty()) {
 				// Do nothing.
 			} else if (_children.size() == 1) {
 				Token::Ptr tk = firstTokenInChildren();
-				CHECK_FOR_INTEGER_OR_IDENTIFIER(onError, tk);
-				frames = (int)tk->data();
+				if (tk && tk->is(Token::Types::INTERMEDIA)) {
+					isExpr = true;
+				} else {
+					CHECK_FOR_INTEGER_OR_IDENTIFIER(onError, tk);
+					frames = (int)tk->data();
+				}
 			} else {
 				THROW_TOO_MANY_ARGUMENTS(onError);
 			}
@@ -12280,14 +12287,32 @@ public:
 			COUNTER_GUARD(ctx, stk);
 
 			// Emit a `VM_WAIT` or `VM_WAIT_N` instruction.
-			if (frames <= 0) {
-				emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::WAIT]);
-			} else {
-				Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PUSH]); INC_COUNTER(stk, 2);
-				args = fill(args, (UInt16)frames);
+			if (isExpr) {
+				do {
+					VAR_GUARD(ctx.expect.lnno, false);
+					VAR_GUARD(ctx.declaration.declaring, Context::Declaration::ARGUMENT); // As argument of a function.
+					VAR_GUARD(
+						ctx.expression.category,
+						Context::Expression::Categories::EVALUATION
+					);
+					VAR_GUARD(ctx.expression.alwaysEvaluate, true);
+					VAR_GUARD(ctx.expression.endian, Endians::LITTLE);
 
-				args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::WAIT_N]);
+					Node::generate(bytes, context, Range(0), onError);
+				} while (false);
+
+				Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::WAIT_N]);
 				args = fill(args, (Int16)ARG0);
+			} else {
+				if (frames <= 0) {
+					emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::WAIT]);
+				} else {
+					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PUSH]); INC_COUNTER(stk, 2);
+					args = fill(args, (UInt16)frames);
+
+					args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::WAIT_N]);
+					args = fill(args, (Int16)ARG0);
+				}
 			}
 
 			// Check the stack footprint.
@@ -27431,6 +27456,7 @@ public:
 			ADD_BUILTIN("PLATFORMER_IDLE_BEHAVIOUR",                 BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_PLATFORMER_IDLE)              );
 			ADD_BUILTIN("TOPDOWN_PLAYER_BEHAVIOUR",                  BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_TOPDOWN_PLAYER_ARBITRARY)     );
 			ADD_BUILTIN("TOPDOWN_MOVE_BEHAVIOUR",                    BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_TOPDOWN_MOVE_ARBITRARY)       );
+			ADD_BUILTIN("TOPDOWN_RIGID_MOVE_BEHAVIOUR",              BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_TOPDOWN_RIGID_MOVE_ARBITRARY) );
 			ADD_BUILTIN("TOPDOWN_IDLE_BEHAVIOUR",                    BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_TOPDOWN_IDLE)                 );
 			ADD_BUILTIN("POINTNCLICK_PLAYER_BEHAVIOUR",              BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER)           );
 			ADD_BUILTIN("POINTNCLICK_PLAYER_WITH_MOUSE_BEHAVIOUR",   BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER_WITH_MOUSE));
