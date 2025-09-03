@@ -12263,6 +12263,8 @@ public:
 				Token::Ptr tk = firstTokenInChildren();
 				if (tk && tk->is(Token::Types::INTERMEDIA)) {
 					isExpr = true;
+				} else if (tk && tk->is(Token::Types::IDENTIFIER)) {
+					isExpr = true;
 				} else {
 					CHECK_FOR_INTEGER_OR_IDENTIFIER(onError, tk);
 					frames = (int)tk->data();
