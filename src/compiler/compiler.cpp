@@ -28966,7 +28966,7 @@ private:
 
 			return n;
 		};
-		auto Parameters = [&] (State &q, Node::Array &children) -> int { // Parameters separated by commas.
+		auto Parameters = [&] (State &q, Node::Array &children, bool acceptMacro) -> int { // Parameters separated by commas.
 			int n = 0;
 			unexpectedCommas = -1;
 			for (EVER) {
@@ -28975,29 +28975,31 @@ private:
 				Token::Ptr id = nullptr;
 
 				if (!(id = maybe(Token::Types::IDENTIFIER)(q1))) break;
-				if (id) {
-					const std::string name = (std::string)id->data();
-					const Node::MacroIdentifierAliasTable::Entry* idAlias = macroIdentifierAliases.find(name); // FEAT: MACRO.
-					const Node::MacroStackReferenceTable::Entry* stackNRef = macroStackReferences.find(name); // FEAT: MACRO.
-					if (idAlias) {
-						id
-							->type(Token::Types::IDENTIFIER)
-							->text(idAlias->alias->text())
-							->parse(false);
-					} else if (stackNRef) {
-						id
-							->type(Token::Types::OPERATOR)
-							->text(stackNRef->alias->text())
-							->parse(false);
+				if (acceptMacro) {
+					if (id) {
+						const std::string name = (std::string)id->data();
+						const Node::MacroIdentifierAliasTable::Entry* idAlias = macroIdentifierAliases.find(name); // FEAT: MACRO.
+						const Node::MacroStackReferenceTable::Entry* stackNRef = macroStackReferences.find(name); // FEAT: MACRO.
+						if (idAlias) {
+							id
+								->type(Token::Types::IDENTIFIER)
+								->text(idAlias->alias->text())
+								->parse(false);
+						} else if (stackNRef) {
+							id
+								->type(Token::Types::OPERATOR)
+								->text(stackNRef->alias->text())
+								->parse(false);
+						}
 					}
-				}
-				if (q1.index == q.index && (id = must(Token::Types::OPERATOR)(q1))) {
-					const std::string name = (std::string)id->data();
-					if (!Text::startsWith(name, "stack", true)) return throwInvalidSyntax(q1.index);
-					const std::string idxTxt = name.substr(5 /* after "stack" */);
-					int idx = -1;
-					if (!Text::fromString(idxTxt, idx)) return throwInvalidSyntax(q1.index);
-					if (idx < 0 || idx >= COMPILER_STACK_ARGUMENT_MAX_COUNT) return throwInvalidSyntax(q1.index);
+					if (q1.index == q.index && (id = must(Token::Types::OPERATOR)(q1))) {
+						const std::string name = (std::string)id->data();
+						if (!Text::startsWith(name, "stack", true)) return throwInvalidSyntax(q1.index);
+						const std::string idxTxt = name.substr(5 /* after "stack" */);
+						int idx = -1;
+						if (!Text::fromString(idxTxt, idx)) return throwInvalidSyntax(q1.index);
+						if (idx < 0 || idx >= COMPILER_STACK_ARGUMENT_MAX_COUNT) return throwInvalidSyntax(q1.index);
+					}
 				}
 
 				Node::Ptr exp(new NodeExpression());
@@ -29029,7 +29031,7 @@ private:
 
 			return n;
 		};
-		auto ParametersOrNumbers = [&] (State &q, Node::Array &children) -> int { // Parameters separated by commas.
+		auto ParametersOrNumbers = [&] (State &q, Node::Array &children, bool acceptMacro) -> int { // Parameters separated by commas.
 			int n = 0;
 			unexpectedCommas = -1;
 			for (EVER) {
@@ -29041,29 +29043,31 @@ private:
 					any()(q1);
 				} else {
 					if (!(id = maybe(Token::Types::IDENTIFIER)(q1))) break;
-					if (id) {
-						const std::string name = (std::string)id->data();
-						const Node::MacroIdentifierAliasTable::Entry* idAlias = macroIdentifierAliases.find(name); // FEAT: MACRO.
-						const Node::MacroStackReferenceTable::Entry* stackNRef = macroStackReferences.find(name); // FEAT: MACRO.
-						if (idAlias) {
-							id
-								->type(Token::Types::IDENTIFIER)
-								->text(idAlias->alias->text())
-								->parse(false);
-						} else if (stackNRef) {
-							id
-								->type(Token::Types::OPERATOR)
-								->text(stackNRef->alias->text())
-								->parse(false);
+					if (acceptMacro) {
+						if (id) {
+							const std::string name = (std::string)id->data();
+							const Node::MacroIdentifierAliasTable::Entry* idAlias = macroIdentifierAliases.find(name); // FEAT: MACRO.
+							const Node::MacroStackReferenceTable::Entry* stackNRef = macroStackReferences.find(name); // FEAT: MACRO.
+							if (idAlias) {
+								id
+									->type(Token::Types::IDENTIFIER)
+									->text(idAlias->alias->text())
+									->parse(false);
+							} else if (stackNRef) {
+								id
+									->type(Token::Types::OPERATOR)
+									->text(stackNRef->alias->text())
+									->parse(false);
+							}
 						}
-					}
-					if (q1.index == q.index && (id = must(Token::Types::OPERATOR)(q1))) {
-						const std::string name = (std::string)id->data();
-						if (!Text::startsWith(name, "stack", true)) return throwInvalidSyntax(q1.index);
-						const std::string idxTxt = name.substr(5 /* after "stack" */);
-						int idx = -1;
-						if (!Text::fromString(idxTxt, idx)) return throwInvalidSyntax(q1.index);
-						if (idx < 0 || idx >= COMPILER_STACK_ARGUMENT_MAX_COUNT) return throwInvalidSyntax(q1.index);
+						if (q1.index == q.index && (id = must(Token::Types::OPERATOR)(q1))) {
+							const std::string name = (std::string)id->data();
+							if (!Text::startsWith(name, "stack", true)) return throwInvalidSyntax(q1.index);
+							const std::string idxTxt = name.substr(5 /* after "stack" */);
+							int idx = -1;
+							if (!Text::fromString(idxTxt, idx)) return throwInvalidSyntax(q1.index);
+							if (idx < 0 || idx >= COMPILER_STACK_ARGUMENT_MAX_COUNT) return throwInvalidSyntax(q1.index);
+						}
 					}
 				}
 
@@ -29913,7 +29917,7 @@ private:
 			q1.index = q.index;
 			Node::Array children_;
 
-			if (Parameters(q1, children_) != 1) return false;
+			if (Parameters(q1, children_, false) != 1) return false;
 			CHECK_UNEXPECTED(q1);
 			if (!must(Token::Types::KEYWORD, "is")(q1)) return false;
 			if (!must(Token::Types::KEYWORD)(q1)) return false;
@@ -32120,12 +32124,12 @@ private:
 				maybe(Token::Types::KEYWORD, "int")(q);
 				if (must(Token::Types::OPERATOR, "(")(q)) {
 					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
-						ParametersOrNumbers(q, children);
+						ParametersOrNumbers(q, children, true);
 						CHECK_UNEXPECTED(q);
 					}
 					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
 				} else {
-					ParametersOrNumbers(q, children);
+					ParametersOrNumbers(q, children, true);
 					CHECK_UNEXPECTED(q);
 				}
 				maybe(Token::Types::OPERATOR, ";")(q);
@@ -32417,7 +32421,7 @@ private:
 				if (idHasBeenDefined(name)) { return throwIdHasBeenAlreadyDeclared(q.index, name); }
 				if (must(Token::Types::OPERATOR, "=")(q)) {
 					r = q.index;
-					if (!Parameters(q, children)) return false;
+					if (!Parameters(q, children, false)) return false;
 					CHECK_UNEXPECTED(q);
 				} else {
 					return throwInvalidSyntax(q.index);
@@ -32483,7 +32487,7 @@ private:
 					else name = (std::string)id->data();
 					if (idHasBeenDefined(name)) { return throwIdHasBeenAlreadyDeclared(q.index, name); }
 					if (!must(Token::Types::OPERATOR, "(")(q)) return false;
-					Parameters(q, children);
+					Parameters(q, children, false);
 					CHECK_UNEXPECTED(q);
 					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
 					if (must(Token::Types::OPERATOR, "=")(q)) {
@@ -32678,7 +32682,7 @@ private:
 				if (idHasBeenDefined(name)) { return throwIdHasBeenAlreadyDeclared(q.index, name); }
 				if (must(Token::Types::OPERATOR, "=")(q)) {
 					r = q.index;
-					if (!Parameters(q, children)) return false;
+					if (!Parameters(q, children, false)) return false;
 					CHECK_UNEXPECTED(q);
 				} else {
 					return throwInvalidSyntax(q.index);
@@ -33019,12 +33023,12 @@ private:
 				if (!must(Token::Types::KEYWORD, "unpack")(q)) return false;
 				if (must(Token::Types::OPERATOR, "(")(q)) {
 					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
-						Parameters(q, children);
+						Parameters(q, children, true);
 						CHECK_UNEXPECTED(q);
 					}
 					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
 				} else {
-					Parameters(q, children);
+					Parameters(q, children, true);
 					CHECK_UNEXPECTED(q);
 				}
 				const int r = q.index;
@@ -33064,12 +33068,12 @@ private:
 				if (!must(Token::Types::KEYWORD, "swap")(q)) return false;
 				if (must(Token::Types::OPERATOR, "(")(q)) {
 					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
-						Parameters(q, children);
+						Parameters(q, children, true);
 						CHECK_UNEXPECTED(q);
 					}
 					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
 				} else {
-					Parameters(q, children);
+					Parameters(q, children, true);
 					CHECK_UNEXPECTED(q);
 				}
 				const int r = q.index;
@@ -33106,12 +33110,12 @@ private:
 				if (!must(Token::Types::KEYWORD, "inc")(q)) return false;
 				if (must(Token::Types::OPERATOR, "(")(q)) {
 					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
-						Parameters(q, children);
+						Parameters(q, children, true);
 						CHECK_UNEXPECTED(q);
 					}
 					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
 				} else {
-					Parameters(q, children);
+					Parameters(q, children, true);
 					CHECK_UNEXPECTED(q);
 				}
 				const int r = q.index;
@@ -33148,12 +33152,12 @@ private:
 				if (!must(Token::Types::KEYWORD, "dec")(q)) return false;
 				if (must(Token::Types::OPERATOR, "(")(q)) {
 					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
-						Parameters(q, children);
+						Parameters(q, children, true);
 						CHECK_UNEXPECTED(q);
 					}
 					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
 				} else {
-					Parameters(q, children);
+					Parameters(q, children, true);
 					CHECK_UNEXPECTED(q);
 				}
 				const int r = q.index;
@@ -34790,12 +34794,12 @@ private:
 				else name = (std::string)id->data();
 				if (must(Token::Types::OPERATOR, "(")(q)) {
 					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
-						Parameters(q, children);
+						Parameters(q, children, true);
 						CHECK_UNEXPECTED(q);
 					}
 					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
 				} else {
-					Parameters(q, children);
+					Parameters(q, children, true);
 					CHECK_UNEXPECTED(q);
 				}
 				maybe(Token::Types::OPERATOR, ";")(q);
