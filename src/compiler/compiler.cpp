@@ -13941,6 +13941,8 @@ public:
 	NODE_TYPE(Types::UNPACK)
 
 	virtual void generate(Bytes::Ptr &bytes, Context::Stack &context, Error::Handler onError) override {
+		typedef std::vector<int> Indices;
+
 		const Generator_Void_Void generator = [&] (void) -> void {
 			// Prepare.
 			Context &ctx = context.top();
@@ -13978,190 +13980,89 @@ public:
 				THROW_ARGUMENT_COUNT_DOES_NOT_MATCH(onError);
 			}
 
-			// Unpack with or without nibbles.
-			if (withNibbles) {
+			// Set the stack footprint guard.
+			COND_VAR_GUARD(ctx.expect.lnno, ctx.stackFootprint, Counter::Ptr(new Counter()));
+			COUNTER_GUARD(ctx, stk);
+
+			// Prepare the arguments.
+			int setBackFrom = 0;
+			Indices tmps;
+			Indices refs;
+			Indices pointers;
+
+			for (int i = 0; i < (int)_children.size(); ++i) {
 				// Get the children.
-				const Ptr &child1 = _children[0];
-				Token::Ptr idtk1 = nullptr;
-				std::string id1;
-				idtk1 = child1->onlyToken();
-				if (!idtk1) { THROW_INVALID_SYNTAX(onError); }
-				id1 = (std::string)idtk1->data();
-
-				const Ptr &child2 = _children[1];
-				Token::Ptr idtk2 = nullptr;
-				std::string id2;
-				idtk2 = child2->onlyToken();
-				if (!idtk2) { THROW_INVALID_SYNTAX(onError); }
-				id2 = (std::string)idtk2->data();
-
-				const Ptr &child3 = _children[2];
-				Token::Ptr idtk3 = nullptr;
-				std::string id3;
-				idtk3 = child3->onlyToken();
-				if (!idtk3) { THROW_INVALID_SYNTAX(onError); }
-				id3 = (std::string)idtk3->data();
-
-				const Ptr &child4 = _children[3];
-				Token::Ptr idtk4 = nullptr;
-				std::string id4;
-				idtk4 = child4->onlyToken();
-				if (!idtk4) { THROW_INVALID_SYNTAX(onError); }
-				id4 = (std::string)idtk4->data();
-
-				const Ptr &child5 = _children[4];
-				Token::Ptr idtk5 = nullptr;
-				std::string id5;
-				idtk5 = child5->onlyToken();
-				if (!idtk5) { THROW_INVALID_SYNTAX(onError); }
-				id5 = (std::string)idtk5->data();
+				const Ptr &child = _children[i];
+				Token::Ptr idtk = nullptr;
+				std::string id;
+				idtk = child->onlyToken();
+				if (!idtk) { THROW_INVALID_SYNTAX(onError); }
+				id = (std::string)idtk->data();
 
 				// Find the ID in RAM.
-				RamLocation inRam1;
-				std::string fuzzyName1;
-				const RamLocation* ramLocation1 = ctx.findPageAndGlobal(id1, fuzzyName1);
-				if (ramLocation1) {
-					inRam1 = *ramLocation1;
+				RamLocation inRam;
+				std::string fuzzyName;
+				const RamLocation* ramLocation = ctx.findPageAndGlobal(id, fuzzyName);
+				const int stackRef = getStackReference(id);
+				if (ramLocation) {
+					inRam = *ramLocation;
+
+					pointers.push_back(inRam.address);
+				} else if (stackRef >= 0) {
+					// Emit a `VM_PUSH` instruction to reserve for the intermedia value.
+					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PUSH]); INC_COUNTER(stk, 2);
+					args = fill(args, (UInt16)0);
+					for (int &tmp : tmps)
+						--tmp;
+					tmps.push_back(ARG0);
+					refs.push_back(stackRef);
+
+					if (i == 0) {
+						setBackFrom = 1;
+
+						// Emit a `VM_GET_TLOCAL` instruction to put the stack reference to the intermedia.
+						args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::GET_TLOCAL]);
+						args = fill(args, (Int16)refs[i]);
+						args = fill(args, (Int16)tmps[i]);
+					}
 				} else {
-					if (!fuzzyName1.empty()) {
-						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk1, fuzzyName1);
+					if (!fuzzyName.empty()) {
+						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk, fuzzyName);
 					}
 
-					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk1);
+					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk);
 				}
-
-				RamLocation inRam2;
-				std::string fuzzyName2;
-				const RamLocation* ramLocation2 = ctx.findPageAndGlobal(id2, fuzzyName2);
-				if (ramLocation2) {
-					inRam2 = *ramLocation2;
-				} else {
-					if (!fuzzyName2.empty()) {
-						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk2, fuzzyName2);
-					}
-
-					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk2);
-				}
-
-				RamLocation inRam3;
-				std::string fuzzyName3;
-				const RamLocation* ramLocation3 = ctx.findPageAndGlobal(id3, fuzzyName3);
-				if (ramLocation3) {
-					inRam3 = *ramLocation3;
-				} else {
-					if (!fuzzyName3.empty()) {
-						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk3, fuzzyName3);
-					}
-
-					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk3);
-				}
-
-				RamLocation inRam4;
-				std::string fuzzyName4;
-				const RamLocation* ramLocation4 = ctx.findPageAndGlobal(id4, fuzzyName4);
-				if (ramLocation4) {
-					inRam4 = *ramLocation4;
-				} else {
-					if (!fuzzyName4.empty()) {
-						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk4, fuzzyName4);
-					}
-
-					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk4);
-				}
-
-				RamLocation inRam5;
-				std::string fuzzyName5;
-				const RamLocation* ramLocation5 = ctx.findPageAndGlobal(id5, fuzzyName5);
-				if (ramLocation5) {
-					inRam5 = *ramLocation5;
-				} else {
-					if (!fuzzyName5.empty()) {
-						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk5, fuzzyName5);
-					}
-
-					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk5);
-				}
-
-				// Emit a `VM_UNPACK` instruction.
-				Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::UNPACK]);
-				args = fill(args, (UInt8)TRUE);
-				args = fill(args, (Int16)inRam5.address);
-				args = fill(args, (Int16)inRam4.address);
-				args = fill(args, (Int16)inRam3.address);
-				args = fill(args, (Int16)inRam2.address);
-				args = fill(args, (Int16)inRam1.address);
-			} else {
-				// Get the children.
-				const Ptr &child1 = _children[0];
-				Token::Ptr idtk1 = nullptr;
-				std::string id1;
-				idtk1 = child1->onlyToken();
-				if (!idtk1) { THROW_INVALID_SYNTAX(onError); }
-				id1 = (std::string)idtk1->data();
-
-				const Ptr &child2 = _children[1];
-				Token::Ptr idtk2 = nullptr;
-				std::string id2;
-				idtk2 = child2->onlyToken();
-				if (!idtk2) { THROW_INVALID_SYNTAX(onError); }
-				id2 = (std::string)idtk2->data();
-
-				const Ptr &child3 = _children[2];
-				Token::Ptr idtk3 = nullptr;
-				std::string id3;
-				idtk3 = child3->onlyToken();
-				if (!idtk3) { THROW_INVALID_SYNTAX(onError); }
-				id3 = (std::string)idtk3->data();
-
-				// Find the ID in RAM.
-				RamLocation inRam1;
-				std::string fuzzyName1;
-				const RamLocation* ramLocation1 = ctx.findPageAndGlobal(id1, fuzzyName1);
-				if (ramLocation1) {
-					inRam1 = *ramLocation1;
-				} else {
-					if (!fuzzyName1.empty()) {
-						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk1, fuzzyName1);
-					}
-
-					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk1);
-				}
-
-				RamLocation inRam2;
-				std::string fuzzyName2;
-				const RamLocation* ramLocation2 = ctx.findPageAndGlobal(id2, fuzzyName2);
-				if (ramLocation2) {
-					inRam2 = *ramLocation2;
-				} else {
-					if (!fuzzyName2.empty()) {
-						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk2, fuzzyName2);
-					}
-
-					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk2);
-				}
-
-				RamLocation inRam3;
-				std::string fuzzyName3;
-				const RamLocation* ramLocation3 = ctx.findPageAndGlobal(id3, fuzzyName3);
-				if (ramLocation3) {
-					inRam3 = *ramLocation3;
-				} else {
-					if (!fuzzyName3.empty()) {
-						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk3, fuzzyName3);
-					}
-
-					THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk3);
-				}
-
-				// Emit a `VM_UNPACK` instruction.
-				Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::UNPACK]);
-				args = fill(args, (UInt8)FALSE);
-				args = fill(args, (Int16)0);
-				args = fill(args, (Int16)0);
-				args = fill(args, (Int16)inRam3.address);
-				args = fill(args, (Int16)inRam2.address);
-				args = fill(args, (Int16)inRam1.address);
 			}
+
+			for (int tmp : tmps)
+				pointers.push_back(tmp);
+
+			// Emit a `VM_UNPACK` instruction.
+			Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::UNPACK]);
+			args = fill(args, (UInt8)BOOLEAN(withNibbles));
+			args = fill(args, (Int16)0);
+			args = fill(args, (Int16)0);
+			for (Indices::reverse_iterator rit = pointers.rbegin(); rit != pointers.rend(); ++rit) {
+				const int address = *rit;
+				args = fill(args, (Int16)address);
+			}
+
+			// Tidy the stack for the intermedia spaces.
+			if (!refs.empty()) {
+				for (int i = setBackFrom; i < (int)refs.size(); ++i) {
+					// Emit a `VM_SET_TLOCAL` instruction to put the intermedia to the stack reference.
+					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::SET_TLOCAL]);
+					args = fill(args, (Int16)tmps[i]);
+					args = fill(args, (Int16)refs[i]);
+				}
+
+				// Emit a `VM_POP` instruction to pop the intermedia value.
+				Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]); DEC_COUNTER(stk, 2 * (int)refs.size());
+				args = fill(args, (UInt8)refs.size());
+			}
+
+			// Check the stack footprint.
+			CHECK_COUNTER(ctx, onError);
 		};
 
 		write(bytes, context, generator, false, onError);
@@ -14803,7 +14704,7 @@ public:
 				// Tidy the stack for the intermedia spaces.
 				if (copy && stackRef >= 0) {
 					// Emit a `VM_SET_TLOCAL` instruction to put the intermedia to the stack reference.
-					args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::SET_TLOCAL]);
+					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::SET_TLOCAL]);
 					args = fill(args, (Int16)ARG0);
 					args = fill(args, (Int16)stackRef);
 
@@ -15385,8 +15286,6 @@ public:
 	NODE_TYPE(Types::RGB)
 
 	virtual void generate(Bytes::Ptr &bytes, Context::Stack &context, Error::Handler onError) override {
-		typedef std::vector<int> Indices;
-
 		const Generator_Void_Void generator = [&] (void) -> void {
 			// Prepare.
 			Context &ctx = context.top();
@@ -15500,8 +15399,6 @@ public:
 	NODE_TYPE(Types::HSV)
 
 	virtual void generate(Bytes::Ptr &bytes, Context::Stack &context, Error::Handler onError) override {
-		typedef std::vector<int> Indices;
-
 		const Generator_Void_Void generator = [&] (void) -> void {
 			// Prepare.
 			Context &ctx = context.top();
@@ -18774,11 +18671,11 @@ public:
 
 						if (withDeclaring) {
 							// Emit a `VM_POP_1` instruction to pop the intermedia value.
-							args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP_1]); DEC_COUNTER(stk, 2 * (int)refs.size());
+							Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP_1]); DEC_COUNTER(stk, 2 * (int)refs.size());
 							args = fill(args, (UInt8)refs.size());
 						} else {
 							// Emit a `VM_POP` instruction to pop the intermedia value.
-							args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]); DEC_COUNTER(stk, 2 * (int)refs.size());
+							Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]); DEC_COUNTER(stk, 2 * (int)refs.size());
 							args = fill(args, (UInt8)refs.size());
 						}
 					}
@@ -20307,7 +20204,7 @@ public:
 				}
 
 				// Emit a `VM_POP` instruction to pop the intermedia value.
-				args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]); DEC_COUNTER(stk, 2 * (int)refs.size());
+				Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]); DEC_COUNTER(stk, 2 * (int)refs.size());
 				args = fill(args, (UInt8)refs.size());
 			}
 
