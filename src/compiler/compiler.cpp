@@ -5162,6 +5162,24 @@ public:
 		_children.insert(_children.begin() + offset, exp);
 	}
 
+	int getStackReference(const std::string &id) const {
+		int stackRef = -1;
+		do {
+			if (!Text::startsWith(id, "stack", true))
+				break;
+			const std::string idxTxt = id.substr(5 /* after "stack" */);
+			int idx = -1;
+			if (!Text::fromString(idxTxt, idx))
+				break;
+			if (idx < 0 || idx >= COMPILER_STACK_ARGUMENT_MAX_COUNT)
+				break;
+
+			stackRef = idx;
+		} while (false);
+
+		return stackRef;
+	}
+
 	/**
 	 * Output interfaces.
 	 */
@@ -8973,19 +8991,7 @@ public:
 			}
 			std::string fuzzyName;
 			const RamLocation* ramLocation = ctx.findPageAndGlobal(id, fuzzyName);
-			int stackRef = -1;
-			do {
-				if (!Text::startsWith(id, "stack", true))
-					break;
-				const std::string idxTxt = id.substr(5 /* after "stack" */);
-				int idx = -1;
-				if (!Text::fromString(idxTxt, idx))
-					break;
-				if (idx < 0 || idx >= COMPILER_STACK_ARGUMENT_MAX_COUNT)
-					break;
-
-				stackRef = idx;
-			} while (false);
+			const int stackRef = getStackReference(id);
 			if (ramLocation) {
 				if (withKey) { // Duplicated declaration.
 #if DECLARE_WITH_LET_AND_ACCEPT_ELSEWHERE_ENABLED
@@ -14206,8 +14212,11 @@ public:
 			RamLocation inRam1;
 			std::string fuzzyName1;
 			const RamLocation* ramLocation1 = ctx.findPageAndGlobal(id1, fuzzyName1);
+			const int stackRef1 = getStackReference(id1);
 			if (ramLocation1) {
 				inRam1 = *ramLocation1;
+			} else if (stackRef1 >= 0) {
+				// Do nothing.
 			} else {
 				if (!fuzzyName1.empty()) {
 					THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk1, fuzzyName1);
@@ -14219,8 +14228,11 @@ public:
 			RamLocation inRam2;
 			std::string fuzzyName2;
 			const RamLocation* ramLocation2 = ctx.findPageAndGlobal(id2, fuzzyName2);
+			const int stackRef2 = getStackReference(id2);
 			if (ramLocation2) {
 				inRam2 = *ramLocation2;
+			} else if (stackRef2 >= 0) {
+				// Do nothing.
 			} else {
 				if (!fuzzyName2.empty()) {
 					THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk2, fuzzyName2);
@@ -14229,12 +14241,78 @@ public:
 				THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk2);
 			}
 
-			// Emit a `VM_SWAP` instruction to swap the two variables.
-			if (inRam1.address != inRam2.address) {
+			// Set the stack footprint guard.
+			VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
+			COUNTER_GUARD(ctx, stk);
+
+			// Emit the instructions to swap.
+			do {
+				if (ramLocation1 && ramLocation2) {
+					if (inRam1.address == inRam2.address) // Do nothing for same variable.
+						break;
+				} else if (!ramLocation1 && !ramLocation2) {
+					if (stackRef1 == stackRef2) // Do nothing for same stack reference.
+						break;
+				}
+
+				int pushed = 0;
+				int ref1 = inRam1.address;
+				if (!ramLocation1 /* && stackRef1 >= 0 */) {
+					// Emit a `VM_PUSH` instruction to reserve for the intermedia value.
+					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PUSH]); INC_COUNTER(stk, 2);
+					args = fill(args, (UInt16)0);
+
+					// Emit a `VM_GET_TLOCAL` instruction to put the stack reference to the intermedia.
+					args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::GET_TLOCAL]);
+					args = fill(args, (Int16)stackRef1);
+					args = fill(args, (Int16)ARG0);
+
+					ref1 = ARG0;
+					++pushed;
+				}
+				int ref2 = inRam2.address;
+				if (!ramLocation2 /* && stackRef2 >= 0 */) {
+					// Emit a `VM_PUSH` instruction to reserve for the intermedia value.
+					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PUSH]); INC_COUNTER(stk, 2);
+					args = fill(args, (UInt16)0);
+
+					// Emit a `VM_GET_TLOCAL` instruction to put the stack reference to the intermedia.
+					args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::GET_TLOCAL]);
+					args = fill(args, (Int16)stackRef2);
+					args = fill(args, (Int16)ARG0);
+
+					ref2 = ARG0;
+					++pushed;
+				}
+				if (pushed == 2) --ref1;
+
+				// Emit a `VM_SWAP` instruction to swap the two variables.
 				Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::SWAP]);
-				args = fill(args, (Int16)inRam2.address);
-				args = fill(args, (Int16)inRam1.address);
-			}
+				args = fill(args, (Int16)ref2);
+				args = fill(args, (Int16)ref1);
+
+				if (!ramLocation1 /* && stackRef1 >= 0 */) {
+					// Emit a `VM_SET_TLOCAL` instruction to put the intermedia to the stack reference.
+					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::SET_TLOCAL]);
+					args = fill(args, (Int16)ref1);
+					args = fill(args, (Int16)stackRef1);
+				}
+				if (!ramLocation2 /* && stackRef2 >= 0 */) {
+					// Emit a `VM_SET_TLOCAL` instruction to put the intermedia to the stack reference.
+					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::SET_TLOCAL]);
+					args = fill(args, (Int16)ref2);
+					args = fill(args, (Int16)stackRef2);
+				}
+
+				if (pushed > 0) {
+					// Emit a `VM_POP` instruction to pop the intermedia values.
+					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]); DEC_COUNTER(stk, 2 * pushed);
+					args = fill(args, (UInt8)pushed);
+				}
+			} while (false);
+
+			// Check the stack footprint.
+			CHECK_COUNTER(ctx, onError);
 		};
 
 		write(bytes, context, generator, false, onError);
@@ -14305,8 +14383,11 @@ public:
 			RamLocation inRam1;
 			std::string fuzzyName1;
 			const RamLocation* ramLocation1 = ctx.findPageAndGlobal(id1, fuzzyName1);
+			const int stackRef1 = getStackReference(id1);
 			if (ramLocation1) {
 				inRam1 = *ramLocation1;
+			} else if (stackRef1 >= 0) {
+				// Do nothing.
 			} else {
 				if (!fuzzyName1.empty()) {
 					THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk1, fuzzyName1);
@@ -14315,10 +14396,43 @@ public:
 				THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk1);
 			}
 
-			// Emit a `VM_ACC_CONST` instruction to increase the variable.
-			Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::ACC_CONST]);
-			args = fill(args, (Int16)1);
-			args = fill(args, (Int16)inRam1.address);
+			// Emit the accumulation instructions.
+			if (ramLocation1) {
+				// Emit a `VM_ACC_CONST` instruction to increase the variable.
+				Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::ACC_CONST]);
+				args = fill(args, (Int16)1);
+				args = fill(args, (Int16)inRam1.address);
+			} else if (stackRef1 >= 0) {
+				// Set the stack footprint guard.
+				VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
+				COUNTER_GUARD(ctx, stk);
+
+				// Emit a `VM_PUSH` instruction to reserve for the intermedia value.
+				Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PUSH]); INC_COUNTER(stk, 2);
+				args = fill(args, (UInt16)0);
+
+				// Emit a `VM_GET_TLOCAL` instruction to put the stack reference to the intermedia.
+				args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::GET_TLOCAL]);
+				args = fill(args, (Int16)stackRef1);
+				args = fill(args, (Int16)ARG0);
+
+				// Emit a `VM_ACC_CONST` instruction to increase the intermedia.
+				args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::ACC_CONST]);
+				args = fill(args, (Int16)1);
+				args = fill(args, (Int16)ARG0);
+
+				// Emit a `VM_SET_TLOCAL` instruction to put the intermedia to the stack reference.
+				args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::SET_TLOCAL]);
+				args = fill(args, (Int16)ARG0);
+				args = fill(args, (Int16)stackRef1);
+
+				// Emit a `VM_POP` instruction to pop the intermedia value.
+				args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]); DEC_COUNTER(stk, 2);
+				args = fill(args, (UInt8)1);
+
+				// Check the stack footprint.
+				CHECK_COUNTER(ctx, onError);
+			}
 		};
 
 		write(bytes, context, generator, false, onError);
@@ -14389,8 +14503,11 @@ public:
 			RamLocation inRam1;
 			std::string fuzzyName1;
 			const RamLocation* ramLocation1 = ctx.findPageAndGlobal(id1, fuzzyName1);
+			const int stackRef1 = getStackReference(id1);
 			if (ramLocation1) {
 				inRam1 = *ramLocation1;
+			} else if (stackRef1 >= 0) {
+				// Do nothing.
 			} else {
 				if (!fuzzyName1.empty()) {
 					THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk1, fuzzyName1);
@@ -14399,10 +14516,43 @@ public:
 				THROW_ID_HAS_NOT_BEEN_DECLARED(onError, idtk1);
 			}
 
-			// Emit a `VM_ACC_CONST` instruction to decrease the variable.
-			Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::ACC_CONST]);
-			args = fill(args, (Int16)-1);
-			args = fill(args, (Int16)inRam1.address);
+			// Emit the accumulation instructions.
+			if (ramLocation1) {
+				// Emit a `VM_ACC_CONST` instruction to decrease the variable.
+				Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::ACC_CONST]);
+				args = fill(args, (Int16)-1);
+				args = fill(args, (Int16)inRam1.address);
+			} else if (stackRef1 >= 0) {
+				// Set the stack footprint guard.
+				VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
+				COUNTER_GUARD(ctx, stk);
+
+				// Emit a `VM_PUSH` instruction to reserve for the intermedia value.
+				Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PUSH]); INC_COUNTER(stk, 2);
+				args = fill(args, (UInt16)0);
+
+				// Emit a `VM_GET_TLOCAL` instruction to put the stack reference to the intermedia.
+				args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::GET_TLOCAL]);
+				args = fill(args, (Int16)stackRef1);
+				args = fill(args, (Int16)ARG0);
+
+				// Emit a `VM_ACC_CONST` instruction to increase the intermedia.
+				args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::ACC_CONST]);
+				args = fill(args, (Int16)-1);
+				args = fill(args, (Int16)ARG0);
+
+				// Emit a `VM_SET_TLOCAL` instruction to put the intermedia to the stack reference.
+				args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::SET_TLOCAL]);
+				args = fill(args, (Int16)ARG0);
+				args = fill(args, (Int16)stackRef1);
+
+				// Emit a `VM_POP` instruction to pop the intermedia value.
+				args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]); DEC_COUNTER(stk, 2);
+				args = fill(args, (UInt8)1);
+
+				// Check the stack footprint.
+				CHECK_COUNTER(ctx, onError);
+			}
 		};
 
 		write(bytes, context, generator, false, onError);
@@ -14508,23 +14658,36 @@ public:
 			if (!ctx.data || ctx.data->empty()) { THROW_NO_DATA(onError); }
 #endif /* DATA_SEQUENCE_WITH_CONSTANT_ONLY */
 
+			// Set the stack footprint guard.
+			COND_VAR_GUARD(ctx.expect.lnno, ctx.stackFootprint, Counter::Ptr(new Counter()));
+			COUNTER_GUARD(ctx, stk);
+
 			// Iterate all children.
 			for (const Ptr &child : _children) {
 				Token::Ptr idtk = nullptr;
 				std::string id;
 				bool copy = false;
+				int stackRef = -1;
 				int skip = 0;
 				idtk = child->onlyToken();
 				if (!idtk) { THROW_INVALID_SYNTAX(onError); }
-				copy = idtk->is(Token::Types::IDENTIFIER);
-				if (copy) {
+				if (idtk->is(Token::Types::IDENTIFIER)) {
 					id = (std::string)idtk->data();
+					copy = true;
+				} else if (idtk->is(Token::Types::OPERATOR)) {
+					id = (std::string)idtk->data();
+					const int stackRef_ = getStackReference(id);
+					if (stackRef_ >= 0) {
+						copy = true;
+						stackRef = stackRef_;
+					}
 				} else {
 					skip = (int)idtk->data();
 					if (skip < 0) { THROW_OUT_OF_BOUNDS(onError); }
 				}
 
 				// Find the left hand ID in RAM.
+				const int* pointer = nullptr;
 				bool isArray = false;
 				if (copy) {
 					std::string fuzzyName;
@@ -14536,6 +14699,14 @@ public:
 						const Context::Array::Dimensions* dimensions = ctx.array->find(id);
 						isArray = !!dimensions;
 						if (isArray && int_ != Token::IntegerTypes::UNSPECIFIED) { THROW_INVALID_SYNTAX(onError); }
+
+						pointer = &top().inRam.address;
+					} else if (stackRef >= 0) {
+						// Emit a `VM_PUSH` instruction to reserve for the intermedia value.
+						Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PUSH]); INC_COUNTER(stk, 2);
+						args = fill(args, (UInt16)0);
+
+						pointer = &ARG0;
 					} else { // Declaration.
 #if DECLARE_WITH_READ_ENABLED
 						const TextLocation &txtLoc = idtk->begin();
@@ -14543,6 +14714,8 @@ public:
 							if (allocateHeap(ctx, ctx.heapSize * 2, WORD_SIZE, id, RamLocation::Usages::READ, txtLoc)) { THROW_HEAP_OVERFLOW(onError, true); }
 							else { THROW_HEAP_OVERFLOW(onError, false); }
 						}
+
+						pointer = &top().inRam.address;
 #else /* DECLARE_WITH_READ_ENABLED */
 						if (!fuzzyName.empty()) {
 							THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk, fuzzyName);
@@ -14593,8 +14766,28 @@ public:
 
 					break;
 				}
-				args = fill(args, (Int16)top().inRam.address);
+				if (pointer) {
+					args = fill(args, (Int16)(*pointer));
+					pointer = nullptr;
+				} else {
+					args = fill(args, (Int16)0);
+				}
+
+				// Tidy the stack for the intermedia spaces.
+				if (copy && stackRef >= 0) {
+					// Emit a `VM_SET_TLOCAL` instruction to put the intermedia to the stack reference.
+					args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::SET_TLOCAL]);
+					args = fill(args, (Int16)ARG0);
+					args = fill(args, (Int16)stackRef);
+
+					// Emit a `VM_POP` instruction to pop the intermedia value.
+					args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]); DEC_COUNTER(stk, 2);
+					args = fill(args, (UInt8)1);
+				}
 			}
+
+			// Check the stack footprint.
+			CHECK_COUNTER(ctx, onError);
 		};
 
 		write(bytes, context, generator, false, onError);
@@ -18390,6 +18583,8 @@ public:
 	NODE_TYPE(Types::TOUCH)
 
 	virtual void generate(Bytes::Ptr &bytes, Context::Stack &context, Error::Handler onError) override {
+		typedef std::vector<int> Indices;
+
 		const Generator_Void_Void generator = [&] (void) -> void {
 			// Prepare.
 			Context &ctx = context.top();
@@ -18443,6 +18638,35 @@ public:
 			writeRightHand(
 				bytes, context, stk,
 				[&] (void) -> void {
+					// Find any stack reference.
+					Indices tmps;
+					Indices refs;
+					for (int i = (int)_children.size() - 1; i >= 0; --i) {
+						const Ptr &child = _children[i];
+						Token::Ptr idtk = nullptr;
+						std::string id;
+						idtk = child->onlyToken();
+						if (!idtk) { THROW_INVALID_SYNTAX(onError); }
+						id = (std::string)idtk->data();
+
+						if (id.empty()) {
+							idtk = child->onlyTokenInOnlyChild();
+							if (!idtk) { THROW_INVALID_SYNTAX(onError); }
+							id = (std::string)idtk->data();
+						}
+
+						const int stackRef = getStackReference(id);
+						if (stackRef >= 0) {
+							// Emit a `VM_PUSH` instruction to reserve for the intermedia value.
+							Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PUSH]); INC_COUNTER(stk, 2);
+							args = fill(args, (UInt16)0);
+							for (int &tmp : tmps)
+								--tmp;
+							tmps.push_back(ARG0);
+							refs.push_back(stackRef);
+						}
+					}
+
 					// Emit a `VM_TOUCH`, `VM_TOUCHD`, or `VM_TOUCHU` instruction.
 					Asm::Types y = Asm::Types::TOUCH;
 					switch (type) {
@@ -18460,6 +18684,7 @@ public:
 						args = fill(args, (Int16)0);
 						args = fill(args, (UInt8)FALSE);
 					} else {
+						int j = 0;
 						for (int i = (int)_children.size() - 1; i >= 0; --i) {
 							const Ptr &child = _children[i];
 							Token::Ptr idtk = nullptr;
@@ -18468,12 +18693,24 @@ public:
 							if (!idtk) { THROW_INVALID_SYNTAX(onError); }
 							id = (std::string)idtk->data();
 
+							if (id.empty()) {
+								idtk = child->onlyTokenInOnlyChild();
+								if (!idtk) { THROW_INVALID_SYNTAX(onError); }
+								id = (std::string)idtk->data();
+							}
+
 							// Find the left hand ID in RAM.
 							std::string fuzzyName;
 							const RamLocation* ramLocation = ctx.findPageAndGlobal(id, fuzzyName);
+							const int stackRef = getStackReference(id);
+							const int* pointer = nullptr;
 							if (ramLocation) {
 								const RamLocation inRam = *ramLocation;
 								top().inRam = inRam;
+
+								pointer = &top().inRam.address;
+							} else if (stackRef >= 0) {
+								pointer = &tmps[j++];
 							} else { // Declaration.
 #if DECLARE_WITH_TOUCH_ENABLED
 								const TextLocation &txtLoc = idtk->begin();
@@ -18481,6 +18718,8 @@ public:
 									if (allocateHeap(ctx, ctx.heapSize * 2, WORD_SIZE, id, RamLocation::Usages::TOUCH, txtLoc)) { THROW_HEAP_OVERFLOW(onError, true); }
 									else { THROW_HEAP_OVERFLOW(onError, false); }
 								}
+
+								pointer = &top().inRam.address;
 #else /* DECLARE_WITH_TOUCH_ENABLED */
 								if (!fuzzyName.empty()) {
 									THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk, fuzzyName);
@@ -18491,9 +18730,30 @@ public:
 							}
 
 							// Fill the parameter.
-							args = fill(args, (Int16)top().inRam.address);
+							args = fill(args, (Int16)(*pointer));
+							pointer = nullptr;
 						}
 						args = fill(args, (UInt8)TRUE);
+					}
+
+					// Tidy the stack for the intermedia spaces.
+					if (!refs.empty()) {
+						for (int i = 0; i < (int)refs.size(); ++i) {
+							// Emit a `VM_SET_TLOCAL` instruction to put the intermedia to the stack reference.
+							Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::SET_TLOCAL]);
+							args = fill(args, (Int16)(tmps[i] - 1));
+							args = fill(args, (Int16)refs[i]);
+						}
+
+						if (withDeclaring) {
+							// Emit a `VM_POP_1` instruction to pop the intermedia value.
+							args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP_1]); DEC_COUNTER(stk, 2 * (int)refs.size());
+							args = fill(args, (UInt8)refs.size());
+						} else {
+							// Emit a `VM_POP` instruction to pop the intermedia value.
+							args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]); DEC_COUNTER(stk, 2 * (int)refs.size());
+							args = fill(args, (UInt8)refs.size());
+						}
 					}
 				}, withDeclaring ? 0 : 1, false,
 				onError
@@ -19888,6 +20148,8 @@ public:
 	NODE_TYPE(Types::VIEWPORT)
 
 	virtual void generate(Bytes::Ptr &bytes, Context::Stack &context, Error::Handler onError) override {
+		typedef std::vector<int> Indices;
+
 		const Generator_Void_Void generator = [&] (void) -> void {
 			// Prepare.
 			Context &ctx = context.top();
@@ -19920,11 +20182,16 @@ public:
 				THROW_TOO_MANY_ARGUMENTS(onError);
 			}
 
+			// Set the stack footprint guard.
+			COND_VAR_GUARD(ctx.expect.lnno, ctx.stackFootprint, Counter::Ptr(new Counter()));
+			COUNTER_GUARD(ctx, stk);
+
 			// Set the expression slot guard.
 			VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
 
-			// Emit a `VM_VIEWPORT` instruction.
-			Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::VIEWPORT]);
+			// Find any stack reference.
+			Indices tmps;
+			Indices refs;
 			for (int i = (int)_children.size() - 1; i >= 0; --i) {
 				const Ptr &child = _children[i];
 				Token::Ptr idtk = nullptr;
@@ -19933,12 +20200,53 @@ public:
 				if (!idtk) { THROW_INVALID_SYNTAX(onError); }
 				id = (std::string)idtk->data();
 
+				if (id.empty()) {
+					idtk = child->onlyTokenInOnlyChild();
+					if (!idtk) { THROW_INVALID_SYNTAX(onError); }
+					id = (std::string)idtk->data();
+				}
+
+				const int stackRef = getStackReference(id);
+				if (stackRef >= 0) {
+					// Emit a `VM_PUSH` instruction to reserve for the intermedia value.
+					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PUSH]); INC_COUNTER(stk, 2);
+					args = fill(args, (UInt16)0);
+					for (int &tmp : tmps)
+						--tmp;
+					tmps.push_back(ARG0);
+					refs.push_back(stackRef);
+				}
+			}
+
+			// Emit a `VM_VIEWPORT` instruction.
+			Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::VIEWPORT]);
+			int j = 0;
+			for (int i = (int)_children.size() - 1; i >= 0; --i) {
+				const Ptr &child = _children[i];
+				Token::Ptr idtk = nullptr;
+				std::string id;
+				idtk = child->onlyToken();
+				if (!idtk) { THROW_INVALID_SYNTAX(onError); }
+				id = (std::string)idtk->data();
+
+				if (id.empty()) {
+					idtk = child->onlyTokenInOnlyChild();
+					if (!idtk) { THROW_INVALID_SYNTAX(onError); }
+					id = (std::string)idtk->data();
+				}
+
 				// Find the left hand ID in RAM.
 				std::string fuzzyName;
 				const RamLocation* ramLocation = ctx.findPageAndGlobal(id, fuzzyName);
+				const int stackRef = getStackReference(id);
+				const int* pointer = nullptr;
 				if (ramLocation) {
 					const RamLocation inRam = *ramLocation;
 					top().inRam = inRam;
+
+					pointer = &top().inRam.address;
+				} else if (stackRef >= 0) {
+					pointer = &tmps[j++];
 				} else { // Declaration.
 #if DECLARE_WITH_VIEWPORT_ENABLED
 					const TextLocation &txtLoc = idtk->begin();
@@ -19946,6 +20254,8 @@ public:
 						if (allocateHeap(ctx, ctx.heapSize * 2, WORD_SIZE, id, RamLocation::Usages::VIEWPORT, txtLoc)) { THROW_HEAP_OVERFLOW(onError, true); }
 						else { THROW_HEAP_OVERFLOW(onError, false); }
 					}
+
+					pointer = &top().inRam.address;
 #else /* DECLARE_WITH_VIEWPORT_ENABLED */
 					if (!fuzzyName.empty()) {
 						THROW_ID_HAS_NOT_BEEN_DECLARED_DID_YOU_MEAN(onError, idtk, fuzzyName);
@@ -19956,8 +20266,26 @@ public:
 				}
 
 				// Fill the parameter.
-				args = fill(args, (Int16)top().inRam.address);
+				args = fill(args, (Int16)(*pointer));
+				pointer = nullptr;
 			}
+
+			// Tidy the stack for the intermedia spaces.
+			if (!refs.empty()) {
+				for (int i = 0; i < (int)refs.size(); ++i) {
+					// Emit a `VM_SET_TLOCAL` instruction to put the intermedia to the stack reference.
+					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::SET_TLOCAL]);
+					args = fill(args, (Int16)tmps[i]);
+					args = fill(args, (Int16)refs[i]);
+				}
+
+				// Emit a `VM_POP` instruction to pop the intermedia value.
+				args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]); DEC_COUNTER(stk, 2 * (int)refs.size());
+				args = fill(args, (UInt8)refs.size());
+			}
+
+			// Check the stack footprint.
+			CHECK_COUNTER(ctx, onError);
 		};
 
 		write(bytes, context, generator, false, onError);
@@ -28201,7 +28529,8 @@ private:
 			};
 		};
 		auto maybe = [&] (Token::Types y, Variant d = nullptr) -> auto {
-			// Expect a token that matches the specific pattern, move the cursor to the next location despite it matched or not.
+			// Expect a token that matches the specific pattern, move the cursor to the next location if matched,
+			// always return the valid token.
 			return [&, y, d] (State &q) -> Token::Ptr {
 				if (q.index >= (int)tokens.size())
 					return nullptr;
@@ -28637,14 +28966,41 @@ private:
 
 			return n;
 		};
-		auto Parameters = [&] (State &q, Node::Array &children) -> int { // Parameters separated by commas.
+		auto Parameters = [&] (State &q, Node::Array &children, bool acceptMacro) -> int { // Parameters separated by commas.
 			int n = 0;
 			unexpectedCommas = -1;
 			for (EVER) {
 				State q1 = begin();
 				q1.index = q.index;
+				Token::Ptr id = nullptr;
 
-				if (!maybe(Token::Types::IDENTIFIER)(q1)) break;
+				if (!(id = maybe(Token::Types::IDENTIFIER)(q1))) break;
+				if (acceptMacro) {
+					if (id) {
+						const std::string name = (std::string)id->data();
+						const Node::MacroIdentifierAliasTable::Entry* idAlias = macroIdentifierAliases.find(name); // FEAT: MACRO.
+						const Node::MacroStackReferenceTable::Entry* stackNRef = macroStackReferences.find(name); // FEAT: MACRO.
+						if (idAlias) {
+							id
+								->type(Token::Types::IDENTIFIER)
+								->text(idAlias->alias->text())
+								->parse(false);
+						} else if (stackNRef) {
+							id
+								->type(Token::Types::OPERATOR)
+								->text(stackNRef->alias->text())
+								->parse(false);
+						}
+					}
+					if (q1.index == q.index && (id = must(Token::Types::OPERATOR)(q1))) {
+						const std::string name = (std::string)id->data();
+						if (!Text::startsWith(name, "stack", true)) return throwInvalidSyntax(q1.index);
+						const std::string idxTxt = name.substr(5 /* after "stack" */);
+						int idx = -1;
+						if (!Text::fromString(idxTxt, idx)) return throwInvalidSyntax(q1.index);
+						if (idx < 0 || idx >= COMPILER_STACK_ARGUMENT_MAX_COUNT) return throwInvalidSyntax(q1.index);
+					}
+				}
 
 				Node::Ptr exp(new NodeExpression());
 				exp->concat(q1.tokens);
@@ -28675,16 +29031,45 @@ private:
 
 			return n;
 		};
-		auto ParametersOrNumbers = [&] (State &q, Node::Array &children) -> int { // Parameters separated by commas.
+		auto ParametersOrNumbers = [&] (State &q, Node::Array &children, bool acceptMacro) -> int { // Parameters separated by commas.
 			int n = 0;
 			unexpectedCommas = -1;
 			for (EVER) {
 				State q1 = begin();
 				q1.index = q.index;
+				Token::Ptr id = nullptr;
 
-				if (forward(Token::Types::IDENTIFIER)(q1.index)) any()(q1);
-				else if (forward(Token::Types::NUMBER)(q1.index)) any()(q1);
-				else break;
+				if (forward(Token::Types::NUMBER)(q1.index)) {
+					any()(q1);
+				} else {
+					if (!(id = maybe(Token::Types::IDENTIFIER)(q1))) break;
+					if (acceptMacro) {
+						if (id) {
+							const std::string name = (std::string)id->data();
+							const Node::MacroIdentifierAliasTable::Entry* idAlias = macroIdentifierAliases.find(name); // FEAT: MACRO.
+							const Node::MacroStackReferenceTable::Entry* stackNRef = macroStackReferences.find(name); // FEAT: MACRO.
+							if (idAlias) {
+								id
+									->type(Token::Types::IDENTIFIER)
+									->text(idAlias->alias->text())
+									->parse(false);
+							} else if (stackNRef) {
+								id
+									->type(Token::Types::OPERATOR)
+									->text(stackNRef->alias->text())
+									->parse(false);
+							}
+						}
+						if (q1.index == q.index && (id = must(Token::Types::OPERATOR)(q1))) {
+							const std::string name = (std::string)id->data();
+							if (!Text::startsWith(name, "stack", true)) return throwInvalidSyntax(q1.index);
+							const std::string idxTxt = name.substr(5 /* after "stack" */);
+							int idx = -1;
+							if (!Text::fromString(idxTxt, idx)) return throwInvalidSyntax(q1.index);
+							if (idx < 0 || idx >= COMPILER_STACK_ARGUMENT_MAX_COUNT) return throwInvalidSyntax(q1.index);
+						}
+					}
+				}
 
 				Node::Ptr exp(new NodeExpression());
 				exp->concat(q1.tokens);
@@ -29532,7 +29917,7 @@ private:
 			q1.index = q.index;
 			Node::Array children_;
 
-			if (Parameters(q1, children_) != 1) return false;
+			if (Parameters(q1, children_, false) != 1) return false;
 			CHECK_UNEXPECTED(q1);
 			if (!must(Token::Types::KEYWORD, "is")(q1)) return false;
 			if (!must(Token::Types::KEYWORD)(q1)) return false;
@@ -31739,12 +32124,12 @@ private:
 				maybe(Token::Types::KEYWORD, "int")(q);
 				if (must(Token::Types::OPERATOR, "(")(q)) {
 					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
-						ParametersOrNumbers(q, children);
+						ParametersOrNumbers(q, children, true);
 						CHECK_UNEXPECTED(q);
 					}
 					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
 				} else {
-					ParametersOrNumbers(q, children);
+					ParametersOrNumbers(q, children, true);
 					CHECK_UNEXPECTED(q);
 				}
 				maybe(Token::Types::OPERATOR, ";")(q);
@@ -32036,7 +32421,7 @@ private:
 				if (idHasBeenDefined(name)) { return throwIdHasBeenAlreadyDeclared(q.index, name); }
 				if (must(Token::Types::OPERATOR, "=")(q)) {
 					r = q.index;
-					if (!Parameters(q, children)) return false;
+					if (!Parameters(q, children, false)) return false;
 					CHECK_UNEXPECTED(q);
 				} else {
 					return throwInvalidSyntax(q.index);
@@ -32102,7 +32487,7 @@ private:
 					else name = (std::string)id->data();
 					if (idHasBeenDefined(name)) { return throwIdHasBeenAlreadyDeclared(q.index, name); }
 					if (!must(Token::Types::OPERATOR, "(")(q)) return false;
-					Parameters(q, children);
+					Parameters(q, children, false);
 					CHECK_UNEXPECTED(q);
 					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
 					if (must(Token::Types::OPERATOR, "=")(q)) {
@@ -32297,7 +32682,7 @@ private:
 				if (idHasBeenDefined(name)) { return throwIdHasBeenAlreadyDeclared(q.index, name); }
 				if (must(Token::Types::OPERATOR, "=")(q)) {
 					r = q.index;
-					if (!Parameters(q, children)) return false;
+					if (!Parameters(q, children, false)) return false;
 					CHECK_UNEXPECTED(q);
 				} else {
 					return throwInvalidSyntax(q.index);
@@ -32638,12 +33023,12 @@ private:
 				if (!must(Token::Types::KEYWORD, "unpack")(q)) return false;
 				if (must(Token::Types::OPERATOR, "(")(q)) {
 					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
-						Parameters(q, children);
+						Parameters(q, children, true);
 						CHECK_UNEXPECTED(q);
 					}
 					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
 				} else {
-					Parameters(q, children);
+					Parameters(q, children, true);
 					CHECK_UNEXPECTED(q);
 				}
 				const int r = q.index;
@@ -32683,12 +33068,12 @@ private:
 				if (!must(Token::Types::KEYWORD, "swap")(q)) return false;
 				if (must(Token::Types::OPERATOR, "(")(q)) {
 					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
-						Parameters(q, children);
+						Parameters(q, children, true);
 						CHECK_UNEXPECTED(q);
 					}
 					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
 				} else {
-					Parameters(q, children);
+					Parameters(q, children, true);
 					CHECK_UNEXPECTED(q);
 				}
 				const int r = q.index;
@@ -32725,12 +33110,12 @@ private:
 				if (!must(Token::Types::KEYWORD, "inc")(q)) return false;
 				if (must(Token::Types::OPERATOR, "(")(q)) {
 					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
-						Parameters(q, children);
+						Parameters(q, children, true);
 						CHECK_UNEXPECTED(q);
 					}
 					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
 				} else {
-					Parameters(q, children);
+					Parameters(q, children, true);
 					CHECK_UNEXPECTED(q);
 				}
 				const int r = q.index;
@@ -32767,12 +33152,12 @@ private:
 				if (!must(Token::Types::KEYWORD, "dec")(q)) return false;
 				if (must(Token::Types::OPERATOR, "(")(q)) {
 					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
-						Parameters(q, children);
+						Parameters(q, children, true);
 						CHECK_UNEXPECTED(q);
 					}
 					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
 				} else {
-					Parameters(q, children);
+					Parameters(q, children, true);
 					CHECK_UNEXPECTED(q);
 				}
 				const int r = q.index;
@@ -34409,12 +34794,12 @@ private:
 				else name = (std::string)id->data();
 				if (must(Token::Types::OPERATOR, "(")(q)) {
 					if (!forward(Token::Types::OPERATOR, ")")(q.index)) {
-						Parameters(q, children);
+						Parameters(q, children, true);
 						CHECK_UNEXPECTED(q);
 					}
 					if (!must(Token::Types::OPERATOR, ")")(q)) return false;
 				} else {
-					Parameters(q, children);
+					Parameters(q, children, true);
 					CHECK_UNEXPECTED(q);
 				}
 				maybe(Token::Types::OPERATOR, ";")(q);
