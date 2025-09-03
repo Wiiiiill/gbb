@@ -1019,13 +1019,13 @@ void vm_find_actor(SCRIPT_CTX * THIS, UINT8 opt) OLDCALL BANKED {
 
         break;
     case ACTOR_FILTER_BY_BEHAVIOUR:
-        val &= ~CONTROLLER_ALWAYS_BEHAVE;
+        val &= ~CONTROLLER_BEHAVIOUR_OPTIONS;
         for ( ; i != ACTOR_MAX_COUNT; ++i) {
             actor_t * actor = &actors[i];
             if (!actor->instantiated)
                 continue;
 
-            if ((actor->behaviour & ~CONTROLLER_ALWAYS_BEHAVE) == val) {
+            if ((actor->behaviour & ~CONTROLLER_BEHAVIOUR_OPTIONS) == val) {
                 *(THIS->stack_ptr++) = (UINT16)actor;
 
                 return;

@@ -96,7 +96,7 @@ typedef struct actor_t {
     bool animation_loop       : 1;
     bool movement_interrupt   : 1;
     // Properties.
-    UINT8 template;
+    UINT8 template;                    // Index of the actor asset.
     upoint16_t position;
     UINT8 direction;
     boundingbox_t bounds;

@@ -237,7 +237,7 @@ BOOLEAN controller_behave_topdown_player_arbitrary(actor_t * actor) BANKED {
 
     // Check whether the actor is right aligned to tile.
     if (TOPDOWN_ALIGNED_TO_TILE(actor)) { // Aligned to tile.
-        actor->behaviour = CONTROLLER_BEHAVIOUR_TOPDOWN_PLAYER; // Transfer to the regular behaviour.
+        actor->behaviour = CONTROLLER_BEHAVIOUR_TOPDOWN_PLAYER; // Transfer to the aligned behaviour.
     }
 
     // Check whether the camera need to be moved.
@@ -247,7 +247,7 @@ BOOLEAN controller_behave_topdown_player_arbitrary(actor_t * actor) BANKED {
     return FALSE;
 }
 
-STATIC BOOLEAN controller_behave_topdown_move_update(actor_t * actor) {
+STATIC BOOLEAN controller_behave_topdown_move_update(actor_t * actor, enum TopDownBodyTypes body_type) {
     // Prepare.
     BOOLEAN result = FALSE;
     BOOLEAN moving = FALSE;
@@ -302,7 +302,7 @@ STATIC BOOLEAN controller_behave_topdown_move_update(actor_t * actor) {
 
     // Check collision with another actor.
     if (moving) {
-        actor_t * hit_actor = actor_in_front_of_actor(actor, 0, FALSE);
+        actor_t * hit_actor = actor_in_front_of_actor(actor, (UINT8)body_type, FALSE);
         if (hit_actor && controller_is_actor_toward_another(actor, hit_actor)) {
             actor_transfer_animation_to_idle(actor);
             actor_move_stop(actor);
@@ -313,12 +313,12 @@ STATIC BOOLEAN controller_behave_topdown_move_update(actor_t * actor) {
     return result;
 }
 
-BOOLEAN controller_behave_topdown_move(actor_t * actor) BANKED {
+BOOLEAN controller_behave_topdown_move(actor_t * actor, enum TopDownBodyTypes body_type) BANKED {
     // Check whether the actor is aligned to tile.
     BOOLEAN moving = TRUE;
     if (TOPDOWN_ALIGNED_TO_TILE(actor)) { // Aligned to tile.
         // Update the actor.
-        moving = controller_behave_topdown_move_update(actor);
+        moving = controller_behave_topdown_move_update(actor, body_type);
     }
 
     // Check whether the camera need to be moved.
@@ -328,13 +328,16 @@ BOOLEAN controller_behave_topdown_move(actor_t * actor) BANKED {
     return FALSE;
 }
 
-BOOLEAN controller_behave_topdown_move_arbitrary(actor_t * actor) BANKED {
+BOOLEAN controller_behave_topdown_move_arbitrary(actor_t * actor, enum TopDownBodyTypes body_type) BANKED {
     // Update the actor.
-    BOOLEAN moving = controller_behave_topdown_move_update(actor);
+    BOOLEAN moving = controller_behave_topdown_move_update(actor, body_type);
 
     // Check whether the actor is right aligned to tile.
     if (TOPDOWN_ALIGNED_TO_TILE(actor)) { // Aligned to tile.
-        actor->behaviour = CONTROLLER_BEHAVIOUR_TOPDOWN_MOVE; // Transfer to the regular behaviour.
+        if (body_type == REGULAR)
+            actor->behaviour = CONTROLLER_BEHAVIOUR_TOPDOWN_MOVE; // Transfer to the aligned behaviour.
+        else /* if (body_type == RIGID) */
+            actor->behaviour = CONTROLLER_BEHAVIOUR_TOPDOWN_RIGID_MOVE; // Transfer to the aligned behaviour.
     }
 
     // Check whether the camera need to be moved.
