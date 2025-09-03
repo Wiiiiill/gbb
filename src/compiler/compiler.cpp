@@ -3502,7 +3502,7 @@ namespace GBBASIC {
 #	define CHECK_FOR_INTEGER_OR_IDENTIFIER(ON_ERROR, TK) \
 		do { \
 			if (!(TK) || ((TK)->isNot(Token::Types::INTEGER) && (TK)->isNot(Token::Types::IDENTIFIER))) { \
-				THROW_TYPE_EXPECTED((ON_ERROR), "Integer or label", (TK)); \
+				THROW_TYPE_EXPECTED((ON_ERROR), "Integer or identifier", (TK)); \
 			} \
 		} while (false)
 #endif /* CHECK_FOR_INTEGER_OR_IDENTIFIER */
