@@ -27148,7 +27148,7 @@ public:
 			}
 
 			// Variable.
-			ADD_STATEMENT("pack",              node<NodePack>(),                           Token::Types::KEYWORD,    false);
+			ADD_STATEMENT("pack",              node<NodePack>(),                           Token::Types::KEYWORD,     true);
 			ADD_STATEMENT("unpack",            node<NodeUnpack>(),                         Token::Types::KEYWORD,    false);
 			ADD_STATEMENT("swap",              node<NodeSwap>(),                           Token::Types::KEYWORD,    false);
 			ADD_STATEMENT("inc",               node<NodeInc>(),                            Token::Types::KEYWORD,    false);
