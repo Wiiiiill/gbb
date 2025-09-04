@@ -3450,6 +3450,13 @@ namespace GBBASIC {
 			return; \
 		} while (false)
 #endif /* THROW_TYPE_EXPECTED */
+#ifndef THROW_UNEXPECTED_OPERATOR
+#	define THROW_UNEXPECTED_OPERATOR(ON_ERROR, TK, RET) \
+		do { \
+			throwUnexpectedOperator((ON_ERROR), (TK)); \
+			return (RET); \
+		} while (false)
+#endif /* THROW_UNEXPECTED_OPERATOR */
 #ifndef THROW_UNKNOWN_GLYPH
 #	define THROW_UNKNOWN_GLYPH(ON_ERROR) \
 		do { \
@@ -7597,12 +7604,10 @@ private:
 			switch (tk->type()) {
 			case Token::Types::OPERATOR:
 				if (expectsOperator == nullptr) {
-					if (tk->data() == "(") {
+					if (tk->data() == "(") { // Is a left parenthesis.
 						expectsOperand = tk;
 					} else {
-						throwUnexpectedOperator(onError, tk);
-
-						return false;
+						THROW_UNEXPECTED_OPERATOR(onError, tk, false);
 					}
 				} else {
 					if (tk->data() == ")") {
@@ -7671,9 +7676,7 @@ private:
 			}
 		}
 		if (expectsOperand) {
-			throwUnexpectedOperator(onError, expectsOperand);
-
-			return false;
+			THROW_UNEXPECTED_OPERATOR(onError, expectsOperand, false);
 		}
 
 		while (!stack.empty()) { // While there are still operator tokens in the stack.
@@ -30140,7 +30143,11 @@ private:
 							Token::Ptr node(new Token());
 							node
 								->type(Token::Types::OPERATOR)
-								->data(NEGATIVE); // Negative.
+								->data(NEGATIVE) // Negative.
+								->begin(id->begin())
+								->end(id->end())
+								->text(id->text())
+								->parse(false);
 							q.tokens.push_back(node);
 							++q.index;
 
