@@ -139,7 +139,9 @@ public:
 
 		const std::string idx = Text::trim(index);
 		if (!_index.set(_workspace, idx) || idx.empty()) {
-			const int pg = _project->preferencesCodePageForBindedRoutine();
+			int pg = _project->preferencesCodePageForBindedRoutine();
+			pg = Math::min(pg, _project->codePageCount() - 1);
+			pg = Math::max(pg, 0);
 			const Either<int, std::string> &ln = _project->preferencesCodeLineForBindedRoutine();
 			std::string dest = "#" + Text::toString(pg);
 			if (ln.isLeft())
@@ -173,7 +175,9 @@ public:
 
 		const int ln = _index.computedLine(this);
 		if (ln == -1 || ln >= GetTotalLines()) {
-			const int pg = _project->preferencesCodePageForBindedRoutine();
+			int pg = _project->preferencesCodePageForBindedRoutine();
+			pg = Math::min(pg, _project->codePageCount() - 1);
+			pg = Math::max(pg, 0);
 			const std::string dest = "#" + Text::toString(pg);
 
 			_index.set(_workspace, dest);
