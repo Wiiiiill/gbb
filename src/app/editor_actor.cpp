@@ -758,15 +758,16 @@ public:
 			return;
 
 		const Editing::Tools::PaintableTools prevTool = _tools.painting;
+		if (prevTool != Editing::Tools::STAMP) {
+			_tools.painting = Editing::Tools::STAMP;
 
-		_tools.painting = Editing::Tools::STAMP;
-
-		_processors[Editing::Tools::STAMP] = Processor{
-			nullptr,
-			nullptr,
-			std::bind(&EditorActorImpl::stampToolUp_Paste, this, std::placeholders::_1, area, dots, prevTool),
-			std::bind(&EditorActorImpl::stampToolHover_Paste, this, std::placeholders::_1, area, dots)
-		};
+			_processors[Editing::Tools::STAMP] = Processor{
+				nullptr,
+				nullptr,
+				std::bind(&EditorActorImpl::stampToolUp_Paste, this, std::placeholders::_1, area, dots, prevTool),
+				std::bind(&EditorActorImpl::stampToolHover_Paste, this, std::placeholders::_1, area, dots)
+			};
+		}
 
 		destroyOverlay();
 	}
