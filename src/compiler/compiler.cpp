@@ -547,6 +547,8 @@ namespace GBBASIC {
 #ifndef CONTROLLER_BEHAVIOURS
 #	define CONTROLLER_BEHAVIOURS
 #	define CONTROLLER_ALWAYS_BEHAVE                                 0x80
+#	define CONTROLLER_RIGIDLY_BEHAVE                                0x40
+#	define CONTROLLER_BEHAVIOUR_OPTIONS                            (CONTROLLER_ALWAYS_BEHAVE | CONTROLLER_RIGIDLY_BEHAVE)
 #	define CONTROLLER_BEHAVIOUR_NONE                                0x00
 #	define CONTROLLER_BEHAVIOUR_PLATFORMER_PLAYER                   0x01
 #	define CONTROLLER_BEHAVIOUR_PLATFORMER_MOVE                     0x02
@@ -555,12 +557,10 @@ namespace GBBASIC {
 #		define CONTROLLER_BEHAVIOUR_TOPDOWN_PLAYER_ARBITRARY        0x05
 #	define CONTROLLER_BEHAVIOUR_TOPDOWN_MOVE                        0x06
 #		define CONTROLLER_BEHAVIOUR_TOPDOWN_MOVE_ARBITRARY          0x07
-#	define CONTROLLER_BEHAVIOUR_TOPDOWN_RIGID_MOVE                  0x08
-#		define CONTROLLER_BEHAVIOUR_TOPDOWN_RIGID_MOVE_ARBITRARY    0x09
-#	define CONTROLLER_BEHAVIOUR_TOPDOWN_IDLE                        0x0a
-#	define CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER                  0x0b
-#	define CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER_WITH_MOUSE      (0x0c | CONTROLLER_ALWAYS_BEHAVE)
-#	define CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER_WITH_TOUCH      (0x0d | CONTROLLER_ALWAYS_BEHAVE)
+#	define CONTROLLER_BEHAVIOUR_TOPDOWN_IDLE                        0x08
+#	define CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER                  0x09
+#	define CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER_WITH_MOUSE      (0x0a | CONTROLLER_ALWAYS_BEHAVE)
+#	define CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER_WITH_TOUCH      (0x0b | CONTROLLER_ALWAYS_BEHAVE)
 #	define CONTROLLER_MOVABLE_FLAG_NONE                             0x00
 #	define CONTROLLER_MOVABLE_FLAG_COLLISIONS                       0x01
 #	define CONTROLLER_MOVABLE_FLAG_FULL                             0x02
@@ -12998,6 +12998,9 @@ public:
 			VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 			COUNTER_GUARD(ctx, stk);
 
+			// Set the expression slot guard.
+			VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
+
 			// Emit the evaluations.
 			if (!_children.empty())
 				writeChildren(bytes, context, Range(0, (int)_children.size() - 1), stk, onError);
@@ -13251,6 +13254,9 @@ public:
 			VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 			COUNTER_GUARD(ctx, stk);
 
+			// Set the expression slot guard.
+			VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
+
 			// Emit the evaluations.
 			writeChildren(bytes, context, Range(0, (int)_children.size() - 1), stk, onError);
 
@@ -13339,6 +13345,9 @@ public:
 			VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 			COUNTER_GUARD(ctx, stk);
 
+			// Set the expression slot guard.
+			VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
+
 			// Emit the specific instruction to reserve a number of slots.
 			if (_children.empty()) {
 				// Emit a `VM_RESERVE` instruction.
@@ -13414,6 +13423,9 @@ public:
 			// Set the stack footprint guard.
 			VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 			COUNTER_GUARD(ctx, stk);
+
+			// Set the expression slot guard.
+			VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
 
 			// Emit the specific instruction to push a value.
 			if (_children.empty()) {
@@ -13502,6 +13514,9 @@ public:
 			// Set the stack footprint guard.
 			COND_VAR_GUARD(ctx.expect.lnno, ctx.stackFootprint, Counter::Ptr(new Counter()));
 			COUNTER_GUARD(ctx, stk);
+
+			// Set the expression slot guard.
+			VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
 
 			// Emit the specific instruction to pop a value.
 			const bool withDeclaring = ctx.declaration.declaring != -1;
@@ -13983,6 +13998,9 @@ public:
 			// Set the stack footprint guard.
 			COND_VAR_GUARD(ctx.expect.lnno, ctx.stackFootprint, Counter::Ptr(new Counter()));
 			COUNTER_GUARD(ctx, stk);
+
+			// Set the expression slot guard.
+			VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
 
 			// Prepare the arguments.
 			int setBackFrom = 0;
@@ -18988,6 +19006,9 @@ public:
 							VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 							COUNTER_GUARD(ctx, stk);
 
+							// Set the expression slot guard.
+							VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
+
 							// Emit the arguments.
 							writeChildren(bytes, context, Range(1), stk, onError); // `n`.
 							Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PUSH]); INC_COUNTER(stk, 2); // Address.
@@ -19018,6 +19039,9 @@ public:
 							// Set the stack footprint guard.
 							VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 							COUNTER_GUARD(ctx, stk);
+
+							// Set the expression slot guard.
+							VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
 
 							// Emit the arguments.
 							writeChildren(bytes, context, Range(1), stk, onError); // `n`.
@@ -19057,6 +19081,9 @@ public:
 							VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 							COUNTER_GUARD(ctx, stk);
 
+							// Set the expression slot guard.
+							VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
+
 							// Emit the arguments.
 							if (argn == 3) {
 								writeChildren(bytes, context, Range(2), stk, onError); // `offset`.
@@ -19093,6 +19120,9 @@ public:
 							// Set the stack footprint guard.
 							VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 							COUNTER_GUARD(ctx, stk);
+
+							// Set the expression slot guard.
+							VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
 
 							// Emit the arguments.
 							Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PUSH]); INC_COUNTER(stk, 2); // `offset`.
@@ -19161,6 +19191,9 @@ public:
 						// Set the stack footprint guard.
 						VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 						COUNTER_GUARD(ctx, stk);
+
+						// Set the expression slot guard.
+						VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
 
 						// Emit the arguments.
 						SourceLocation target(page, tks.size() == 1 ? 0 : dest.left().get()); // `#pg:n`. By page number and index.
@@ -19245,6 +19278,9 @@ public:
 						// Set the stack footprint guard.
 						VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 						COUNTER_GUARD(ctx, stk);
+
+						// Set the expression slot guard.
+						VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
 
 						// Emit the arguments.
 						SourceLocation target(page, tks.size() == 1 ? 0 : dest.left().get()); // `#pg:n`. By page number and index.
@@ -19412,6 +19448,9 @@ public:
 			VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 			COUNTER_GUARD(ctx, stk);
 
+			// Set the expression slot guard.
+			VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
+
 			// Emit the arguments.
 			writeChildren(bytes, context, Range((int)_children.size() - 1, 0), stk, onError);
 
@@ -19481,6 +19520,9 @@ public:
 			// Set the stack footprint guard.
 			VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 			COUNTER_GUARD(ctx, stk);
+
+			// Set the expression slot guard.
+			VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
 
 			// Emit the arguments.
 			writeChildren(bytes, context, Range((int)_children.size() - 1, 0), stk, onError);
@@ -25431,6 +25473,9 @@ public:
 			VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 			COUNTER_GUARD(ctx, stk);
 
+			// Set the expression slot guard.
+			VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
+
 			// Emit a `VM_FX` instruction.
 			Token::Ptr tk = nullptr;
 			int val = 0;
@@ -26363,6 +26408,9 @@ public:
 			VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 			COUNTER_GUARD(ctx, stk);
 
+			// Set the expression slot guard.
+			VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
+
 			// Emit the streaming statement.
 			if (isEos) {
 				// Emit a `VM_STREAM` instruction.
@@ -26519,6 +26567,9 @@ public:
 			VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 			COUNTER_GUARD(ctx, stk);
 
+			// Set the expression slot guard.
+			VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
+
 			// Emit the evaluations.
 			writeChildren(bytes, context, Range(0), stk, onError);
 
@@ -26593,6 +26644,9 @@ public:
 			// Set the stack footprint guard.
 			VAR_GUARD(ctx.stackFootprint, Counter::Ptr(new Counter()));
 			COUNTER_GUARD(ctx, stk);
+
+			// Set the expression slot guard.
+			VAR_GUARD(ctx.expression.slots, Context::Expression::Slots(new Context::Expression::Slots::element_type));
 
 			// Emit the arguments.
 			if (_children.size() > 1)
@@ -27349,13 +27403,13 @@ public:
 			ADD_BUILTIN("ANY_TEMPLATE",                              BuiltinTable::Entry(ACTOR_TEMPLATE_ANY)                                );
 
 			// Controller.
+			ADD_BUILTIN("RIGID_BEHAVIOUR",                           BuiltinTable::Entry(CONTROLLER_RIGIDLY_BEHAVE)                         ); // For controller...
 			ADD_BUILTIN("NONE_BEHAVIOUR",                            BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_NONE)                         ); // For controller...
 			ADD_BUILTIN("PLATFORMER_PLAYER_BEHAVIOUR",               BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_PLATFORMER_PLAYER)            );
 			ADD_BUILTIN("PLATFORMER_MOVE_BEHAVIOUR",                 BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_PLATFORMER_MOVE)              );
 			ADD_BUILTIN("PLATFORMER_IDLE_BEHAVIOUR",                 BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_PLATFORMER_IDLE)              );
 			ADD_BUILTIN("TOPDOWN_PLAYER_BEHAVIOUR",                  BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_TOPDOWN_PLAYER_ARBITRARY)     );
 			ADD_BUILTIN("TOPDOWN_MOVE_BEHAVIOUR",                    BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_TOPDOWN_MOVE_ARBITRARY)       );
-			ADD_BUILTIN("TOPDOWN_RIGID_MOVE_BEHAVIOUR",              BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_TOPDOWN_RIGID_MOVE_ARBITRARY) );
 			ADD_BUILTIN("TOPDOWN_IDLE_BEHAVIOUR",                    BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_TOPDOWN_IDLE)                 );
 			ADD_BUILTIN("POINTNCLICK_PLAYER_BEHAVIOUR",              BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER)           );
 			ADD_BUILTIN("POINTNCLICK_PLAYER_WITH_MOUSE_BEHAVIOUR",   BuiltinTable::Entry(CONTROLLER_BEHAVIOUR_POINTNCLICK_PLAYER_WITH_MOUSE));
@@ -28721,6 +28775,20 @@ private:
 			if (macroIdentifierAliases.find(name, 1 /* local only */))
 				return true;
 			if (macroStackReferences.find(name, 1 /* local only */))
+				return true;
+
+			return false;
+		};
+		auto idHasBeenDefinedAsmacro = [&] (const std::string &name) -> bool {
+			if (macroAliases.find(name))
+				return true;
+			if (macroFunctions.find(name))
+				return true;
+			if (macroConstants.find(name))
+				return true;
+			if (macroIdentifierAliases.find(name))
+				return true;
+			if (macroStackReferences.find(name))
 				return true;
 
 			return false;
@@ -31092,6 +31160,7 @@ private:
 				if (!must(Token::Types::KEYWORD, "case")(q)) return throwInvalidSyntax(q.index);
 				if (!(id = must(Token::Types::SYMBOL)(q))) return throwInvalidSyntax(q.index);
 				else name = (std::string)id->data();
+				if (idHasBeenDefinedAsmacro(name)) return throwInvalidSyntax(q.index); // Is a macro.
 				{
 					ignore(Token::Types::COMMENT)(q);
 					if (!ignore(Token::Types::END_OF_LINE)(q)) return throwInvalidSyntax(q.index);
@@ -31557,6 +31626,7 @@ private:
 				if (!must(Token::Types::KEYWORD, "for")(q)) return false;
 				if (!(id = must(Token::Types::IDENTIFIER)(q))) return throwInvalidSyntax(q.index);
 				else name = (std::string)id->data();
+				if (idHasBeenDefinedAsmacro(name)) return throwInvalidSyntax(q.index); // Is a macro.
 				if (!must(Token::Types::OPERATOR, "=")(q)) return throwInvalidSyntax(q.index);
 				if (!Expression(q, children)) return throwInvalidSyntax(q.index);
 				if (!must(Token::Types::KEYWORD, "to")(q)) return throwInvalidSyntax(q.index);
@@ -32361,12 +32431,7 @@ private:
 					return false;
 
 				const std::string aliasName = children.front()->onlyToken()->text();
-				const Node::MacroAliasTable::Entry* macroAliasEntry = macroAliases.find(aliasName);
-				const Node::MacroFunctionTable::Entry* fnEntry = macroFunctions.find(aliasName);
-				const Node::MacroConstantTable::Entry* constEntry = macroConstants.find(aliasName);
-				const Node::MacroIdentifierAliasTable::Entry* idAliasEntry = macroIdentifierAliases.find(aliasName);
-				const Node::MacroStackReferenceTable::Entry* stackRefEntry = macroStackReferences.find(aliasName);
-				if (!macroAliasEntry && !fnEntry && !constEntry && !idAliasEntry && !stackRefEntry) // Is not a macro.
+				if (!idHasBeenDefinedAsmacro(aliasName)) // Is not a macro.
 					return false;
 
 				Node::Ptr node = createNode(

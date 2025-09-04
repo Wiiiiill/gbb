@@ -219,6 +219,15 @@
       "animation": "topdown"
     },
     {
+      "type": "player",
+      "id": "tdrp",
+      "value": "0x45",
+      "name": {
+        "english": "Topdown Rigid Player"
+      },
+      "animation": "topdown"
+    },
+    {
       "type": "npc",
       "id": "tdmv",
       "value": "0x07",
@@ -230,7 +239,7 @@
     {
       "type": "npc",
       "id": "tdrm",
-      "value": "0x09",
+      "value": "0x47",
       "name": {
         "english": "Topdown Rigid Move"
       },
@@ -239,7 +248,7 @@
     {
       "type": "npc",
       "id": "tdid",
-      "value": "0x0A",
+      "value": "0x08",
       "name": {
         "english": "Topdown Idle"
       },
@@ -248,7 +257,7 @@
     {
       "type": "player",
       "id": "pcpl",
-      "value": "0x0B",
+      "value": "0x09",
       "name": {
         "english": "Point&Click Player"
       },
@@ -257,7 +266,7 @@
     {
       "type": "player",
       "id": "pcpm",
-      "value": "0x8C",
+      "value": "0x8A",
       "name": {
         "english": "Point&Click Player with Mouse"
       },
@@ -266,7 +275,7 @@
     {
       "type": "player",
       "id": "pcpt",
-      "value": "0x8D",
+      "value": "0x8B",
       "name": {
         "english": "Point&Click Player with Touch"
       },

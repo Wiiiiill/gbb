@@ -9,16 +9,11 @@
 #include "../vm.h"
 #include "../vm_actor.h"
 
-enum TopDownBodyTypes {
-    REGULAR,
-    RIGID
-};
-
 BOOLEAN controller_behave_topdown_player(actor_t * actor) BANKED;
-BOOLEAN controller_behave_topdown_player_arbitrary(actor_t * actor) BANKED;
+BOOLEAN controller_behave_topdown_player_arbitrary(actor_t * actor, UINT8 rigid) BANKED;
 
-BOOLEAN controller_behave_topdown_move(actor_t * actor, enum TopDownBodyTypes body_type) BANKED;
-BOOLEAN controller_behave_topdown_move_arbitrary(actor_t * actor, enum TopDownBodyTypes body_type) BANKED;
+BOOLEAN controller_behave_topdown_move(actor_t * actor) BANKED;
+BOOLEAN controller_behave_topdown_move_arbitrary(actor_t * actor, UINT8 rigid) BANKED;
 
 BOOLEAN controller_behave_topdown_idle(actor_t * actor) BANKED;
 
