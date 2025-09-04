@@ -14032,7 +14032,7 @@ public:
 					args = fill(args, (UInt16)0);
 					for (int &tmp : tmps)
 						--tmp;
-					tmps.push_back(ARG0);
+					tmps.push_back((int)ARG0);
 					refs.push_back(stackRef);
 
 					if (i == 0) {
@@ -14633,6 +14633,7 @@ public:
 				}
 
 				// Find the left hand ID in RAM.
+				const int arg0 = ARG0;
 				const int* pointer = nullptr;
 				bool isArray = false;
 				if (copy) {
@@ -14652,7 +14653,7 @@ public:
 						Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::PUSH]); INC_COUNTER(stk, 2);
 						args = fill(args, (UInt16)0);
 
-						pointer = &ARG0;
+						pointer = &arg0;
 					} else { // Declaration.
 #if DECLARE_WITH_READ_ENABLED
 						const TextLocation &txtLoc = idtk->begin();
@@ -18604,7 +18605,7 @@ public:
 							args = fill(args, (UInt16)0);
 							for (int &tmp : tmps)
 								--tmp;
-							tmps.push_back(ARG0);
+							tmps.push_back((int)ARG0);
 							refs.push_back(stackRef);
 						}
 					}
@@ -20179,7 +20180,7 @@ public:
 					args = fill(args, (UInt16)0);
 					for (int &tmp : tmps)
 						--tmp;
-					tmps.push_back(ARG0);
+					tmps.push_back((int)ARG0);
 					refs.push_back(stackRef);
 				}
 			}
