@@ -868,6 +868,27 @@ public:
 			}
 
 			return Variant(true);
+		case SET_FRAME: {
+				const Variant::Int index = unpack<Variant::Int>(argc, argv, 0, _index);
+
+				constexpr const int layers[] = {
+					ASSETS_MAP_GRAPHICS_LAYER,
+					ASSETS_MAP_ATTRIBUTES_LAYER
+				};
+				const bool isInLayers = std::any_of(
+					std::begin(layers), std::end(layers),
+					[index] (int layer) -> bool {
+						return layer == index;
+					}
+				);
+
+				if (!isInLayers)
+					return Variant(false);
+
+				_setLayer(index);
+			}
+
+			return Variant(true);
 		case CLEAR_UNDO_REDO_RECORDS:
 			_commands->clear();
 

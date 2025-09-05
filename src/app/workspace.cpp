@@ -136,6 +136,9 @@ EM_JS(
 	}
 );
 #else /* GBBASIC_OS_HTML */
+static void workspaceFree(void*) {
+	// Do nothing.
+}
 static const char* workspaceGetProjectData(void) {
 	return nullptr;
 }
@@ -2169,6 +2172,80 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 
 										category((Workspace::Categories)cat);
 										switch ((Workspace::Categories)cat) {
+										case Categories::CODE: {
+												fprintf(stdout, "SDL: TO CODE.\n");
+
+												changePage(wnd, rnd, prj.get(), category(), page);
+
+												CodeAssets::Entry* entry = prj->getCode(page);
+												if (entry) {
+													Editable* editor = entry->editor;
+													if (!editor)
+														editor = touchCodeEditor(wnd, rnd, prj.get(), page, true, entry);
+													if (editor)
+														editor->post(Editable::SET_CURSOR, (Variant::Int)sub);
+												}
+											}
+
+											break;
+										case Categories::MAP: {
+												fprintf(stdout, "SDL: TO MAP.\n");
+
+												changePage(wnd, rnd, prj.get(), category(), page);
+
+												MapAssets::Entry* entry = prj->getMap(page);
+												if (entry) {
+													Editable* editor = entry->editor;
+													if (!editor) {
+														BaseAssets::Entry* refAsset = prj->tilesPageCount() == 0 ? nullptr : prj->getTiles(entry->ref);
+														if (refAsset)
+															editor = touchMapEditor(wnd, rnd, prj.get(), prj->activeMapIndex(), (unsigned)Categories::TILES, entry->ref, entry);
+														else
+															editor = touchMapEditor(wnd, rnd, prj.get(), prj->activeMapIndex(), (unsigned)(~0), -1, entry);
+													}
+													if (editor)
+														editor->post(Editable::SET_FRAME, (Variant::Int)sub);
+												}
+											}
+
+											break;
+										case Categories::ACTOR: {
+												fprintf(stdout, "SDL: TO ACTOR.\n");
+
+												changePage(wnd, rnd, prj.get(), category(), page);
+
+												ActorAssets::Entry* entry = prj->getActor(page);
+												if (entry) {
+													Editable* editor = entry->editor;
+													if (!editor)
+														editor = touchActorEditor(wnd, rnd, prj.get(), page, entry);
+													if (editor)
+														editor->post(Editable::SET_FRAME, (Variant::Int)sub);
+												}
+											}
+
+											break;
+										case Categories::SCENE: {
+												fprintf(stdout, "SDL: TO SCENE.\n");
+
+												changePage(wnd, rnd, prj.get(), category(), page);
+
+												SceneAssets::Entry* entry = prj->getScene(page);
+												if (entry) {
+													Editable* editor = entry->editor;
+													if (!entry->editor) {
+														BaseAssets::Entry* refAsset = prj->mapPageCount() == 0 ? nullptr : prj->getMap(entry->refMap);
+														if (refAsset)
+															editor = touchSceneEditor(wnd, rnd, prj.get(), prj->activeSceneIndex(), (unsigned)Categories::MAP, entry->refMap, entry);
+														else
+															editor = touchSceneEditor(wnd, rnd, prj.get(), prj->activeSceneIndex(), (unsigned)(~0), -1, entry);
+													}
+													if (editor)
+														editor->post(Editable::SET_FRAME, (Variant::Int)sub);
+												}
+											}
+
+											break;
 										case Workspace::Categories::CONSOLE:
 											fprintf(stdout, "SDL: TO COMPILE.\n");
 
@@ -2182,18 +2259,7 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 
 											break;
 										default:
-											changePage(wnd, rnd, prj.get(), category(), page);
-
-											if ((Workspace::Categories)cat == Workspace::Categories::CODE) {
-												CodeAssets::Entry* entry = prj->getCode(page);
-												if (entry) {
-													Editable* editor = entry->editor;
-													if (!editor)
-														editor = touchCodeEditor(wnd, rnd, prj.get(), page, true, entry);
-													if (editor)
-														editor->post(Editable::SET_CURSOR, (Variant::Int)sub);
-												}
-											}
+											// Do nothing.
 
 											break;
 										}
@@ -2320,7 +2386,7 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 	case ExternalEventTypes::TO_LOCATION: {
 			fprintf(stdout, "SDL: TO_LOCATION.\n");
 
-			const int ln = (int)(intptr_t)evt->user.data1;
+			const int sub = (int)(intptr_t)evt->user.data1;
 
 			if (!currentProject()) {
 				messagePopupBox(theme()->dialogPrompt_NoValidProject(), nullptr, nullptr, nullptr);
@@ -2332,15 +2398,61 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 
 			Project::Ptr &prj = currentProject();
 
-			const int pg = prj->activeMajorCodeIndex();
+			switch (category()) {
+			case Categories::CODE: {
+					const int pg = prj->activeMajorCodeIndex();
 
-			CodeAssets::Entry* entry = prj->getCode(pg);
-			if (entry) {
-				Editable* editor = entry->editor;
-				if (!editor)
-					editor = touchCodeEditor(wnd, rnd, prj.get(), pg, true, entry);
-				if (editor)
-					editor->post(Editable::SET_CURSOR, (Variant::Int)ln);
+					CodeAssets::Entry* entry = prj->getCode(pg);
+					if (entry) {
+						Editable* editor = entry->editor;
+						if (!editor)
+							editor = touchCodeEditor(wnd, rnd, prj.get(), pg, true, entry);
+						if (editor)
+							editor->post(Editable::SET_CURSOR, (Variant::Int)sub);
+					}
+				}
+
+				break;
+			case Categories::MAP: {
+					const int pg = prj->activeMapIndex();
+
+					MapAssets::Entry* entry = prj->getMap(pg);
+					if (entry) {
+						Editable* editor = entry->editor;
+						if (editor)
+							editor->post(Editable::SET_FRAME, (Variant::Int)sub);
+					}
+				}
+
+				break;
+			case Categories::ACTOR: {
+					const int pg = prj->activeActorIndex();
+
+					ActorAssets::Entry* entry = prj->getActor(pg);
+					if (entry) {
+						Editable* editor = entry->editor;
+						if (editor)
+							editor->post(Editable::SET_FRAME, (Variant::Int)sub);
+					}
+				}
+
+				break;
+			case Categories::SCENE: {
+					const int pg = prj->activeSceneIndex();
+
+					SceneAssets::Entry* entry = prj->getScene(pg);
+					if (entry) {
+						Editable* editor = entry->editor;
+						if (editor)
+							editor->post(Editable::SET_FRAME, (Variant::Int)sub);
+					}
+				}
+
+				break;
+			default:
+				// Do nothing.
+
+				break;
 			}
 		}
 

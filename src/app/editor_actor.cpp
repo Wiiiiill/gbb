@@ -906,6 +906,16 @@ public:
 			}
 
 			return Variant(true);
+		case SET_FRAME: {
+				const Variant::Int index = unpack<Variant::Int>(argc, argv, 0, _index);
+
+				if (index < 0 || index >= object()->count())
+					return Variant(false);
+
+				_setFrame(index);
+			}
+
+			return Variant(true);
 		case BIND_CALLBACK: {
 				const Variant::Int index = unpack<Variant::Int>(argc, argv, 0, 0);
 

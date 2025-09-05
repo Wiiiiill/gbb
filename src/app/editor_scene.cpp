@@ -1204,6 +1204,30 @@ public:
 			}
 
 			return Variant(true);
+		case SET_FRAME: {
+				const Variant::Int index = unpack<Variant::Int>(argc, argv, 0, _index);
+
+				constexpr const int layers[] = {
+					ASSETS_SCENE_GRAPHICS_LAYER,
+					ASSETS_SCENE_ATTRIBUTES_LAYER,
+					ASSETS_SCENE_PROPERTIES_LAYER,
+					ASSETS_SCENE_ACTORS_LAYER,
+					ASSETS_SCENE_TRIGGERS_LAYER
+				};
+				const bool isInLayers = std::any_of(
+					std::begin(layers), std::end(layers),
+					[index] (int layer) -> bool {
+						return layer == index;
+					}
+				);
+
+				if (!isInLayers)
+					return Variant(false);
+
+				_setLayer(index);
+			}
+
+			return Variant(true);
 		case CLEAR_UNDO_REDO_RECORDS:
 			_commands->clear();
 
