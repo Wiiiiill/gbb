@@ -28,7 +28,7 @@ STATIC void game_update_modules(void) {
     game_has_input |= input_button_pressed; // Some button has been pressed.
     if (device_type & DEVICE_TYPE_GBB) {
         INPUT_ACCEPT_TOUCH;
-        game_has_input |= INPUT_IS_TOUCH_PRESSED; // Touched.
+        game_has_input |= input_touch_state; // Touched.
     }
 
     // Update the actors.
