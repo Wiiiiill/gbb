@@ -378,6 +378,7 @@ public:
 		DEF_STACK_N,
 		LOCATE,
 		PRINT,
+		CLS,
 		PEEK,
 		POKE,
 		RESERVE,

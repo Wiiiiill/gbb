@@ -237,6 +237,10 @@ namespace GBBASIC {
 #	define PERSISTENCE_SIGNATURE_ENTRY_NAME "PERSISTENCE_SIGNATURE" // DOC: ROM SCHEMA.
 #endif /* PERSISTENCE_SIGNATURE_ENTRY_NAME */
 
+#ifndef CLS_ENTRY_NAME
+#	define CLS_ENTRY_NAME "clear_text" // DOC: ROM SCHEMA.
+#endif /* CLS_ENTRY_NAME */
+
 #ifndef BOOTSTRAP_ENTRY_NAME
 #	define BOOTSTRAP_ENTRY_NAME "BOOTSTRAP" // DOC: ROM SCHEMA.
 #endif /* BOOTSTRAP_ENTRY_NAME */
@@ -13102,6 +13106,77 @@ public:
 
 	virtual std::string dump(int depth) const override {
 		return dump(depth, "PRINT");
+	}
+	using Node::dump;
+};
+
+class NodeCls : public Node {
+public:
+	NodeCls() {
+	}
+	virtual ~NodeCls() override {
+	}
+
+	NODE_TYPE(Types::CLS)
+
+	virtual void generate(Bytes::Ptr &bytes, Context::Stack &context, Error::Handler onError) override {
+		const Generator_Void_Void generator = [&] (void) -> void {
+			// Prepare.
+			Context &ctx = context.top();
+			State &state = top();
+
+			const Asm::Instructions &INSTRUCTIONS = *ctx.instructions;
+
+			// Determine the location in the ROM.
+			state.inRom.bank = ctx.bank;
+			state.inRom.address = ctx.addressCursor;
+			state.inRom.size = 0;
+
+			// Consume the tokens.
+			if (ctx.expect.lnno) {
+				if (!consume(Token::Types::INTEGER, ANYTHING, [&] (Token::Ptr tk) -> void {
+					state.inCode = SourceLocation(tk->begin().page, (int)tk->data());
+				})) { THROW_INVALID_SYNTAX(onError); }
+			}
+			if (!consume(Token::Types::KEYWORD, "cls")) { THROW_INVALID_SYNTAX(onError); }
+			if (consume(Token::Types::OPERATOR, "(")) {
+				if (!consume(Token::Types::OPERATOR, ")")) { THROW_INVALID_SYNTAX(onError); }
+			}
+
+			// Check the children.
+			if (_children.empty()) {
+				// Do nothing.
+			} else {
+				THROW_TOO_MANY_ARGUMENTS(onError);
+			}
+
+			// Get the native function pointer in the ROM.
+			if (!ctx.symbols) { THROW_INVALID_NATIVE_SYMBOL(onError); }
+			const RomLocation* romLocation = ctx.symbols->find(CLS_ENTRY_NAME);
+			if (!romLocation) {
+				THROW_INVALID_NATIVE_SYMBOL(onError);
+			}
+			const int bank = romLocation->bank;
+			const int address = romLocation->address;
+
+			// Emit a `VM_INVOKE_FN` instruction.
+			Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::INVOKE_FN]);
+			args = fill(args, (Int16)0);
+			args = fill(args, (UInt8)0);
+			args = fill(args, (UInt16)address);
+			args = fill(args, (UInt8)bank);
+		};
+
+		write(bytes, context, generator, false, onError);
+	}
+
+	virtual Abstract abstract(void) const override {
+		return abstract("CLS");
+	}
+	using Node::abstract;
+
+	virtual std::string dump(int depth) const override {
+		return dump(depth, "CLS");
 	}
 	using Node::dump;
 };
@@ -27088,6 +27163,7 @@ public:
 			// Output.
 			ADD_STATEMENT("locate",            node<NodeLocate>(),                         Token::Types::KEYWORD,    false);
 			ADD_STATEMENT("print",             node<NodePrint>(),                          Token::Types::KEYWORD,    false);
+			ADD_STATEMENT("cls",               node<NodeCls>(),                            Token::Types::KEYWORD,    false);
 
 			// Peek and poke.
 			ADD_STATEMENT("peek",              node<NodePeek>(),                           Token::Types::KEYWORD,     true);

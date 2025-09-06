@@ -1,6 +1,7 @@
 #pragma bank 255
 
 #if defined __SDCC
+#   include <gbdk/console.h>
 #else /* __SDCC */
 #   error "Not implemented."
 #endif /* __SDCC */
@@ -13,6 +14,17 @@
 #include "vm_native.h"
 
 BANKREF(VM_NATIVE)
+
+// Clears the screen for the text mode.
+BOOLEAN clear_text(POINTER THIS, BOOLEAN start, UINT16 * stack_frame) OLDCALL BANKED { // INVOKABLE.
+    (void)THIS;
+    (void)start;
+    (void)stack_frame;
+
+    cls();
+
+    return TRUE;
+}
 
 // Waits for the specific number of frames.
 BOOLEAN wait_for(POINTER THIS, BOOLEAN start, UINT16 * stack_frame) OLDCALL BANKED { // INVOKABLE.
