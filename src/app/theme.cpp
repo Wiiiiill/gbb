@@ -978,6 +978,7 @@ bool Theme::open(class Renderer* rnd) {
 	tooltipActor_Bit6("Bit 6\n(vertical flip, determined automatically)");
 	tooltipActor_Bit7("Bit 7\n(priority)");
 	tooltipActor_CheckToApplyToAllFrames("Check to apply to all frames");
+	tooltipActor_CheckToChangeBitToAllTiles("Check to change bit to all tiles");
 	tooltipActor_CopyDefinition("Copy definition");
 	tooltipActor_Export("Export");
 	tooltipActor_ForAnimationTicking("For animation ticking");
@@ -996,7 +997,8 @@ bool Theme::open(class Renderer* rnd) {
 	tooltipActor_IntervalTooltips().push_back("  60 FPS (Fast)");
 	tooltipActor_PasteDefinition("Paste definition");
 	tooltipActor_Refresh("Refresh (Ctrl+Shift+R)");
-	tooltipActor_ToAll("To All");
+	tooltipActor_ToAllFrames("To all frames");
+	tooltipActor_ToAllTiles("To all tiles");
 
 	tooltipArbitrary_Note(tooltipArbitrary_Note() + "* For parameterized GUI text\n");
 	tooltipArbitrary_Note(tooltipArbitrary_Note() + "* Each font asset has its own arbitrary data");

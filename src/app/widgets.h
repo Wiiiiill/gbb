@@ -1155,6 +1155,7 @@ void Indicator(const char* label, const ImVec2 &pos);
 
 bool IntegerModifier(Renderer* rnd, Theme* theme, int* val, int min, int max, float width, const char* fmt = nullptr, const char* tooltip = nullptr);
 
+bool ByteMatrice(Renderer* rnd, Theme* theme, Byte* val, bool* set /* nullable */, int* bit /* nullable */, Byte editable, float width, const char* tooltipLnHigh = nullptr, const char* tooltipLnLow = nullptr, const char** tooltipBits = nullptr);
 bool ByteMatrice(Renderer* rnd, Theme* theme, Byte* val, Byte editable, float width, const char* tooltipLnHigh = nullptr, const char* tooltipLnLow = nullptr, const char** tooltipBits = nullptr);
 
 bool ProgressBar(const char* label, float* v, float v_min, float v_max, const char* format = "%.3f", bool readonly = false);

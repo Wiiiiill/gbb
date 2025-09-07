@@ -855,6 +855,21 @@ bool flippable(
 
 /**
  * @param[in, out] data
+ * @param[in, out] set
+ * @param[in, out] bit
+ */
+bool maskable(
+	Renderer* rnd, Workspace* ws,
+	Byte* data, bool* set /* nullable */, int* bit /* nullable */,
+	Byte editable,
+	float width = -1.0f,
+	bool disabled = false,
+	const char* prompt = nullptr,
+	const char* tooltipLnHigh = nullptr, const char* tooltipLnLow = nullptr,
+	const char* tooltipBits[8] = nullptr
+);
+/**
+ * @param[in, out] data
  */
 bool maskable(
 	Renderer* rnd, Workspace* ws,

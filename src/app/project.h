@@ -110,6 +110,7 @@ public:
 	GBBASIC_PROPERTY             (int,                           preferencesMapRef                                ) // Serialized in project. For map assets.
 	GBBASIC_PROPERTY             (bool,                          preferencesMusicPreviewStroke                    ) // Serialized in project. For music assets.
 	GBBASIC_PROPERTY             (bool,                          preferencesSfxShowSoundShape                     ) // Serialized in project. For SFX assets.
+	GBBASIC_PROPERTY             (bool,                          preferencesActorApplyPropertiesToAllTiles        ) // Serialized in project. For actor assets.
 	GBBASIC_PROPERTY             (bool,                          preferencesActorApplyPropertiesToAllFrames       ) // Serialized in project. For actor assets.
 	GBBASIC_PROPERTY             (bool,                          preferencesActorUses8x16Sprites                  ) // Serialized in project. For actor assets.
 	GBBASIC_PROPERTY             (int,                           preferencesSceneRefMap                           ) // Serialized in project. For scene assets.

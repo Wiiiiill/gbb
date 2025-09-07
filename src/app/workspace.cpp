@@ -4339,7 +4339,7 @@ bool Workspace::analyze(bool force) {
 		return true;
 
 	if (!force) {
-		if (popupBox() || menuOpened() || analyzing() || _state == States::COMPILING)
+		if (popupBox() || menuOpened())
 			return false;
 	}
 
@@ -4825,6 +4825,7 @@ void Workspace::upgrade(
 		prj->preferencesMapRef(0);
 		prj->preferencesMusicPreviewStroke(true);
 		prj->preferencesSfxShowSoundShape(true);
+		prj->preferencesActorApplyPropertiesToAllTiles(false);
 		prj->preferencesActorApplyPropertiesToAllFrames(true);
 		prj->preferencesActorUses8x16Sprites(true);
 		prj->preferencesSceneRefMap(0);

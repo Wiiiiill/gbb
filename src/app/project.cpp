@@ -88,6 +88,7 @@ Project::Project(class Window* wnd, Renderer* rnd, class Workspace* ws) {
 	preferencesMapRef(0);
 	preferencesMusicPreviewStroke(true);
 	preferencesSfxShowSoundShape(true);
+	preferencesActorApplyPropertiesToAllTiles(false);
 	preferencesActorApplyPropertiesToAllFrames(true);
 	preferencesActorUses8x16Sprites(true);
 	preferencesSceneRefMap(0);
@@ -166,6 +167,7 @@ Project &Project::operator = (const Project &other) {
 	preferencesMapRef(other.preferencesMapRef());
 	preferencesMusicPreviewStroke(other.preferencesMusicPreviewStroke());
 	preferencesSfxShowSoundShape(other.preferencesSfxShowSoundShape());
+	preferencesActorApplyPropertiesToAllTiles(other.preferencesActorApplyPropertiesToAllTiles());
 	preferencesActorApplyPropertiesToAllFrames(other.preferencesActorApplyPropertiesToAllFrames());
 	preferencesActorUses8x16Sprites(other.preferencesActorUses8x16Sprites());
 	preferencesSceneRefMap(other.preferencesSceneRefMap());
@@ -1793,6 +1795,7 @@ bool Project::open(const char* path_) {
 		preferencesMapRef(0);
 		preferencesMusicPreviewStroke(true);
 		preferencesSfxShowSoundShape(true);
+		preferencesActorApplyPropertiesToAllTiles(false);
 		preferencesActorApplyPropertiesToAllFrames(true);
 		preferencesActorUses8x16Sprites(true);
 		preferencesSceneRefMap(0);
@@ -2003,6 +2006,7 @@ bool Project::load(const char* fontConfigPath, WarningOrErrorHandler onWarningOr
 		preferencesMapRef(0);
 		preferencesMusicPreviewStroke(true);
 		preferencesSfxShowSoundShape(true);
+		preferencesActorApplyPropertiesToAllTiles(false);
 		preferencesActorApplyPropertiesToAllFrames(true);
 		preferencesActorUses8x16Sprites(true);
 		preferencesSceneRefMap(0);
@@ -2595,6 +2599,11 @@ bool Project::loadInformation(const std::string &content, WarningOrErrorHandler 
 		preferencesSfxShowSoundShape(true);
 	}
 
+	preferencesActorApplyPropertiesToAllTiles(false);
+	if (!Jpath::get(doc, preferencesActorApplyPropertiesToAllTiles(), "preference", "actor_apply_properties_to_all_tiles")) {
+		preferencesActorApplyPropertiesToAllTiles(false);
+	}
+
 	preferencesActorApplyPropertiesToAllFrames(true);
 	if (!Jpath::get(doc, preferencesActorApplyPropertiesToAllFrames(), "preference", "actor_apply_properties_to_all_frames")) {
 		preferencesActorApplyPropertiesToAllFrames(true);
@@ -2714,6 +2723,8 @@ bool Project::saveInformation(std::string &content) {
 	Jpath::set(doc, doc, preferencesMusicPreviewStroke(), "preference", "music_preview_stroke");
 
 	Jpath::set(doc, doc, preferencesSfxShowSoundShape(), "preference", "sfx_show_sound_shape");
+
+	Jpath::set(doc, doc, preferencesActorApplyPropertiesToAllTiles(), "preference", "actor_apply_properties_to_all_tiles");
 
 	Jpath::set(doc, doc, preferencesActorApplyPropertiesToAllFrames(), "preference", "actor_apply_properties_to_all_frames");
 

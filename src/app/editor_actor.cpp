@@ -1528,7 +1528,9 @@ public:
 					[this] (const std::initializer_list<Variant> &args) -> void {
 						const Variant &arg = *args.begin();
 						const int cursor = (int)(Variant::Int)(*(args.begin() + 1));
-						const bool applyToAllFrames = (bool)(*(args.begin() + 2));
+						const bool applyToAllTiles = (bool)(*(args.begin() + 2));
+						const bool applyToAllFrames = (bool)(*(args.begin() + 3));
+						(void)applyToAllTiles;
 
 						Object::Ptr obj = (Object::Ptr)arg;
 						Image::Ptr props = Object::as<Image::Ptr>(obj);

@@ -4081,6 +4081,49 @@ bool flippable(
 
 bool maskable(
 	Renderer* rnd, Workspace* ws,
+	Byte* data, bool* set, int* bit,
+	Byte editable,
+	float width,
+	bool disabled,
+	const char* prompt,
+	const char* tooltipLnHigh, const char* tooltipLnLow,
+	const char* tooltipBits[8]
+) {
+	Theme* theme = ws->theme();
+
+	bool result = false;
+
+	if (width <= 0)
+		width = ImGui::GetContentRegionAvail().x;
+	constexpr const int X_COUNT = EDITING_ITEM_COUNT_PER_LINE;
+	float xOffset = 0;
+	float size = width / X_COUNT;
+	const float iconSize = (float)theme->iconSize();
+	if (size > iconSize) {
+		size = iconSize * (int)(size / iconSize);
+		xOffset = (width - size * X_COUNT) * 0.5f;
+	}
+
+	ImGui::Dummy(ImVec2(xOffset, 0));
+	ImGui::SameLine();
+	ImGui::AlignTextToFramePadding();
+	ImGui::TextUnformatted(prompt);
+
+	ImGui::Dummy(ImVec2(xOffset, 0));
+	ImGui::SameLine();
+	if (disabled) {
+		ImGui::BeginDisabled();
+		ImGui::ByteMatrice(rnd, theme, data, set, bit, editable, size * X_COUNT, tooltipLnHigh, tooltipLnLow, tooltipBits);
+		ImGui::EndDisabled();
+	} else {
+		result = ImGui::ByteMatrice(rnd, theme, data, set, bit, editable, size * X_COUNT, tooltipLnHigh, tooltipLnLow, tooltipBits);
+	}
+
+	return result;
+}
+
+bool maskable(
+	Renderer* rnd, Workspace* ws,
 	Byte* data,
 	Byte editable,
 	float width,

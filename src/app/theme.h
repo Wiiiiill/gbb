@@ -767,6 +767,7 @@ public:
 	GBBASIC_PROPERTY_READONLY(std::string, tooltipActor_Bit6)
 	GBBASIC_PROPERTY_READONLY(std::string, tooltipActor_Bit7)
 	GBBASIC_PROPERTY_READONLY(std::string, tooltipActor_CheckToApplyToAllFrames)
+	GBBASIC_PROPERTY_READONLY(std::string, tooltipActor_CheckToChangeBitToAllTiles)
 	GBBASIC_PROPERTY_READONLY(std::string, tooltipActor_CopyDefinition)
 	GBBASIC_PROPERTY_READONLY(std::string, tooltipActor_Export)
 	GBBASIC_PROPERTY_READONLY(std::string, tooltipActor_ForAnimationTicking)
@@ -777,7 +778,8 @@ public:
 	GBBASIC_PROPERTY(Text::Array, tooltipActor_IntervalTooltips)
 	GBBASIC_PROPERTY_READONLY(std::string, tooltipActor_PasteDefinition)
 	GBBASIC_PROPERTY_READONLY(std::string, tooltipActor_Refresh)
-	GBBASIC_PROPERTY_READONLY(std::string, tooltipActor_ToAll)
+	GBBASIC_PROPERTY_READONLY(std::string, tooltipActor_ToAllFrames)
+	GBBASIC_PROPERTY_READONLY(std::string, tooltipActor_ToAllTiles)
 
 	GBBASIC_PROPERTY_READONLY(std::string, tooltipArbitrary_Note)
 

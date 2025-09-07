@@ -5754,7 +5754,7 @@ bool IntegerModifier(Renderer* rnd, Theme* theme, int* val, int min, int max, fl
 	return changed;
 }
 
-bool ByteMatrice(Renderer*, Theme* theme, Byte* val, Byte editable, float width, const char* tooltipLnHigh, const char* tooltipLnLow, const char** tooltipBits) {
+bool ByteMatrice(Renderer*, Theme* theme, Byte* val, bool* set, int* bit, Byte editable, float width, const char* tooltipLnHigh, const char* tooltipLnLow, const char** tooltipBits) {
 	ImGuiStyle &style = GetStyle();
 
 	constexpr const char HEX[] = {
@@ -5825,10 +5825,15 @@ bool ByteMatrice(Renderer*, Theme* theme, Byte* val, Byte editable, float width,
 			if (Button(buf, ImVec2(size, size))) {
 				result = true;
 
-				if (on)
+				if (on) {
 					byte &= ~(1 << i);
-				else
+					if (set) *set = false;
+					if (bit) *bit = i;
+				} else {
 					byte |= 1 << i;
+					if (set) *set = true;
+					if (bit) *bit = i;
+				}
 				*val = byte;
 			}
 		} else {
@@ -5886,10 +5891,15 @@ bool ByteMatrice(Renderer*, Theme* theme, Byte* val, Byte editable, float width,
 			if (Button(buf, ImVec2(size, size))) {
 				result = true;
 
-				if (on)
+				if (on) {
 					byte &= ~(1 << i);
-				else
+					if (set) *set = false;
+					if (bit) *bit = i;
+				} else {
 					byte |= 1 << i;
+					if (set) *set = true;
+					if (bit) *bit = i;
+				}
 				*val = byte;
 			}
 		} else {
@@ -5911,6 +5921,10 @@ bool ByteMatrice(Renderer*, Theme* theme, Byte* val, Byte editable, float width,
 	NewLine();
 
 	return result;
+}
+
+bool ByteMatrice(Renderer* rnd, Theme* theme, Byte* val, Byte editable, float width, const char* tooltipLnHigh, const char* tooltipLnLow, const char** tooltipBits) {
+	return ByteMatrice(rnd, theme, val, nullptr, nullptr, editable, width, tooltipLnHigh, tooltipLnLow, tooltipBits);
 }
 
 bool ProgressBar(const char* label, float* v, float v_min, float v_max, const char* format, bool readonly) {

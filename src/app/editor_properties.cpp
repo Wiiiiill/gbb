@@ -32,6 +32,7 @@ private:
 	const Text::Array &_frameNames;
 	Actor::Shadow::Array _frameShadow;
 	ImageArray _propertiesArray; // Foreign.
+	bool _applyToAllTiles = false;
 	bool _applyToAllFrames = true;
 	ChangedHandler _changed = nullptr; // Foreign.
 
@@ -78,6 +79,7 @@ public:
 		}
 		changeFrame();
 
+		_applyToAllTiles = _project->preferencesActorApplyPropertiesToAllTiles();
 		_applyToAllFrames = _project->preferencesActorApplyPropertiesToAllFrames();
 
 		_cursor.position = Math::Vec2i(0, 0);
@@ -93,6 +95,8 @@ public:
 	}
 
 	virtual void update(Workspace*) override {
+		typedef std::function<void(int, int, Byte)> CelSetter;
+
 		ImGuiStyle &style = ImGui::GetStyle();
 
 		bool isOpen = true;
@@ -201,11 +205,13 @@ public:
 						_theme->tooltipActor_Bit7().c_str()
 					};
 					Byte cel = (Byte)_shadowMap->get(cursor.position.x, cursor.position.y);
+					bool setBit = false;
+					int bit = -1;
 					const std::string pos = _theme->status_Pos() + " " + Text::toString(cursor.position.x) + "," + Text::toString(_cursor.position.y);
 					const bool changed = Editing::Tools::maskable(
 						_renderer,
 						_workspace,
-						&cel,
+						&cel, &setBit, &bit,
 						0b10011111,
 						swidth,
 						false,
@@ -214,17 +220,60 @@ public:
 						tooltipBits
 					);
 					if (changed && cursor == _cursor) {
+						CelSetter set = nullptr;
 						if (_applyToAllFrames) {
-							for (int i = 0; i < (int)_shadowImageArray.size(); ++i)
-								_shadowImageArray[i]->set(cursor.position.x, cursor.position.y, cel);
+							set = [this, setBit, bit] (int x, int y, Byte /* cel */) -> void {
+								for (int i = 0; i < (int)_shadowImageArray.size(); ++i) {
+									int celi = 0;
+									_shadowImageArray[_layer]->get(x, y, celi);
+									if (setBit) celi |= 1 << bit;
+									else celi &= ~(1 << bit);
+									_shadowImageArray[i]->set(x, y, celi);
+								}
+
+								int celm = _shadowMap->get(x, y);
+								if (setBit) celm |= 1 << bit;
+								else celm &= ~(1 << bit);
+								_shadowMap->set(x, y, celm, false);
+							};
 						} else {
-							_shadowImageArray[_layer]->set(cursor.position.x, cursor.position.y, cel);
+							set = [this, setBit, bit] (int x, int y, Byte /* cel */) -> void {
+								int celi = 0;
+								_shadowImageArray[_layer]->get(x, y, celi);
+								if (setBit) celi |= 1 << bit;
+								else celi &= ~(1 << bit);
+								_shadowImageArray[_layer]->set(x, y, celi);
+
+								int celm = _shadowMap->get(x, y);
+								if (setBit) celm |= 1 << bit;
+								else celm &= ~(1 << bit);
+								_shadowMap->set(x, y, celm, false);
+							};
 						}
-						_shadowMap->set(cursor.position.x, cursor.position.y, cel, false);
+
+						if (_applyToAllTiles) {
+							for (int j = 0; j < _shadowMap->height(); ++j) {
+								for (int i = 0; i < _shadowMap->width(); ++i) {
+									set(i, j, cel);
+								}
+							}
+						} else {
+							set(cursor.position.x, cursor.position.y, cel);
+						}
 					}
 
 					ImGui::NewLine(2);
-					if (ImGui::Checkbox(_theme->tooltipActor_ToAll(), &_applyToAllFrames)) {
+					if (ImGui::Checkbox(_theme->tooltipActor_ToAllTiles(), &_applyToAllTiles)) {
+						_project->preferencesActorApplyPropertiesToAllTiles(_applyToAllTiles);
+						_project->hasDirtyInformation(true);
+					}
+					if (ImGui::IsItemHovered()) {
+						VariableGuard<decltype(style.WindowPadding)> guardWindowPadding_(&style.WindowPadding, style.WindowPadding, ImVec2(WIDGETS_TOOLTIP_PADDING, WIDGETS_TOOLTIP_PADDING));
+
+						ImGui::SetTooltip(_theme->tooltipActor_CheckToChangeBitToAllTiles());
+					}
+					ImGui::NewLine(2);
+					if (ImGui::Checkbox(_theme->tooltipActor_ToAllFrames(), &_applyToAllFrames)) {
 						_project->preferencesActorApplyPropertiesToAllFrames(_applyToAllFrames);
 						_project->hasDirtyInformation(true);
 					}
@@ -307,7 +356,7 @@ public:
 					const Image::Ptr &props = _propertiesArray[i];
 					const Image::Ptr &shadow = _shadowImageArray[i];
 					if (props->compare(shadow.get()) != 0) {
-						_changed({ Object::Ptr(shadow), i, _applyToAllFrames });
+						_changed({ Object::Ptr(shadow), i, _applyToAllTiles, _applyToAllFrames });
 
 						break;
 					}
@@ -328,7 +377,7 @@ public:
 					const Image::Ptr &props = _propertiesArray[i];
 					const Image::Ptr &shadow = _shadowImageArray[i];
 					if (props->compare(shadow.get()) != 0) {
-						_changed({ Object::Ptr(shadow), i, _applyToAllFrames });
+						_changed({ Object::Ptr(shadow), i, _applyToAllTiles, _applyToAllFrames });
 
 						break;
 					}
