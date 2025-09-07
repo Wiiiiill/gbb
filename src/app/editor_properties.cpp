@@ -225,7 +225,7 @@ public:
 							set = [this, setBit, bit] (int x, int y, Byte /* cel */) -> void {
 								for (int i = 0; i < (int)_shadowImageArray.size(); ++i) {
 									int celi = 0;
-									_shadowImageArray[_layer]->get(x, y, celi);
+									_shadowImageArray[i]->get(x, y, celi);
 									if (setBit) celi |= 1 << bit;
 									else celi &= ~(1 << bit);
 									_shadowImageArray[i]->set(x, y, celi);
