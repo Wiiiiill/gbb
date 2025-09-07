@@ -557,9 +557,10 @@ Command* SetPropertiesToAll::redo(Object::Ptr obj, int argc, const Variant* argv
 	(void)entry;
 
 	for (int i = 0; i < ptr->count(); ++i) {
-		for (int j = 0; j < (int)points().size(); ++j) {
-			const Math::Vec2i &p = points()[j];
-			const int val = values()[j];
+		const Editing::Point::Set &l = points()[i];
+		for (const Editing::Point::Set::value_type &q : l) {
+			const Math::Vec2i &p = q.position;
+			const int val = q.dot.indexed;
 			set()(i, p, val);
 		}
 	}
@@ -592,9 +593,8 @@ SetPropertiesToAll* SetPropertiesToAll::with(Getter get_, Setter set_) {
 	return this;
 }
 
-SetPropertiesToAll* SetPropertiesToAll::with(const Paintable::Paint::Points &points_, const Paintable::Paint::Indices &values_) {
+SetPropertiesToAll* SetPropertiesToAll::with(const LayeredPoints &points_) {
 	points(points_);
-	values(values_);
 
 	return this;
 }
@@ -608,7 +608,8 @@ Command* SetPropertiesToAll::exec(Object::Ptr obj, int argc, const Variant* argv
 	for (int i = 0; i < ptr->count(); ++i) {
 		old().push_back(Editing::Point::Set());
 		Editing::Point::Set &layer = old().back();
-		for (const Math::Vec2i &p : points()) {
+		for (const Editing::Point::Set::value_type &q : points()[i]) {
+			const Math::Vec2i &p = q.position;
 			Editing::Dot dot;
 			if (get()(i, p, dot))
 				layer.insert(Editing::Point(p, dot));

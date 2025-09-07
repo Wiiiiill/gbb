@@ -8,6 +8,7 @@
 
 #include "commands_actor.h"
 #include "editor_actor.h"
+#include "editor_properties.h"
 #include "theme.h"
 #include "workspace.h"
 #include "../utils/datetime.h"
@@ -1530,50 +1531,80 @@ public:
 						const int cursor = (int)(Variant::Int)(*(args.begin() + 1));
 						const bool applyToAllTiles = (bool)(*(args.begin() + 2));
 						const bool applyToAllFrames = (bool)(*(args.begin() + 3));
+						EditorProperties::ImageArray* shadowImageArray = (EditorProperties::ImageArray*)(void*)(*(args.begin() + 4));
 						(void)applyToAllTiles;
 
-						Object::Ptr obj = (Object::Ptr)arg;
-						Image::Ptr props = Object::as<Image::Ptr>(obj);
+						if (applyToAllFrames) {
+							Commands::Actor::SetPropertiesToAll::LayeredPoints layeredPoints;
+							layeredPoints.resize(shadowImageArray->size());
+							layeredPoints.shrink_to_fit();
+							for (int k = 0; k < (int)shadowImageArray->size(); ++k) {
+								const Image::Ptr &props = shadowImageArray->at(k);
 
-						const Actor::Frame* frame = object()->get(cursor);
-						Commands::Paintable::Paint::Points points;
-						Commands::Paintable::Paint::Indices values;
-						for (int j = 0; j < props->height(); ++j) {
-							for (int i = 0; i < props->width(); ++i) {
-								const Math::Vec2i p(i, j);
-								int u = 0;
-								int v = 0;
-								frame->properties->get(i, j, u);
-								props->get(i, j, v);
-								if (u != v) {
-									points.push_back(p);
-									values.push_back(v);
+								const Actor::Frame* frame = object()->get(k);
+								for (int j = 0; j < props->height(); ++j) {
+									for (int i = 0; i < props->width(); ++i) {
+										const Math::Vec2i p(i, j);
+										int u = 0;
+										int v = 0;
+										frame->properties->get(i, j, u);
+										props->get(i, j, v);
+										if (u != v) {
+											layeredPoints[k].insert(Editing::Point(p, v));
+										}
+									}
 								}
 							}
-						}
-						points.shrink_to_fit();
-						values.shrink_to_fit();
 
-						if (applyToAllFrames) {
-							Commands::Actor::SetPropertiesToAll::Getter getter = [&] (int frame, const Math::Vec2i &pos, Editing::Dot &dot) -> bool {
+							Commands::Actor::SetPropertiesToAll::Getter getter = [this] (int frame, const Math::Vec2i &pos, Editing::Dot &dot) -> bool {
+								GBBASIC_ASSERT(frameAt(frame) && "Impossible.");
+
 								return frameAt(frame)->properties->get(pos.x, pos.y, dot.indexed);
 							};
-							Commands::Actor::SetPropertiesToAll::Setter setter = [&] (int frame, const Math::Vec2i &pos, const Editing::Dot &dot) -> bool {
+							Commands::Actor::SetPropertiesToAll::Setter setter = [this] (int frame, const Math::Vec2i &pos, const Editing::Dot &dot) -> bool {
+								GBBASIC_ASSERT(frameAt(frame) && "Impossible.");
+
 								return frameAt(frame)->properties->set(pos.x, pos.y, dot.indexed);
 							};
 
 							Command* cmd = enqueue<Commands::Actor::SetPropertiesToAll>()
 								->with(getter, setter)
-								->with(points, values)
+								->with(layeredPoints)
 								->with(_setFrame, cursor)
 								->exec(object(), Variant((void*)entry()));
 
 							_refresh(cmd);
 						} else {
-							Commands::Paintable::Paint::Getter getter = [&] (const Math::Vec2i &pos, Editing::Dot &dot) -> bool {
+							Object::Ptr obj = (Object::Ptr)arg;
+							Image::Ptr props = Object::as<Image::Ptr>(obj);
+
+							const Actor::Frame* frame = object()->get(cursor);
+							Commands::Paintable::Paint::Points points;
+							Commands::Paintable::Paint::Indices values;
+							for (int j = 0; j < props->height(); ++j) {
+								for (int i = 0; i < props->width(); ++i) {
+									const Math::Vec2i p(i, j);
+									int u = 0;
+									int v = 0;
+									frame->properties->get(i, j, u);
+									props->get(i, j, v);
+									if (u != v) {
+										points.push_back(p);
+										values.push_back(v);
+									}
+								}
+							}
+							points.shrink_to_fit();
+							values.shrink_to_fit();
+
+							Commands::Paintable::Paint::Getter getter = [this, cursor] (const Math::Vec2i &pos, Editing::Dot &dot) -> bool {
+								GBBASIC_ASSERT(frameAt(cursor) && "Impossible.");
+
 								return frameAt(cursor)->properties->get(pos.x, pos.y, dot.indexed);
 							};
-							Commands::Paintable::Paint::Setter setter = [&] (const Math::Vec2i &pos, const Editing::Dot &dot) -> bool {
+							Commands::Paintable::Paint::Setter setter = [this, cursor] (const Math::Vec2i &pos, const Editing::Dot &dot) -> bool {
+								GBBASIC_ASSERT(frameAt(cursor) && "Impossible.");
+
 								return frameAt(cursor)->properties->set(pos.x, pos.y, dot.indexed);
 							};
 							const Math::Vec2i size(currentFrame()->width(), currentFrame()->height());

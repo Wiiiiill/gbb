@@ -310,7 +310,7 @@ public:
 
 			ImGui::CentralizeButton(3);
 
-			if (ImGui::Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || ImGui::IsKeyReleased(SDL_SCANCODE_RETURN) || ImGui::IsKeyReleased(SDL_SCANCODE_Y)) {
+			if (ImGui::Button(confirm, ImVec2(WIDGETS_BUTTON_WIDTH, 0)) || ImGui::IsKeyReleased(SDL_SCANCODE_RETURN)) {
 				toConfirm = true;
 
 				ImGui::CloseCurrentPopup();
@@ -356,7 +356,7 @@ public:
 					const Image::Ptr &props = _propertiesArray[i];
 					const Image::Ptr &shadow = _shadowImageArray[i];
 					if (props->compare(shadow.get()) != 0) {
-						_changed({ Object::Ptr(shadow), i, _applyToAllTiles, _applyToAllFrames });
+						_changed({ Object::Ptr(shadow), i, _applyToAllTiles, _applyToAllFrames, &_shadowImageArray });
 
 						break;
 					}
@@ -377,7 +377,7 @@ public:
 					const Image::Ptr &props = _propertiesArray[i];
 					const Image::Ptr &shadow = _shadowImageArray[i];
 					if (props->compare(shadow.get()) != 0) {
-						_changed({ Object::Ptr(shadow), i, _applyToAllTiles, _applyToAllFrames });
+						_changed({ Object::Ptr(shadow), i, _applyToAllTiles, _applyToAllFrames, &_shadowImageArray });
 
 						break;
 					}

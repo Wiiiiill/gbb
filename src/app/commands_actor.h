@@ -279,8 +279,7 @@ public:
 public:
 	GBBASIC_PROPERTY_READONLY(Getter, get)
 	GBBASIC_PROPERTY_READONLY(Setter, set)
-	GBBASIC_PROPERTY_READONLY(Paintable::Paint::Points, points)
-	GBBASIC_PROPERTY_READONLY(Paintable::Paint::Indices, values)
+	GBBASIC_PROPERTY_READONLY(LayeredPoints, points)
 
 	GBBASIC_PROPERTY(LayeredPoints, old)
 
@@ -300,7 +299,7 @@ public:
 	using Layered::Layered::undo;
 
 	SetPropertiesToAll* with(Getter get, Setter set);
-	SetPropertiesToAll* with(const Paintable::Paint::Points &points_, const Paintable::Paint::Indices &values_);
+	SetPropertiesToAll* with(const LayeredPoints &points_);
 	using Layered::Layered::with;
 
 	virtual Command* exec(Object::Ptr obj, int argc, const Variant* argv) override;
