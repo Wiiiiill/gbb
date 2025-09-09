@@ -231,7 +231,7 @@ ImGui::CodeEditor::LanguageDefinition EditorCodeLanguageDefinition::languageDefi
 	// Identifiers.
 	constexpr const char* const IDENTIFIERS[] = {
 		// Output.
-		"locate", "print",
+		"locate", "print", "cls",
 
 		// System.
 		"sleep",
