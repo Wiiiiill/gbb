@@ -12747,6 +12747,9 @@ public:
 };
 
 class NodeDefFn : public NodeMacro {
+private:
+	bool _isFunction = true; // Otherwise for expression.
+
 public:
 	NodeDefFn() {
 	}
@@ -12754,6 +12757,10 @@ public:
 	}
 
 	NODE_TYPE(Types::DEF_FN)
+
+	virtual void options(const IDictionary::Ptr &options) override {
+		_isFunction = (bool)options->get("is_function");
+	}
 
 	virtual void generate(Bytes::Ptr &/* bytes */, Context::Stack &context, Error::Handler onError) override {
 		// Prepare.
@@ -12779,8 +12786,14 @@ public:
 			idtk = tk;
 			id = (std::string)tk->data();
 		})) { THROW_INVALID_SYNTAX(onError); }
-		if (!consume(Token::Types::OPERATOR, "(")) { THROW_INVALID_SYNTAX(onError); }
-		if (!consume(Token::Types::OPERATOR, ")")) { THROW_INVALID_SYNTAX(onError); }
+		if (_isFunction) {
+			if (!consume(Token::Types::OPERATOR, "(")) { THROW_INVALID_SYNTAX(onError); }
+			if (!consume(Token::Types::OPERATOR, ")")) { THROW_INVALID_SYNTAX(onError); }
+		} else {
+			if (consume(Token::Types::OPERATOR, "(")) {
+				if (!consume(Token::Types::OPERATOR, ")")) { THROW_INVALID_SYNTAX(onError); }
+			}
+		}
 		if (!consume(Token::Types::OPERATOR, "=")) { THROW_INVALID_SYNTAX(onError); }
 
 		// Put the code to ROM location correspondence.
@@ -12799,6 +12812,9 @@ public:
 };
 
 class NodeFn : public Node { // FEAT: MACRO.
+private:
+	bool _isFunction = true; // Otherwise for expression.
+
 public:
 	NodeFn() {
 	}
@@ -12806,6 +12822,10 @@ public:
 	}
 
 	NODE_TYPE(Types::FN)
+
+	virtual void options(const IDictionary::Ptr &options) override {
+		_isFunction = (bool)options->get("is_function");
+	}
 
 	virtual void generate(Bytes::Ptr &bytes, Context::Stack &context, Error::Handler onError) override {
 		const Generator_Void_Void generator = [&] (void) -> void {
@@ -12832,17 +12852,26 @@ public:
 				idtk = tk;
 				id = (std::string)tk->data();
 			})) { THROW_INVALID_SYNTAX(onError); }
-			if (!consume(Token::Types::OPERATOR, "(")) { THROW_INVALID_SYNTAX(onError); }
-			if (!consume(Token::Types::OPERATOR, ")")) { THROW_INVALID_SYNTAX(onError); }
+			if (consume(Token::Types::OPERATOR, "(")) {
+				if (!consume(Token::Types::OPERATOR, ")")) { THROW_INVALID_SYNTAX(onError); }
+			}
 
 			// Check the children.
 			if (!ctx.macroFunctions) { THROW_TABLE_IS_NOT_INITIALIZED(onError); }
 			const MacroFunctionTable::Entry* entry = ctx.macroFunctions->find(id); // FEAT: MACRO.
 			if (!entry) { THROW_INVALID_SYNTAX(onError); }
-			if (_children.size() < entry->parameters.size()) {
-				THROW_TOO_FEW_ARGUMENTS(onError);
-			} else if (_children.size() > entry->parameters.size()) {
-				THROW_TOO_MANY_ARGUMENTS(onError);
+			if (_isFunction) {
+				if (_children.size() < entry->parameters.size()) {
+					THROW_TOO_FEW_ARGUMENTS(onError);
+				} else if (_children.size() > entry->parameters.size()) {
+					THROW_TOO_MANY_ARGUMENTS(onError);
+				}
+			} else {
+				if (_children.empty()) {
+					// Do nothing.
+				} else if (_children.size() > entry->parameters.size()) {
+					THROW_TOO_MANY_ARGUMENTS(onError);
+				}
 			}
 
 			// Set the stack footprint guard.
@@ -29644,6 +29673,7 @@ private:
 			q1.index = q.index;
 			Node::Array children_;
 			Token::Ptr id = nullptr;
+			bool isFunction = true;
 
 			if (!(id = must(Token::Types::SYMBOL)(q1))) return false;
 			if (must(Token::Types::OPERATOR, "(")(q1)) {
@@ -29653,14 +29683,14 @@ private:
 				}
 				if (!must(Token::Types::OPERATOR, ")")(q1)) return false;
 			} else {
-				Arguments(q1, children_);
-				CHECK_UNEXPECTED(q1);
+				isFunction = false;
 			}
 
-			Node::Ptr node = createNode(
+			Node::Ptr node = createNode( // Reuse the `FN` workflow for macro expression.
 				"fn", name,
 				{
-					{ "allow_call", true }
+					{ "allow_call", true },
+					{ "is_function", isFunction }
 				}
 			);
 			if (!node) return false;
@@ -32727,6 +32757,8 @@ private:
 					return throwInvalidSyntax(q.index);
 				}
 				const int r = q.index;
+				if (!forward(Token::Types::COMMENT)(q.index) && !forward(Token::Types::END_OF_LINE)(q.index))
+					return false;
 				maybe(Token::Types::OPERATOR, ";")(q);
 				if (!EndOfLine(q)) return throwInvalidSyntax(q.index);
 
@@ -32879,6 +32911,106 @@ private:
 				macroStackReferences.add(name, Node::MacroStackReferenceTable::Entry(ref, idx)); // Add to the macro stack reference table.
 				const Variant data = refTo;
 				const Macro macro(name, Macro::Types::STACK_REFERENCE, data, headOfCurrentScope());
+				macros.push_back(macro); // Add to the exposable macro list.
+
+				return true;
+			}
+		);
+		const Combinator DefExpression( // FEAT: MACRO. Translate `DEF FN = ...` as `DEF FN(...) = ...`.
+			[&] (Node::Ptr &p, const Combinator::Options &opts) -> bool {
+				State q = begin();
+				Node::Array children;
+				Token::Ptr id = nullptr;
+				std::string name;
+				int beginIdx = -1;
+				int endIdx = -1;
+
+				if (!LineNumber(q, opts)) return false;
+				if (!must(Token::Types::KEYWORD, "def")(q)) return false;
+				beginIdx = q.index;
+				{
+					if (!(id = must(Token::Types::IDENTIFIER)(q))) return false;
+					else name = (std::string)id->data();
+					if (idHasBeenDefined(name)) { return throwIdHasBeenAlreadyDeclared(q.index, name); }
+					if (must(Token::Types::OPERATOR, "(")(q)) return false;
+					Parameters(q, children, false);
+					CHECK_UNEXPECTED(q);
+					if (must(Token::Types::OPERATOR, "=")(q)) {
+						if (!New(q, children) && !Expression(q, children) && !Invoking(q, children, true) && !Is(q, children, true)) return throwInvalidSyntax(q.index);
+						if (forward(Token::Types::OPERATOR, ANYTHING)(q.index)) return throwInvalidSyntax(q.index);
+					} else {
+						return throwInvalidSyntax(q.index);
+					}
+				}
+				endIdx = q.index;
+				maybe(Token::Types::OPERATOR, ";")(q);
+				if (!EndOfLine(q)) return throwInvalidSyntax(q.index);
+
+				if (children.size() < 2) return throwInvalidSyntax(q.index);
+
+				Node::Ptr node = createNode(
+					"def fn(...)=...", "_", // Reuse the `DEF FN` workflow for macro expression.
+					{
+						{ "allow_call", false },
+						{ "is_function", false }
+					}
+				);
+				if (!node) return false;
+				node->concat(q.tokens);
+				p->add(node);
+
+				q.success = true;
+				end(q);
+
+				node->add(children);
+
+				Token::Array params = node->flatOnlyTokens(Node::Range(0, (int)children.size() - 1 - 1));
+				Node::Ptr expr = children.back();
+				macroFunctions.add(name, Node::MacroFunctionTable::Entry(params, expr)); // Add to the macro function table.
+				const Token::Array tokens = between(beginIdx, endIdx);
+				Token::Array filtered;
+				std::copy_if(
+					tokens.begin(), tokens.end(), 
+					std::back_inserter(filtered),
+					[] (const Token::Ptr &tk) -> bool {
+						switch (tk->type()) {
+						case Token::Types::NONE: // Fall through.
+						case Token::Types::END_OF_LINE: // Fall through.
+						case Token::Types::LINE_CONNECTOR: // Fall through.
+						case Token::Types::COMMENT:
+							return false;
+						default:
+							return true;
+						}
+					}
+				);
+				std::string txt;
+				for (int i = 0; i < (int)filtered.size(); ++i) {
+					const Token::Ptr &tk = filtered[i];
+					switch (tk->type()) {
+					case Token::Types::OPERATOR:
+						if (tk->data() == "(") {
+							txt += tk->caseSensitiveText();
+						} else if (tk->data() == ")") {
+							txt += tk->caseSensitiveText();
+							if (i != (int)filtered.size() - 1)
+								txt += " ";
+						} else if (tk->data() == "sgn" || tk->data() == "abs" || tk->data() == "sqr" || tk->data() == "sqrt" || tk->data() == "sin" || tk->data() == "cos" || tk->data() == "atan2" || tk->data() == "pow" || tk->data() == "min" || tk->data() == "max") {
+							txt += tk->caseSensitiveText();
+						} else {
+							txt += tk->caseSensitiveText();
+							txt += " ";
+						}
+
+						break;
+					default:
+						txt += tk->caseSensitiveText();
+
+						break;
+					}
+				}
+				const Variant data = txt;
+				const Macro macro(name, Macro::Types::FUNCTION, data, headOfCurrentScope());
 				macros.push_back(macro); // Add to the exposable macro list.
 
 				return true;
@@ -35141,6 +35273,7 @@ private:
 			DefConstant,
 			DefIdentifierAlias,
 			DefStackN,
+			DefExpression,
 
 			/**< Peek and poke. */
 
