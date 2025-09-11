@@ -478,6 +478,9 @@ public:
 	GBBASIC_PROPERTY(ProjectIndices, projectIndices)
 	GBBASIC_PROPERTY(Project::Array, projects)
 	GBBASIC_PROPERTY(Project::Ptr, currentProject)
+#if defined GBBASIC_OS_HTML
+	GBBASIC_PROPERTY_READONLY(bool, loadingProject)
+#endif /* Platform macro. */
 
 	GBBASIC_PROPERTY_READONLY_PTR(Input, input)
 

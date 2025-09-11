@@ -477,6 +477,10 @@ bool Workspace::open(Window* wnd, Renderer* rnd, const char* font, unsigned fps,
 	forceWritable(forceWritable_);
 	exampleRevision(1);
 	fontConfig(font ? font : WORKSPACE_FONT_DEFAULT_CONFIG_FILE);
+#if defined GBBASIC_OS_HTML
+	loadingProject(false);
+#endif /* Platform macro. */
+
 	needAnalyzing(false);
 
 	splashCustomized(false);
@@ -2122,6 +2126,12 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 	case ExternalEventTypes::LOAD_PROJECT: {
 			fprintf(stdout, "SDL: LOAD_PROJECT.\n");
 
+			if (loadingProject()) {
+				fprintf(stderr, "In loading, calm down.\n");
+
+				return;
+			}
+
 			const int sub = (int)evt->user.code;
 			const int cat = (int)(intptr_t)evt->user.data1;
 			const int page = (int)(intptr_t)evt->user.data2;
@@ -2150,23 +2160,34 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 			content_->text(Text::replace(content_->text(), "\r\n", "\n"));
 			content_->text(Text::replace(content_->text(), "\r", "\n"));
 
+			loadingProject(true);
+
 			auto next = [wnd, rnd, this, cat, page, sub, toCompile, toRun, content_] (void) -> void {
 				Operations::fileImportStringForNotepad(wnd, rnd, this, content_)
 					.then(
 						[wnd, rnd, this, cat, page, sub, toCompile, toRun] (Project::Ptr prj) -> void {
-							if (!prj)
+							if (!prj) {
+								loadingProject(false);
+
 								return;
+							}
 
 							ImGuiIO &io = ImGui::GetIO();
 
-							if (io.KeyCtrl)
+							if (io.KeyCtrl) {
+								loadingProject(false);
+
 								return;
+							}
 
 							Operations::fileOpen(wnd, rnd, this, prj, fontConfig().empty() ? nullptr : fontConfig().c_str())
 								.then(
 									[wnd, rnd, this, cat, page, sub, prj, toCompile, toRun] (bool ok) -> void {
-										if (!ok)
+										if (!ok) {
+											loadingProject(false);
+
 											return;
+										}
 
 										validateProject(prj.get());
 
@@ -2263,8 +2284,20 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 
 											break;
 										}
+
+										loadingProject(false);
+									}
+								)
+								.fail(
+									[this] (void) -> void {
+										loadingProject(false);
 									}
 								);
+						}
+					)
+					.fail(
+						[this] (void) -> void {
+							loadingProject(false);
 						}
 					);
 			};
@@ -2278,6 +2311,11 @@ void Workspace::sendExternalEvent(Window* wnd, Renderer* rnd, ExternalEventTypes
 						}
 
 						next();
+					}
+				)
+				.fail(
+					[this] (void) -> void {
+						loadingProject(false);
 					}
 				);
 		}
