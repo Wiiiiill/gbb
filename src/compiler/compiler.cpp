@@ -12852,8 +12852,13 @@ public:
 				idtk = tk;
 				id = (std::string)tk->data();
 			})) { THROW_INVALID_SYNTAX(onError); }
-			if (consume(Token::Types::OPERATOR, "(")) {
+			if (_isFunction) {
+				if (!consume(Token::Types::OPERATOR, "(")) { THROW_INVALID_SYNTAX(onError); }
 				if (!consume(Token::Types::OPERATOR, ")")) { THROW_INVALID_SYNTAX(onError); }
+			} else {
+				if (consume(Token::Types::OPERATOR, "(")) {
+					if (!consume(Token::Types::OPERATOR, ")")) { THROW_INVALID_SYNTAX(onError); }
+				}
 			}
 
 			// Check the children.
