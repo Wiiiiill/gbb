@@ -13583,7 +13583,7 @@ public:
 			}
 
 			// Check the children.
-			if (_children.empty()) {
+			if (_children.size() <= 1) {
 				// Do nothing.
 			} else {
 				THROW_TOO_MANY_ARGUMENTS(onError);
@@ -13598,17 +13598,40 @@ public:
 
 			// Emit the specific instruction to pop a value.
 			const bool withDeclaring = ctx.declaration.declaring != -1;
-			if (withDeclaring) {
-				// Increase the counter because the local stack doesn't match the global counter statically,
-				// so we need to count an extra frame manually.
-				INC_COUNTER(stk, 2);
+			if (_children.empty()) {
+				if (withDeclaring) {
+					// Increase the counter because the local stack doesn't match the global counter statically,
+					// so we need to count an extra frame manually.
+					INC_COUNTER(stk, 2);
 
-				// Do nothing here, because we are trying to retrieve the top value to an outter declaration
-				// then pop it, and that is what will happen in the outter declaration later.
+					// Do nothing here, because we are trying to retrieve the top value to an outter declaration
+					// then pop it, and that is what will happen in the outter declaration later.
+				} else {
+					// Emit a `VM_POP` instruction.
+					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]);
+					args = fill(args, (UInt8)1);
+				}
 			} else {
-				// Emit a `VM_POP` instruction.
-				Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]);
-				args = fill(args, (UInt8)1);
+				Token::Ptr simpleTk = onlyTokenInOnlyChild();
+				if (!(simpleTk && simpleTk->is(Token::Types::NUMBER))) { // Expect const.
+					THROW_TYPE_EXPECTED(onError, "Integer constant", simpleTk);
+				}
+				if (withDeclaring) {
+					// Increase the counter because the local stack doesn't match the global counter statically,
+					// so we need to count an extra frame manually.
+					INC_COUNTER(stk, 2);
+
+					// Pop the desired amount minus one, because we are trying to retrieve the last popped value to
+					// an outter declaration then pop it, and that is what will happen in the outter declaration later.
+
+					// Emit a `VM_POP` instruction.
+					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]);
+					args = fill(args, (UInt8)((Int)simpleTk->data() - 1));
+				} else {
+					// Emit a `VM_POP` instruction.
+					Byte* args = emit(bytes, context, INSTRUCTIONS[(size_t)Asm::Types::POP]);
+					args = fill(args, (UInt8)(Int)simpleTk->data());
+				}
 			}
 
 			// Check the stack footprint.
@@ -33020,6 +33043,10 @@ private:
 
 				if (!LineNumber(q, opts)) return false;
 				if (!must(Token::Types::KEYWORD, "pop")(q)) return false;
+				if (!forward(Token::Types::COMMENT)(q.index) && !forward(Token::Types::END_OF_LINE)(q.index)) {
+					if (!Expression(q, children)) return throwInvalidSyntax(q.index);
+					if (forward(Token::Types::OPERATOR, ANYTHING)(q.index)) return throwInvalidSyntax(q.index);
+				}
 				maybe(Token::Types::OPERATOR, ";")(q);
 				if (!EndOfLine(q)) return throwInvalidSyntax(q.index);
 
