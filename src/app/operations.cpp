@@ -4080,7 +4080,7 @@ promise::Promise Operations::projectBuild(Window* wnd, Renderer* rnd, Workspace*
 						);
 				} else if (!hosted.empty()) { // Has been hosted locally.
 					const std::string msg = Text::format(
-						ws->theme()->dialogAsk_ProjectHasBeenBuiltAndIsBeingHostedAt_StopHostingAndBrowseIt(),
+						ws->theme()->dialogAsk_ProjectHasBeenBuiltAndIsBeingHostedAt_StopHostingAndBrowseThePackage(),
 						{ hosted }
 					);
 					popupMessage(wnd, rnd, ws, msg.c_str(), true, false)
@@ -4088,7 +4088,8 @@ promise::Promise Operations::projectBuild(Window* wnd, Renderer* rnd, Workspace*
 							[ws, ex, exported] (bool ok) -> void {
 								WORKSPACE_AUTO_CLOSE_POPUP(ws)
 
-								ws->print("Stopped hosting.");
+								ws->print("Local server has been stopped for preview. To maintain access for other players, consider");
+								ws->print("setting up a dedicated web server or uploading the game to a cloud hosting platform.");
 								ex->reset();
 
 								if (ok) {

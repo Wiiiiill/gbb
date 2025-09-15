@@ -676,7 +676,7 @@ bool Theme::open(class Renderer* rnd) {
 	dialogPrompt_Writing("Writing");
 	dialogAsk_BrowseTheExportedFile("Browser the exported file?");
 	dialogAsk_ClearAllRecentProjects("Clear all recent projects?");
-	dialogAsk_ProjectHasBeenBuiltAndIsBeingHostedAt_StopHostingAndBrowseIt("The project has been built and is being hosted\nat {0}.\nStop hosting and browse it?");
+	dialogAsk_ProjectHasBeenBuiltAndIsBeingHostedAt_StopHostingAndBrowseThePackage("The project has been built and is being hosted\nat {0}.\nStop hosting and browse the package?");
 	dialogAsk_RemoveFromDisk("Remove from disk");
 	dialogAsk_RemoveTheCurrentAssetPage("Remove the current asset page?");
 	dialogAsk_RemoveTheCurrentProject("Remove the current project?");

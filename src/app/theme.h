@@ -475,7 +475,7 @@ public:
 	GBBASIC_PROPERTY_READONLY(std::string, dialogPrompt_Writing)
 	GBBASIC_PROPERTY_READONLY(std::string, dialogAsk_BrowseTheExportedFile)
 	GBBASIC_PROPERTY_READONLY(std::string, dialogAsk_ClearAllRecentProjects)
-	GBBASIC_PROPERTY_READONLY(std::string, dialogAsk_ProjectHasBeenBuiltAndIsBeingHostedAt_StopHostingAndBrowseIt)
+	GBBASIC_PROPERTY_READONLY(std::string, dialogAsk_ProjectHasBeenBuiltAndIsBeingHostedAt_StopHostingAndBrowseThePackage)
 	GBBASIC_PROPERTY_READONLY(std::string, dialogAsk_RemoveFromDisk)
 	GBBASIC_PROPERTY_READONLY(std::string, dialogAsk_RemoveTheCurrentAssetPage)
 	GBBASIC_PROPERTY_READONLY(std::string, dialogAsk_RemoveTheCurrentProject)
