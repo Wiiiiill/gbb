@@ -6384,8 +6384,9 @@ void Workspace::shortcuts(Window* wnd, Renderer* rnd) {
 	const bool comma      = ImGui::IsKeyPressed(SDL_SCANCODE_COMMA);      /* , */
 	const bool period     = ImGui::IsKeyPressed(SDL_SCANCODE_PERIOD);     /* . */
 	const bool slash      = ImGui::IsKeyPressed(SDL_SCANCODE_SLASH);      /* / */
-	const bool tab        = ImGui::IsKeyPressed(SDL_SCANCODE_TAB);
 	const bool return_    = ImGui::IsKeyPressed(SDL_SCANCODE_RETURN);
+	const bool tab        = ImGui::IsKeyPressed(SDL_SCANCODE_TAB);
+	const bool esc        = ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE);
 	const bool del        = ImGui::IsKeyPressed(SDL_SCANCODE_DELETE);
 	const bool home       = ImGui::IsKeyPressed(SDL_SCANCODE_HOME);
 	const bool end        = ImGui::IsKeyPressed(SDL_SCANCODE_END);
@@ -6755,7 +6756,7 @@ void Workspace::shortcuts(Window* wnd, Renderer* rnd) {
 	}
 	if (!opened) {
 		if (showRecentProjects()) {
-			if (!modifier && !io.KeyShift && !io.KeyAlt) {
+			if (!modifier && !io.KeyShift && !io.KeyAlt && !recentProjectsFilter().enabled) {
 				auto getLinesPerPage = [&] (void) -> int {
 					ImGuiStyle &style = ImGui::GetStyle();
 
@@ -6774,7 +6775,10 @@ void Workspace::shortcuts(Window* wnd, Renderer* rnd) {
 				int dx = 0;
 				int dy = 0;
 				int fully = 0;
-				if (right || d) {
+				if (esc) {
+					recentProjectSelectingIndex(-1);
+					recentProjectSelectedIndex(-1);
+				} else if (right || d) {
 					dx = 1;
 				} else if (left || a) {
 					dx = -1;
