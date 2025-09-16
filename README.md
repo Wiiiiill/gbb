@@ -2,15 +2,38 @@
 
 [Home](https://paladin-t.github.io/kits/gbb/) | [Steam](https://store.steampowered.com/app/2308700/) | [Itch.io](https://tonywang.itch.io/gbbasic) | [Documents](https://paladin-t.github.io/kits/gbb/manual.html) | [About](https://paladin-t.github.io/kits/gbb/about.html)
 
-## About GB BASIC
+## Table of Content
+
+- [About GB BASIC](#about-gb-basic)
+  - [About This Repository](#about-this-repository)
+  - [Why GB BASIC?](#why-gb-basic)
+  - [Programming Paradigms](#programming-paradigms)
+  - [Features](#features)
+  - [Specs](#specs)
+- [Glance](#glance)
+- [Installation](#installation)
+  - [Using Prebuilt](#using-prebuilt)
+  - [Compiling from Source](#compiling-from-source)
+    - [Windows](#windows)
+    - [Linux](#linux)
+    - [MacOS](#macos)
+    - [Other platforms](#other-platforms)
+- [Learning](#learning)
+  - [Documentation](#documentation)
+
+# About GB BASIC
 
 **GameBuilder BASIC** (**GB BASIC**) is a retro Fantasy Console that generates ROMs compatible with the popular handheld game console. It has everything ready-to-use for writting code, making assets, compiling projects, running with the built-in emulator, exporting to runnable ROM, etc.
 
-### Why GB BASIC?
+## About This Repository
+
+This repository contains the full source code of GB BASIC, including the [kernel](src/vm) (runtime virtual machine), the [compiler](src/compiler) (for BASIC), and all the [editors](src/app).
+
+## Why GB BASIC?
 
 GB BASIC is programmable in a brand new BASIC dialect. The integrated assets editors are intuitive to use. You can generate real ROMs and play on any GB emulator or hardware.
 
-### Programming Paradigms
+## Programming Paradigms
 
 - Imperative paradigm
   - Non-structured programming
@@ -18,7 +41,7 @@ GB BASIC is programmable in a brand new BASIC dialect. The integrated assets edi
 - Declarative paradigm
   - Data driven approach
 
-### Features
+## Features
 
 - Programmable in BASIC, an easy to learn and fun to use programming language
 - Easy to use API for graphics, input, audio, and other facilities
@@ -29,7 +52,7 @@ GB BASIC is programmable in a brand new BASIC dialect. The integrated assets edi
 - Project can be exported into real ROM
 - Dozens of example projects
 
-### Specs
+## Specs
 
 - **CPU**: 4.19MHz/8.38MHz for classic/colored respectively
 - **Threads**: up to 16 concurrent execution contexts
@@ -50,7 +73,7 @@ GB BASIC is programmable in a brand new BASIC dialect. The integrated assets edi
 - **RTC**: supported
 - **Serial port**: supported
 
-## Glance
+# Glance
 
 ![](docs/screenshots/screenshot1.png)
 
@@ -90,14 +113,14 @@ GB BASIC is programmable in a brand new BASIC dialect. The integrated assets edi
 
 ![](docs/screenshots/screenshot19.png)
 
-## Installation
+# Installation
 
-### Using Prebuilt
+## Using Prebuilt
 
 - [Steam](https://store.steampowered.com/app/2308700/)
 - [Itch.io](https://tonywang.itch.io/gbbasic)
 
-### Compiling from Source
+## Compiling from Source
 
 A C++14 capable compiler is required, any compiler came after 2014 should be ok. You need to get this repository before build:
 
@@ -106,7 +129,7 @@ git clone https://github.com/paladin-t/gbb.git
 cd gbb
 ```
 
-#### Windows
+### Windows
 
 Dependencies: Visual Studio (with C++ development tools installed).
 
@@ -123,7 +146,7 @@ Dependencies: Visual Studio (with C++ development tools installed).
 
 </details>
 
-#### Linux
+### Linux
 
 Dependencies: CMake, GCC.
 
@@ -152,7 +175,7 @@ Dependencies: CMake, GCC.
 
 </details>
 
-#### MacOS
+### MacOS
 
 Dependencies: Xcode.
 
@@ -170,7 +193,7 @@ Dependencies: Xcode.
 
 </details>
 
-#### Other platforms
+### Other platforms
 
 <details>
 <summary>Details</summary>
@@ -181,9 +204,9 @@ The "platform_*" files contain most platform dependent code, you'll probably mak
 
 </details>
 
-## Learning
+# Learning
 
-### Documentation
+## Documentation
 
 - [Manual](https://paladin-t.github.io/kits/gbb/manual.html)
 - [Extensions](https://paladin-t.github.io/kits/gbb/extensions.html)
