@@ -126,6 +126,12 @@ extern UINT8 vm_lock_state;
 extern UINT8 vm_exception_code;   // Exception type.
 extern UINT8 vm_exception_source; // Exception source or parameters bank.
 extern UINT16 vm_exception_data;  // Exception data or parameters address.
+#   define VM_THROW(CODE, SRC, DATA) \
+        do { \
+            vm_exception_code   = (CODE); \
+            vm_exception_source = (SRC); \
+            vm_exception_data   = (DATA); \
+        } while (0)
 #endif /* VM_EXCEPTION_ENABLED */
 
 // Operators.

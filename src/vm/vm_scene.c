@@ -704,9 +704,7 @@ void vm_get_scene_prop(SCRIPT_CTX * THIS) OLDCALL BANKED {
         *(THIS->stack_ptr++) = FALSE;
 
 #if VM_EXCEPTION_ENABLED
-        vm_exception_code   = EXCEPTION_UNKNOWN_PARAMETER;
-        vm_exception_source = EXCEPTION_SCENE_ERROR;
-        vm_exception_data   = p;
+        VM_THROW(EXCEPTION_UNKNOWN_PARAMETER, EXCEPTION_SCENE_ERROR, p);
 #endif /* VM_EXCEPTION_ENABLED */
 
         break;
@@ -776,9 +774,7 @@ void vm_set_scene_prop(SCRIPT_CTX * THIS) OLDCALL BANKED {
         --THIS->stack_ptr;
 
 #if VM_EXCEPTION_ENABLED
-        vm_exception_code   = EXCEPTION_UNKNOWN_PARAMETER;
-        vm_exception_source = EXCEPTION_SCENE_ERROR;
-        vm_exception_data   = p;
+        VM_THROW(EXCEPTION_UNKNOWN_PARAMETER, EXCEPTION_SCENE_ERROR, p);
 #endif /* VM_EXCEPTION_ENABLED */
 
         break;

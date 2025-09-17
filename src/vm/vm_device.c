@@ -311,9 +311,7 @@ void vm_option(SCRIPT_CTX * THIS) OLDCALL BANKED {
         *(THIS->stack_ptr++) = FALSE;
 
 #if VM_EXCEPTION_ENABLED
-        vm_exception_code   = EXCEPTION_UNKNOWN_PARAMETER;
-        vm_exception_source = EXCEPTION_DEVICE_ERROR;
-        vm_exception_data   = what;
+        VM_THROW(EXCEPTION_UNKNOWN_PARAMETER, EXCEPTION_DEVICE_ERROR, what);
 #endif /* VM_EXCEPTION_ENABLED */
 
         break;
@@ -535,9 +533,7 @@ void vm_query(SCRIPT_CTX * THIS) OLDCALL BANKED {
         *(THIS->stack_ptr++) = FALSE;
 
 #if VM_EXCEPTION_ENABLED
-        vm_exception_code   = EXCEPTION_UNKNOWN_PARAMETER;
-        vm_exception_source = EXCEPTION_DEVICE_ERROR;
-        vm_exception_data   = what;
+        VM_THROW(EXCEPTION_UNKNOWN_PARAMETER, EXCEPTION_DEVICE_ERROR, what);
 #endif /* VM_EXCEPTION_ENABLED */
 
         break;

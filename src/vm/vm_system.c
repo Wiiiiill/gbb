@@ -33,9 +33,7 @@ void vm_sleep(SCRIPT_CTX * THIS, INT16 idx) OLDCALL BANKED {
 // Raises a VM exception.
 void vm_raise(SCRIPT_CTX * THIS, UINT8 code, UINT8 size) OLDCALL BANKED {
 #if VM_EXCEPTION_ENABLED
-    vm_exception_code   = code;
-    vm_exception_source = THIS->bank;
-    vm_exception_data   = (UINT16)THIS->PC;
+    VM_THROW(code, THIS->bank, (UINT16)THIS->PC);
 #else /* VM_EXCEPTION_ENABLED */
     (void)code;
 #endif /* VM_EXCEPTION_ENABLED */
