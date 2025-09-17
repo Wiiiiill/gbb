@@ -15,7 +15,10 @@ void vm_sread(SCRIPT_CTX * THIS) OLDCALL BANKED {
     receive_byte();
     if (wait) {
         while (_io_status == IO_RECEIVING) { /* Wait until received. */ }
-        *(THIS->stack_ptr++) = (_io_status == IO_IDLE) ? _io_in : SERIAL_ERROR;
+        if (_io_status == IO_IDLE)
+            *(THIS->stack_ptr++) = _io_in;
+        else
+            *(THIS->stack_ptr++) = SERIAL_ERROR;
     } else {
         if      (_io_status == IO_IDLE)      *(THIS->stack_ptr++) = _io_in;
         else if (_io_status == IO_RECEIVING) *(THIS->stack_ptr++) = SERIAL_BUSY;
@@ -29,7 +32,10 @@ void vm_swrite(SCRIPT_CTX * THIS) OLDCALL BANKED {
     send_byte();
     if (wait) {
         while (_io_status == IO_SENDING) { /* Wait until sent. */ }
-        *(THIS->stack_ptr++) = (_io_status == IO_IDLE) ? _io_out : SERIAL_ERROR;
+        if (_io_status == IO_IDLE)
+            *(THIS->stack_ptr++) = _io_out;
+        else
+            *(THIS->stack_ptr++) = SERIAL_ERROR;
     } else {
         if      (_io_status == IO_IDLE)    *(THIS->stack_ptr++) = _io_out;
         else if (_io_status == IO_SENDING) *(THIS->stack_ptr++) = SERIAL_BUSY;
