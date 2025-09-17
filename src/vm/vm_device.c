@@ -265,22 +265,22 @@ void vm_option(SCRIPT_CTX * THIS) OLDCALL BANKED {
 
         break;
     case DEVICE_OPTION_RTC_SEC:
-        rtc_set((UINT8)((RTC_VALUE_SEC & 0x03) + RTC_VALUE_SEC), val);
+        rtc_set(RTC_VALUE_SEC, val);
         *(THIS->stack_ptr++) = TRUE;
 
         break;
     case DEVICE_OPTION_RTC_MIN:
-        rtc_set((UINT8)((RTC_VALUE_MIN & 0x03) + RTC_VALUE_SEC), val);
+        rtc_set(RTC_VALUE_MIN, val);
         *(THIS->stack_ptr++) = TRUE;
 
         break;
     case DEVICE_OPTION_RTC_HOUR:
-        rtc_set((UINT8)((RTC_VALUE_HOUR & 0x03) + RTC_VALUE_SEC), val);
+        rtc_set(RTC_VALUE_HOUR, val);
         *(THIS->stack_ptr++) = TRUE;
 
         break;
     case DEVICE_OPTION_RTC_DAY:
-        rtc_set((UINT8)((RTC_VALUE_DAY & 0x03) + RTC_VALUE_SEC), val);
+        rtc_set(RTC_VALUE_DAY, val);
         *(THIS->stack_ptr++) = TRUE;
 
         break;
@@ -499,19 +499,19 @@ void vm_query(SCRIPT_CTX * THIS) OLDCALL BANKED {
 
         break;
     case DEVICE_QUERY_RTC_SEC:
-        *(THIS->stack_ptr++) = rtc_get((UINT8)((RTC_VALUE_SEC & 0x03) + RTC_VALUE_SEC));
+        *(THIS->stack_ptr++) = rtc_get(RTC_VALUE_SEC);
 
         break;
     case DEVICE_QUERY_RTC_MIN:
-        *(THIS->stack_ptr++) = rtc_get((UINT8)((RTC_VALUE_MIN & 0x03) + RTC_VALUE_SEC));
+        *(THIS->stack_ptr++) = rtc_get(RTC_VALUE_MIN);
 
         break;
     case DEVICE_QUERY_RTC_HOUR:
-        *(THIS->stack_ptr++) = rtc_get((UINT8)((RTC_VALUE_HOUR & 0x03) + RTC_VALUE_SEC));
+        *(THIS->stack_ptr++) = rtc_get(RTC_VALUE_HOUR);
 
         break;
     case DEVICE_QUERY_RTC_DAY:
-        *(THIS->stack_ptr++) = rtc_get((UINT8)((RTC_VALUE_DAY & 0x03) + RTC_VALUE_SEC));
+        *(THIS->stack_ptr++) = rtc_get(RTC_VALUE_DAY);
 
         break;
     case DEVICE_QUERY_SYS_TIME:

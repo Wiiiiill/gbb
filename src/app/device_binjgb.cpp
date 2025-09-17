@@ -611,10 +611,10 @@ bool DeviceBinjgb::open(Bytes::Ptr rom, DeviceTypes deviceType, bool isEditor, b
 		ENABLE_RAM(_emulator);
 		deviceBinjgbRtcStart(_emulator, 1);
 		deviceBinjgbRtcLatch(_emulator);
-		deviceBinjgbRtcSet(_emulator, (UInt8)((RTC_VALUE_DAY  & 0x03) + RTC_VALUE_SEC), (UInt16)day);
-		deviceBinjgbRtcSet(_emulator, (UInt8)((RTC_VALUE_HOUR & 0x03) + RTC_VALUE_SEC), (UInt16)hr);
-		deviceBinjgbRtcSet(_emulator, (UInt8)((RTC_VALUE_MIN  & 0x03) + RTC_VALUE_SEC), (UInt16)mi);
-		deviceBinjgbRtcSet(_emulator, (UInt8)((RTC_VALUE_SEC  & 0x03) + RTC_VALUE_SEC), (UInt16)sec);
+		deviceBinjgbRtcSet(_emulator, (UInt8)RTC_VALUE_DAY,  (UInt16)day);
+		deviceBinjgbRtcSet(_emulator, (UInt8)RTC_VALUE_HOUR, (UInt16)hr);
+		deviceBinjgbRtcSet(_emulator, (UInt8)RTC_VALUE_MIN,  (UInt16)mi);
+		deviceBinjgbRtcSet(_emulator, (UInt8)RTC_VALUE_SEC,  (UInt16)sec);
 		DISABLE_RAM(_emulator);
 	}
 
