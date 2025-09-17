@@ -517,11 +517,11 @@ void vm_query(SCRIPT_CTX * THIS) OLDCALL BANKED {
 
         break;
     case DEVICE_QUERY_SYS_TIME:
-        *(THIS->stack_ptr++) = DIV_REG;
+        *(THIS->stack_ptr++) = sys_time;
 
         break;
     case DEVICE_QUERY_DIV_REG:
-        *(THIS->stack_ptr++) = sys_time;
+        *(THIS->stack_ptr++) = DIV_REG;
 
         break;
     case DEVICE_QUERY_PLATFORM_FLAGS:
