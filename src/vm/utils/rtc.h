@@ -33,9 +33,8 @@ inline void rtc_start(UINT8 start) {
     else
         RTC_VALUE_REG |= RTC_TIMER_STOP;
 }
-inline void rtc_latch(void) {
-    RTC_LATCH_REG = 0;
-    RTC_LATCH_REG = 1;
+inline void rtc_latch(UINT8 val) {
+    RTC_LATCH_REG = val;
 }
 
 inline UINT16 rtc_get(UINT8 part) {

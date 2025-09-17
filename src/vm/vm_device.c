@@ -303,7 +303,7 @@ void vm_option(SCRIPT_CTX * THIS) OLDCALL BANKED {
 
         break;
     case DEVICE_OPTION_RTC_LATCH:
-        if (val) rtc_latch();
+        rtc_latch(val);
         *(THIS->stack_ptr++) = TRUE;
 
         break;
